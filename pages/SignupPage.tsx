@@ -114,6 +114,10 @@ const SignupPage: React.FC = () => {
       const cleanMobile = rawMobile.startsWith('0') ? rawMobile.slice(1) : rawMobile;
       const fullMobile = `${country?.code || ''}${cleanMobile}`;
 
+      // Delete old pending registration and OTP if exists
+      await supabase.from('pending_registrations').delete().eq('email', formData.email.toLowerCase());
+      await supabase.from('otp_verifications').delete().eq('email', formData.email.toLowerCase());
+
       const { error: regError } = await supabase.from('pending_registrations').insert({
         username: cleanUsername,
         login_id: loginId,

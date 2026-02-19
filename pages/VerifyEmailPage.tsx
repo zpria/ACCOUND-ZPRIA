@@ -30,6 +30,9 @@ const VerifyEmailPage: React.FC = () => {
       return;
     }
     setEmail(savedEmail.toLowerCase());
+    // Start countdown immediately when page loads with email
+    setShowTimer(true);
+    setCountdown(60);
   }, []);
 
   useEffect(() => {
@@ -69,6 +72,9 @@ const VerifyEmailPage: React.FC = () => {
     if (countdown > 0) return;
     
     setIsLoading(true);
+    // Start timer immediately when resend is clicked
+    startCountdown();
+    
     try {
       const newOtpCode = Math.floor(10000000 + Math.random() * 90000000).toString();
       
@@ -101,7 +107,6 @@ const VerifyEmailPage: React.FC = () => {
       });
       
       setError('');
-      startCountdown(); // Reset timer after successful resend
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -155,6 +160,19 @@ const VerifyEmailPage: React.FC = () => {
         });
 
         if (insertError) throw insertError;
+
+        // Create user session (auto login)
+        const user = {
+          id: pending.username,
+          username: pending.username,
+          login_id: pending.login_id,
+          firstName: pending.first_name,
+          lastName: pending.last_name,
+          email: pending.email,
+          mobile: pending.mobile,
+          themePreference: 'default'
+        };
+        localStorage.setItem('zpria_user', JSON.stringify(user));
 
         await sendWelcomeAlert({
           to_name: pending.first_name,
