@@ -5,6 +5,7 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement | HTMLSelectE
   label: string;
   isSelect?: boolean;
   isInvalid?: boolean;
+  errorMessage?: string;
   children?: React.ReactNode;
 }
 
@@ -12,6 +13,7 @@ const FloatingInput: React.FC<Props> = ({
   label, 
   isSelect, 
   isInvalid,
+  errorMessage,
   children, 
   className = '', 
   ...props 
@@ -77,6 +79,9 @@ const FloatingInput: React.FC<Props> = ({
           </div>
         )}
       </div>
+      {isInvalid && errorMessage && (
+        <p className="mt-2 text-[12px] text-[#ff3b30] font-medium ml-1">{errorMessage}</p>
+      )}
     </div>
   );
 };

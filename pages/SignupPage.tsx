@@ -16,6 +16,8 @@ const SignupPage: React.FC = () => {
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [captchaRefresh, setCaptchaRefresh] = useState(0);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState(() => {
     const savedDraft = localStorage.getItem(STORAGE_KEY);
@@ -71,12 +73,70 @@ const SignupPage: React.FC = () => {
     return age >= 16;
   }, [formData]);
 
+  const validateField = (name: string, value: any): string => {
+    switch (name) {
+      case 'firstName':
+        if (!value) return 'Please enter your first name';
+        if (!/^[a-zA-Z\s]+$/.test(value)) return 'Only letters allowed';
+        if (value.length < 2) return 'At least 2 characters';
+        return '';
+      case 'lastName':
+        if (!value) return 'Please enter your last name';
+        if (!/^[a-zA-Z\s]+$/.test(value)) return 'Only letters allowed';
+        if (value.length < 2) return 'At least 2 characters';
+        return '';
+      case 'username':
+        if (!value) return 'Please enter a username';
+        if (value.length < 5) return 'At least 5 characters';
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Only letters, numbers, and underscores';
+        return '';
+      case 'email':
+        if (!value) return 'Please enter your email';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format';
+        return '';
+      case 'password':
+        if (!value) return 'Please enter a password';
+        if (value.length < 8) return 'At least 8 characters';
+        if (!/[A-Z]/.test(value)) return 'Need uppercase letter';
+        if (!/[a-z]/.test(value)) return 'Need lowercase letter';
+        if (!/[0-9]/.test(value)) return 'Need number';
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Need special character';
+        return '';
+      case 'confirmPassword':
+        if (!value) return 'Please confirm your password';
+        if (value !== formData.password) return 'Passwords do not match';
+        return '';
+      case 'mobile':
+        if (!value) return 'Please enter your phone number';
+        if (!/^\d+$/.test(value)) return 'Only numbers allowed';
+        if (value.length < 10) return 'At least 10 digits';
+        return '';
+      default:
+        return '';
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as any;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    
     setFormData((prev: any) => ({ 
       ...prev, 
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value 
+      [name]: newValue 
     }));
+
+    // Real-time validation for touched fields
+    if (touchedFields.has(name)) {
+      const error = validateField(name, newValue);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setTouchedFields(prev => new Set(prev).add(name));
+    const error = validateField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -197,8 +257,8 @@ const SignupPage: React.FC = () => {
         {/* PERSONAL IDENTIFIER */}
         <section className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <FloatingInput name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} required />
-            <FloatingInput name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} required />
+            <FloatingInput name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.firstName} errorMessage={fieldErrors.firstName} required />
+            <FloatingInput name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.lastName} errorMessage={fieldErrors.lastName} required />
           </div>
           
           <div className="grid grid-cols-3 gap-3">
@@ -236,7 +296,7 @@ const SignupPage: React.FC = () => {
           
           <div className="flex items-stretch w-full rounded-2xl border border-[#d2d2d7] overflow-hidden focus-within:ring-1 focus-within:ring-[#0071e3] transition-all bg-white group">
             <div className="flex-1">
-              <FloatingInput name="username" label="Claim Username" value={formData.username} onChange={handleChange} required className="!border-0 !rounded-none !shadow-none" />
+              <FloatingInput name="username" label="Claim Username" value={formData.username} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.username} errorMessage={fieldErrors.username} required className="!border-0 !rounded-none !shadow-none" />
             </div>
             <div className="flex items-center px-6 bg-[#f5f5f7] border-l border-[#d2d2d7] font-black text-[#1d1d1f] text-[14px] select-none group-hover:bg-[#ebebed] transition-colors whitespace-nowrap">
               @prigod.com
@@ -246,10 +306,10 @@ const SignupPage: React.FC = () => {
 
         {/* SECURITY CORE */}
         <section className="space-y-4">
-          <FloatingInput name="email" label="Recovery Email" type="email" value={formData.email} onChange={handleChange} required />
+          <FloatingInput name="email" label="Recovery Email" type="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.email} errorMessage={fieldErrors.email} required />
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
-              <FloatingInput name="password" label="Password" type="password" value={formData.password} onChange={handleChange} onFocus={() => setIsPasswordFocused(true)} onBlur={() => setIsPasswordFocused(false)} required />
+              <FloatingInput name="password" label="Password" type="password" value={formData.password} onChange={handleChange} onFocus={() => setIsPasswordFocused(true)} onBlur={(e) => { setIsPasswordFocused(false); handleBlur(e); }} isInvalid={!!fieldErrors.password} errorMessage={fieldErrors.password} required />
               {isPasswordFocused && (
                 <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[260px] pointer-events-none transition-all duration-300">
                   <div className="bg-[#f2f2f7]/95 backdrop-blur-xl rounded-[20px] border border-white/60 p-4 shadow-2xl">
@@ -271,7 +331,7 @@ const SignupPage: React.FC = () => {
                 </div>
               )}
             </div>
-            <FloatingInput name="confirmPassword" label="Confirm" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+            <FloatingInput name="confirmPassword" label="Confirm" type="password" value={formData.confirmPassword} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.confirmPassword} errorMessage={fieldErrors.confirmPassword} required />
           </div>
         </section>
 
@@ -283,7 +343,7 @@ const SignupPage: React.FC = () => {
             </FloatingInput>
           </div>
           <div className="flex-1">
-            <FloatingInput name="mobile" label="Phone Number" type="tel" value={formData.mobile} onChange={handleChange} required />
+            <FloatingInput name="mobile" label="Phone Number" type="tel" value={formData.mobile} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.mobile} errorMessage={fieldErrors.mobile} required />
           </div>
         </section>
 
