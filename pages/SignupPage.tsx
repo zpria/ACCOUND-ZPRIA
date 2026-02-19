@@ -52,6 +52,55 @@ const SignupPage: React.FC = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
+  // Live database validation for username, email, mobile
+  useEffect(() => {
+    const checkLiveAvailability = async () => {
+      const fieldsToCheck = [
+        { name: 'username', value: formData.username, minLength: 3 },
+        { name: 'email', value: formData.email, minLength: 5 },
+        { name: 'mobile', value: formData.mobile, minLength: 10 }
+      ];
+
+      for (const field of fieldsToCheck) {
+        if (field.value.length >= field.minLength) {
+          setCheckingFields(prev => new Set(prev).add(field.name));
+          
+          let checkValue = field.value.toLowerCase().trim();
+          if (field.name === 'mobile') {
+            const country = COUNTRY_LIST.find(c => c.value === formData.countryCode);
+            const rawMobile = formData.mobile.trim();
+            const cleanMobile = rawMobile.startsWith('0') ? rawMobile.slice(1) : rawMobile;
+            checkValue = `${country?.code || ''}${cleanMobile}`;
+          }
+
+          const isAvailable = await checkAvailability(field.name as 'username' | 'email' | 'mobile', checkValue);
+          
+          if (!isAvailable) {
+            const errorMsg = field.name === 'username' ? 'Username already taken' :
+                           field.name === 'email' ? 'Email already registered' :
+                           'Phone number already registered';
+            setLiveErrors(prev => ({ ...prev, [field.name]: errorMsg }));
+          } else {
+            setLiveErrors(prev => {
+              const newErrors = { ...prev };
+              delete newErrors[field.name];
+              return newErrors;
+            });
+          }
+          
+          setCheckingFields(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(field.name);
+            return newSet;
+          });
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(checkLiveAvailability, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.username, formData.email, formData.mobile, formData.countryCode]);
+
   const passwordValidation = useMemo(() => {
     const pass = formData.password;
     const checks = {
@@ -302,7 +351,7 @@ const SignupPage: React.FC = () => {
           
           <div className="flex items-stretch w-full rounded-2xl border border-[#d2d2d7] overflow-hidden focus-within:ring-1 focus-within:ring-[#0071e3] transition-all bg-white group">
             <div className="flex-1">
-              <FloatingInput name="username" label="Claim Username" value={formData.username} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.username} errorMessage={fieldErrors.username} required className="!border-0 !rounded-none !shadow-none" />
+              <FloatingInput name="username" label="Claim Username" value={formData.username} onChange={handleChange} onBlur={handleBlur} isInvalid={!!(fieldErrors.username || liveErrors.username)} errorMessage={fieldErrors.username || liveErrors.username} required className="!border-0 !rounded-none !shadow-none" />
             </div>
             <div className="flex items-center px-6 bg-[#f5f5f7] border-l border-[#d2d2d7] font-black text-[#1d1d1f] text-[14px] select-none group-hover:bg-[#ebebed] transition-colors whitespace-nowrap">
               @prigod.com
@@ -312,7 +361,7 @@ const SignupPage: React.FC = () => {
 
         {/* SECURITY CORE */}
         <section className="space-y-4">
-          <FloatingInput name="email" label="Recovery Email" type="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.email} errorMessage={fieldErrors.email} required />
+          <FloatingInput name="email" label="Recovery Email" type="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} isInvalid={!!(fieldErrors.email || liveErrors.email)} errorMessage={fieldErrors.email || liveErrors.email} required />
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
               <FloatingInput name="password" label="Password" type="password" value={formData.password} onChange={handleChange} onFocus={() => setIsPasswordFocused(true)} onBlur={(e) => { setIsPasswordFocused(false); handleBlur(e); }} isInvalid={!!fieldErrors.password} errorMessage={fieldErrors.password} required />
@@ -349,7 +398,7 @@ const SignupPage: React.FC = () => {
             </FloatingInput>
           </div>
           <div className="flex-1">
-            <FloatingInput name="mobile" label="Phone Number" type="tel" value={formData.mobile} onChange={handleChange} onBlur={handleBlur} isInvalid={!!fieldErrors.mobile} errorMessage={fieldErrors.mobile} required />
+            <FloatingInput name="mobile" label="Phone Number" type="tel" value={formData.mobile} onChange={handleChange} onBlur={handleBlur} isInvalid={!!(fieldErrors.mobile || liveErrors.mobile)} errorMessage={fieldErrors.mobile || liveErrors.mobile} required />
           </div>
         </section>
 
