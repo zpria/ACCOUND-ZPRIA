@@ -25,6 +25,9 @@ const DiagnosticsPage = React.lazy(() => import('./pages/DiagnosticsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 const TeamsPage = React.lazy(() => import('./pages/TeamsPage'));
 const ThemeSelectionPage = React.lazy(() => import('./pages/ThemeSelectionPage'));
+const SecurityPage = React.lazy(() => import('./pages/SecurityPage'));
+const TwoFactorSetupPage = React.lazy(() => import('./pages/TwoFactorSetupPage'));
+const DevicesPage = React.lazy(() => import('./pages/DevicesPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -268,6 +271,9 @@ const App: React.FC = () => {
           <Route path="/diagnostics" element={<DiagnosticsPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
           <Route path="/theme" element={<ThemeSelectionPage onSelectTheme={updateTheme} currentTheme={authState.theme} />} />
+          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/security/2fa-setup" element={<TwoFactorSetupPage />} />
+          <Route path="/security/devices" element={<DevicesPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
