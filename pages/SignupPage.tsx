@@ -136,7 +136,24 @@ const SignupPage: React.FC = () => {
         expires_at: new Date(Date.now() + 600000).toISOString()
       });
 
-      await sendOTP({ to_name: formData.firstName, to_email: formData.email.toLowerCase(), otp_code: otpCode });
+      const deviceInfo = navigator.userAgent.split(')')[0].split('(')[1] || 'Unknown Device';
+      const ipAddress = await fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => data.ip)
+        .catch(() => 'Unknown IP');
+      const loginTime = new Date().toLocaleString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: 'numeric', hour12: true
+      });
+
+      await sendOTP({ 
+        to_name: formData.firstName, 
+        to_email: formData.email.toLowerCase(), 
+        otp_code: otpCode,
+        device_info: deviceInfo,
+        ip_address: ipAddress,
+        login_time: loginTime
+      });
       
       localStorage.setItem('zpria_verification_email', formData.email.toLowerCase());
       navigate('/verify-email');

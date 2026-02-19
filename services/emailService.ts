@@ -15,6 +15,10 @@ export interface ZpriaEmailParams {
   otp_code?: string;
   purpose?: string;
   expires_in?: string;
+  // Security Context Fields
+  device_info?: string;
+  ip_address?: string;
+  login_time?: string;
   // Welcome/Alert Fields
   success_title?: string;
   welcome_message?: string;
@@ -136,12 +140,23 @@ export const sendZpriaEmail = async (params: ZpriaEmailParams) => {
   }
 };
 
-export const sendOTP = async (params: { to_name: string, to_email: string, otp_code: string, purpose?: string }) => {
+export const sendOTP = async (params: { 
+  to_name: string, 
+  to_email: string, 
+  otp_code: string, 
+  purpose?: string,
+  device_info: string,
+  ip_address: string,
+  login_time: string
+}) => {
   return sendZpriaEmail({
     to_name: params.to_name,
     to_email: params.to_email,
     otp_code: params.otp_code,
     purpose: params.purpose || 'Registration',
+    device_info: params.device_info,
+    ip_address: params.ip_address,
+    login_time: params.login_time,
     subject: "Your ZPRIA verification code"
   });
 };
