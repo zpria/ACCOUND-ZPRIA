@@ -17,10 +17,7 @@ export async function hashPassword(password: string): Promise<string> {
 export const checkAvailability = async (field: 'username' | 'email', value: string) => {
   const normalizedValue = value.trim().toLowerCase();
   const { data: user } = await supabase.from('users').select('id').eq(field, normalizedValue).maybeSingle();
-  if (user) return false;
-  
-  const { data: pending } = await supabase.from('pending_registrations').select('id').eq(field, normalizedValue).maybeSingle();
-  return !pending;
+  return !user;
 };
 
 export const handleLoginAttempt = async (identifier: string, passwordHash: string) => {
