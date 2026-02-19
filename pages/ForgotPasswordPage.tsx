@@ -5,6 +5,7 @@ import { ZPRIA_MAIN_LOGO } from '../constants';
 import { supabase } from '../services/supabaseService';
 import { sendOTP } from '../services/emailService';
 import FloatingInput from '../components/FloatingInput';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { UserProfile } from '../types';
 
 type RecoveryStep = 'SEARCH' | 'SELECT' | 'METHOD' | 'DONE';
@@ -270,6 +271,8 @@ const ForgotPasswordPage: React.FC = () => {
         )}
 
       </div>
+      
+      <LoadingOverlay isLoading={isLoading} message="Processing..." />
     </div>
   );
 };

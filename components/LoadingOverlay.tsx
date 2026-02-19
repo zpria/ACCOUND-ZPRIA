@@ -1,25 +1,36 @@
-
 import React, { useEffect, useState } from 'react';
 
-const LoadingPage: React.FC = () => {
+interface LoadingOverlayProps {
+  isLoading: boolean;
+  message?: string;
+}
+
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ 
+  isLoading, 
+  message = 'ZPRIA PROCESSING' 
+}) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [startTime] = useState(Date.now());
 
   useEffect(() => {
-    // Fade in the loader for a smoother cinematic entrance
-    const timer = setTimeout(() => setIsVisible(true), 50);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isLoading) {
+      const timer = setTimeout(() => setIsVisible(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isLoading]);
 
-  // Note: The logic for "complete once" is usually handled by the parent
-  // component waiting for a minimum of 1s, but we provide the visual structure here.
+  if (!isLoading) return null;
 
   return (
-    <div className={`fixed inset-0 bg-white/90 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center p-6 transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div 
+      className={`fixed inset-0 bg-white/95 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 transition-all duration-300 ${
+        isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+      }`}
+    >
       <div className="relative flex flex-col items-center scale-75 md:scale-100">
-        {/* Geometric Blocks Loading Animation (1s Cycle) */}
-        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm">
-          <rect width="200" height="200" fill="white"/>
+        {/* Geometric Blocks Loading Animation */}
+        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg">
           <g transform="translate(100, 100)">
             <rect x="-42" y="-35" width="50" height="50" fill="#7C3AED" rx="8">
               <animateTransform attributeName="transform" type="translate" values="0,0; 0,-10; 0,0" dur="1s" repeatCount="indefinite"/>
@@ -48,7 +59,7 @@ const LoadingPage: React.FC = () => {
             <div className="absolute top-0 left-0 h-full bg-[#7C3AED] animate-[loading_1.5s_infinite_ease-in-out]"></div>
           </div>
           <p className="text-[10px] md:text-[11px] font-black text-[#86868b] uppercase tracking-[0.6em] animate-pulse">
-            ZPRIA PROCESSING
+            {message}
           </p>
         </div>
       </div>
@@ -63,4 +74,4 @@ const LoadingPage: React.FC = () => {
   );
 };
 
-export default LoadingPage;
+export default LoadingOverlay;

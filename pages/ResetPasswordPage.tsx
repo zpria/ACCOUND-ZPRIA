@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import FloatingInput from '../components/FloatingInput';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword } from '../services/supabaseService';
 import { sendPasswordChangeAlert, sendWelcomeAlert } from '../services/emailService';
 import { UserProfile } from '../types';
@@ -228,6 +229,8 @@ const ResetPasswordPage: React.FC<Props> = ({ onLogin }) => {
           Back to Sign In
         </Link>
       </div>
+      
+      <LoadingOverlay isLoading={isLoading} message="Updating Password..." />
     </div>
   );
 };

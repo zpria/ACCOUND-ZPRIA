@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { Send, AlertCircle, CheckCircle, Mail, User, Building, MessageSquare, ChevronDown } from 'lucide-react';
 
 interface FormData {
@@ -330,6 +331,8 @@ ${formData.description}
           </div>
         </div>
       </footer>
+      
+      <LoadingOverlay isLoading={isSubmitting} message="Sending Message..." />
     </div>
   );
 };

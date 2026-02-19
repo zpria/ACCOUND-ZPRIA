@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { UserProfile } from '../types';
 import FloatingInput from '../components/FloatingInput';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { hashPassword, handleLoginAttempt, supabase } from '../services/supabaseService';
 import { sendWelcomeAlert } from '../services/emailService';
 
@@ -223,6 +224,8 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
           </div>
         </div>
       </div>
+      
+      <LoadingOverlay isLoading={isLoading} message="Authenticating..." />
     </div>
   );
 };

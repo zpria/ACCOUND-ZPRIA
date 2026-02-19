@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { sendOTP, sendWelcomeAlert } from '../services/emailService';
 
@@ -278,6 +279,8 @@ const VerifyEmailPage: React.FC = () => {
           </div>
         </form>
       </div>
+      
+      <LoadingOverlay isLoading={isLoading} message="Verifying..." />
     </div>
   );
 };

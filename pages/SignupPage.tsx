@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../constants';
 import Captcha from '../components/Captcha';
 import FloatingInput from '../components/FloatingInput';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword, checkAvailability } from '../services/supabaseService';
 import { sendOTP } from '../services/emailService';
 
@@ -421,6 +422,8 @@ const SignupPage: React.FC = () => {
           {isLoading ? "Provisioning..." : "Sign Up"}
         </button>
       </form>
+      
+      <LoadingOverlay isLoading={isLoading} message="Creating Account..." />
     </div>
   );
 };
