@@ -18,6 +18,8 @@ const SignupPage: React.FC = () => {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [liveErrors, setLiveErrors] = useState<Record<string, string>>({});
+  const [checkingFields, setCheckingFields] = useState<Set<string>>(new Set());
   
   const [formData, setFormData] = useState(() => {
     const savedDraft = localStorage.getItem(STORAGE_KEY);
@@ -88,6 +90,7 @@ const SignupPage: React.FC = () => {
       case 'username':
         if (!value) return 'Please enter a username';
         if (value.length < 5) return 'At least 5 characters';
+        if (value.length > 20) return 'Maximum 20 characters';
         if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Only letters, numbers, and underscores';
         return '';
       case 'email':
@@ -110,6 +113,7 @@ const SignupPage: React.FC = () => {
         if (!value) return 'Please enter your phone number';
         if (!/^\d+$/.test(value)) return 'Only numbers allowed';
         if (value.length < 10) return 'At least 10 digits';
+        if (value.length > 15) return 'Maximum 15 digits';
         return '';
       default:
         return '';
@@ -161,18 +165,20 @@ const SignupPage: React.FC = () => {
       const loginId = `${cleanUsername}@prigod.com`;
       const otpCode = Math.floor(10000000 + Math.random() * 90000000).toString();
 
-      const isUserAvailable = await checkAvailability('username', cleanUsername);
-      const isEmailAvailable = await checkAvailability('email', formData.email.toLowerCase());
-      
-      if (!isUserAvailable) throw new Error('Username already taken');
-      if (!isEmailAvailable) throw new Error('Recovery email already registered');
-
-      const hPassword = await hashPassword(formData.password);
-      
       const country = COUNTRY_LIST.find(c => c.value === formData.countryCode);
       const rawMobile = formData.mobile.trim();
       const cleanMobile = rawMobile.startsWith('0') ? rawMobile.slice(1) : rawMobile;
       const fullMobile = `${country?.code || ''}${cleanMobile}`;
+
+      const isUserAvailable = await checkAvailability('username', cleanUsername);
+      const isEmailAvailable = await checkAvailability('email', formData.email.toLowerCase());
+      const isMobileAvailable = await checkAvailability('mobile', fullMobile);
+      
+      if (!isUserAvailable) throw new Error('Username already taken');
+      if (!isEmailAvailable) throw new Error('Recovery email already registered');
+      if (!isMobileAvailable) throw new Error('Phone number already registered');
+
+      const hPassword = await hashPassword(formData.password);
 
       // Delete old pending registration and OTP if exists
       await supabase.from('pending_registrations').delete().eq('email', formData.email.toLowerCase());

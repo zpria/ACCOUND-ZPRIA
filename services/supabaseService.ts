@@ -14,7 +14,7 @@ export async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export const checkAvailability = async (field: 'username' | 'email', value: string) => {
+export const checkAvailability = async (field: 'username' | 'email' | 'mobile', value: string) => {
   const normalizedValue = value.trim().toLowerCase();
   const { data: user } = await supabase.from('users').select('id').eq(field, normalizedValue).maybeSingle();
   return !user;
