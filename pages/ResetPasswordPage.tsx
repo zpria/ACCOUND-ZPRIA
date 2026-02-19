@@ -230,7 +230,7 @@ const ResetPasswordPage: React.FC<Props> = ({ onLogin }) => {
         </Link>
       </div>
       
-      <LoadingOverlay isLoading={isLoading} message="Updating Password..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

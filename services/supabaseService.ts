@@ -16,6 +16,15 @@ export async function hashPassword(password: string): Promise<string> {
 
 export const checkAvailability = async (field: 'username' | 'email' | 'mobile', value: string) => {
   const normalizedValue = value.trim().toLowerCase();
+  
+  // For mobile: allow up to 3 accounts per mobile number
+  if (field === 'mobile') {
+    const { data: users, error } = await supabase.from('users').select('id').eq(field, normalizedValue);
+    if (error) return false;
+    return (users?.length || 0) < 3; // Allow if less than 3 accounts
+  }
+  
+  // For username and email: must be unique
   const { data: user } = await supabase.from('users').select('id').eq(field, normalizedValue).maybeSingle();
   return !user;
 };

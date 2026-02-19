@@ -280,7 +280,7 @@ const VerifyEmailPage: React.FC = () => {
         </form>
       </div>
       
-      <LoadingOverlay isLoading={isLoading} message="Verifying..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

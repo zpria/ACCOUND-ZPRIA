@@ -79,7 +79,7 @@ const SignupPage: React.FC = () => {
           if (!isAvailable) {
             const errorMsg = field.name === 'username' ? 'Username already taken' :
                            field.name === 'email' ? 'Email already registered' :
-                           'Phone number already registered';
+                           'This number has 3 accounts already';
             setLiveErrors(prev => ({ ...prev, [field.name]: errorMsg }));
           } else {
             setLiveErrors(prev => {
@@ -226,7 +226,7 @@ const SignupPage: React.FC = () => {
       
       if (!isUserAvailable) throw new Error('Username already taken');
       if (!isEmailAvailable) throw new Error('Recovery email already registered');
-      if (!isMobileAvailable) throw new Error('Phone number already registered');
+      if (!isMobileAvailable) throw new Error('This phone number already has 3 accounts. Use a different number.');
 
       const hPassword = await hashPassword(formData.password);
 
@@ -423,7 +423,7 @@ const SignupPage: React.FC = () => {
         </button>
       </form>
       
-      <LoadingOverlay isLoading={isLoading} message="Creating Account..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

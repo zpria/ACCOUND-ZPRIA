@@ -153,7 +153,7 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
         </form>
       </div>
       
-      <LoadingOverlay isLoading={isLoading} message="Verifying..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

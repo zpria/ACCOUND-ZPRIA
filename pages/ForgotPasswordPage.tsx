@@ -272,7 +272,7 @@ const ForgotPasswordPage: React.FC = () => {
 
       </div>
       
-      <LoadingOverlay isLoading={isLoading} message="Processing..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

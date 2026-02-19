@@ -225,7 +225,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
         </div>
       </div>
       
-      <LoadingOverlay isLoading={isLoading} message="Authenticating..." />
+      <LoadingOverlay isLoading={isLoading} />
     </div>
   );
 };

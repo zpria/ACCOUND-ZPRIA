@@ -332,7 +332,7 @@ ${formData.description}
         </div>
       </footer>
       
-      <LoadingOverlay isLoading={isSubmitting} message="Sending Message..." />
+      <LoadingOverlay isLoading={isSubmitting} />
     </div>
   );
 };
