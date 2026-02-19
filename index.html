@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZPRIA Account | Sovereign Identity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zp-blue: #0071e3;
+            --zp-blue-hover: #0077ed;
+            --zp-text: #1d1d1f;
+            --zp-secondary-text: #86868b;
+            --zp-border: #d2d2d7;
+            --zp-bg: #ffffff;
+            --cinematic-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--zp-bg);
+            color: var(--zp-text);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Apple Style Verification Inputs */
+        .apple-otp-input {
+            width: 44px;
+            height: 58px;
+            background: #f5f5f7;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.2s var(--cinematic-ease);
+            outline: none;
+        }
+        @media (min-width: 768px) {
+            .apple-otp-input {
+                width: 52px;
+                height: 72px;
+                font-size: 28px;
+            }
+        }
+        .apple-otp-input:focus {
+            background: #ffffff;
+            border-color: var(--zp-blue);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+
+        .apple-btn-primary {
+            background: #0071e3;
+            color: white;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .apple-btn-primary:disabled {
+            background: #e5e5ea;
+            color: #aeaeae;
+            cursor: not-allowed;
+        }
+
+        .apple-btn-secondary {
+            background: #f5f5f7;
+            color: #1d1d1f;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .reveal-node {
+            opacity: 0;
+            animation: cinematicReveal 0.8s var(--cinematic-ease) forwards;
+        }
+
+        @keyframes cinematicReveal {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom": "https://esm.sh/react-dom@^19.2.4",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.48.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
