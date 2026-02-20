@@ -887,3 +887,98 @@ export interface UserOnboarding {
   createdAt: string;
   updatedAt: string;
 }
+
+// Enhanced Account Management Interfaces
+
+export interface UserAuditLog {
+  id: string;
+  userId: string;
+  action: string;
+  tableName: string;
+  recordId?: string;
+  oldValues?: any;
+  newValues?: any;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export interface UserBackupCode {
+  id: string;
+  userId: string;
+  backupCodeHash: string;
+  isUsed: boolean;
+  usedAt?: string;
+  createdAt: string;
+}
+
+export interface UserAccountRecovery {
+  id: string;
+  userId: string;
+  recoveryType: 'email' | 'phone' | 'backup_contact' | 'security_question';
+  recoveryValue?: string;
+  isVerified: boolean;
+  verifiedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserSecurityQuestion {
+  id: string;
+  userId: string;
+  question: string;
+  answerHash: string;
+  createdAt: string;
+}
+
+export interface UserTrustedDevice {
+  id: string;
+  userId: string;
+  deviceId?: string;
+  deviceName?: string;
+  deviceType?: string;
+  os?: string;
+  browser?: string;
+  fingerprint?: string;
+  ipAddress?: string;
+  isTrusted: boolean;
+  trustedUntil?: string;
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
+export interface UserSessionPreference {
+  id: string;
+  userId: string;
+  sessionId?: string;
+  preferences: any;
+  createdAt: string;
+  expiresAt?: string;
+}
+
+export interface UserAccountHistory {
+  id: string;
+  userId: string;
+  changeType: 'profile_update' | 'security_change' | 'privacy_change' | 'account_recovery' | 'subscription_change' | 'payment_method_change';
+  description?: string;
+  oldValue?: string;
+  newValue?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  changedAt: string;
+}
+
+export interface LoginHistory {
+  id: string;
+  userId: string;
+  deviceName?: string;
+  deviceType?: string;
+  browser?: string;
+  location?: string;
+  ipAddress?: string;
+  loginTime: string;
+  isCurrent: boolean;
+  sessionId?: string;
+  success: boolean;
+  failureReason?: string;
+}

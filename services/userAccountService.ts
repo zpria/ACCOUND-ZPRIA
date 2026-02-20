@@ -28,7 +28,15 @@ import type {
   UserNotification,
   UserTwoFA,
   UserPasskey,
-  UserOnboarding
+  UserOnboarding,
+  UserAuditLog,
+  UserBackupCode,
+  UserAccountRecovery,
+  UserSecurityQuestion,
+  UserTrustedDevice,
+  UserSessionPreference,
+  UserAccountHistory,
+  LoginHistory
 } from '../types';
 
 // ==================== USER PROFILE ====================
