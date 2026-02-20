@@ -145,6 +145,17 @@ const VerifyEmailPage: React.FC = () => {
         const { data: pending } = await supabase.from('pending_registrations').select('*').eq('email', email).maybeSingle();
         if (!pending) throw new Error('Registration session expired. Please sign up again.');
 
+        // Check how many accounts already exist with this mobile number
+        const { data: existingUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('mobile', pending.mobile);
+        
+        const existingCount = existingUsers?.length || 0;
+        if (existingCount >= 3) {
+          throw new Error('This phone number already has 3 accounts. Please use a different number.');
+        }
+
         const { error: insertError } = await supabase.from('users').insert({
           username: pending.username,
           login_id: pending.login_id,
