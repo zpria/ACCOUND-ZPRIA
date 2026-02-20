@@ -2427,6 +2427,31 @@ CREATE TABLE public.user_account_deletion_schedule (
   CONSTRAINT user_account_deletion_schedule_pkey PRIMARY KEY (id),
   CONSTRAINT user_account_deletion_schedule_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_account_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  change_type text NOT NULL CHECK (change_type = ANY (ARRAY['profile_update'::text, 'security_change'::text, 'privacy_change'::text, 'account_recovery'::text, 'subscription_change'::text, 'payment_method_change'::text])),
+  description text,
+  old_value text,
+  new_value text,
+  ip_address inet,
+  user_agent text,
+  changed_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_account_history_pkey PRIMARY KEY (id),
+  CONSTRAINT user_account_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_account_recovery (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  recovery_type text NOT NULL CHECK (recovery_type = ANY (ARRAY['email'::text, 'phone'::text, 'backup_contact'::text, 'security_question'::text])),
+  recovery_value text,
+  is_verified boolean DEFAULT false,
+  verified_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_account_recovery_pkey PRIMARY KEY (id),
+  CONSTRAINT user_account_recovery_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_account_recovery_options (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2614,6 +2639,20 @@ CREATE TABLE public.user_app_usage_timeline (
   CONSTRAINT user_app_usage_timeline_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_usage_timeline_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_audit_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  action text NOT NULL,
+  table_name text NOT NULL,
+  record_id text,
+  old_values jsonb,
+  new_values jsonb,
+  ip_address inet,
+  user_agent text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_audit_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT user_audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_automations (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2628,6 +2667,16 @@ CREATE TABLE public.user_automations (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_automations_pkey PRIMARY KEY (id),
   CONSTRAINT user_automations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_backup_codes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  backup_code_hash text NOT NULL,
+  is_used boolean DEFAULT false,
+  used_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_backup_codes_pkey PRIMARY KEY (id),
+  CONSTRAINT user_backup_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_badges (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -3894,6 +3943,15 @@ CREATE TABLE public.user_security_checkup (
   CONSTRAINT user_security_checkup_pkey PRIMARY KEY (id),
   CONSTRAINT user_security_checkup_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_security_questions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  question text NOT NULL,
+  answer_hash text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_security_questions_pkey PRIMARY KEY (id),
+  CONSTRAINT user_security_questions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_segments (
   segment_id integer NOT NULL DEFAULT nextval('user_segments_segment_id_seq'::regclass),
   segment_code text NOT NULL UNIQUE,
@@ -3905,6 +3963,16 @@ CREATE TABLE public.user_segments (
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_segments_pkey PRIMARY KEY (segment_id)
+);
+CREATE TABLE public.user_session_preferences (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  session_id text,
+  preferences jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  expires_at timestamp with time zone,
+  CONSTRAINT user_session_preferences_pkey PRIMARY KEY (id),
+  CONSTRAINT user_session_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_sessions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -4154,6 +4222,23 @@ CREATE TABLE public.user_trusted_contacts (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_trusted_contacts_pkey PRIMARY KEY (id),
   CONSTRAINT user_trusted_contacts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_trusted_devices (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  device_id uuid,
+  device_name text,
+  device_type text,
+  os text,
+  browser text,
+  fingerprint text,
+  ip_address inet,
+  is_trusted boolean DEFAULT true,
+  trusted_until timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  last_used_at timestamp with time zone,
+  CONSTRAINT user_trusted_devices_pkey PRIMARY KEY (id),
+  CONSTRAINT user_trusted_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_voice_activity (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
