@@ -39,6 +39,14 @@ const PaymentMethodsPage = React.lazy(() => import('./pages/PaymentMethodsPage')
 const OrderHistoryPage = React.lazy(() => import('./pages/OrderHistoryPage'));
 const ConnectedAppsPage = React.lazy(() => import('./pages/ConnectedAppsPage'));
 const ActivityLogsPage = React.lazy(() => import('./pages/ActivityLogsPage'));
+const AccountDashboardPage = React.lazy(() => import('./pages/AccountDashboardPage'));
+const WishlistPage = React.lazy(() => import('./pages/WishlistPage'));
+const CartPage = React.lazy(() => import('./pages/CartPage'));
+const WalletPage = React.lazy(() => import('./pages/WalletPage'));
+const SubscriptionsPage = React.lazy(() => import('./pages/SubscriptionsPage'));
+const AddressesPage = React.lazy(() => import('./pages/AddressesPage'));
+const RewardsPage = React.lazy(() => import('./pages/RewardsPage'));
+const PreferencesPage = React.lazy(() => import('./pages/PreferencesPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -282,15 +290,23 @@ const App: React.FC = () => {
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/security/2fa-setup" element={<TwoFactorSetupPage />} />
           <Route path="/security/devices" element={<DevicesPage />} />
+          <Route path="/account" element={<AccountDashboardPage />} />
           <Route path="/account/profile" element={<ProfilePage />} />
-                    <Route path="/account/security" element={<SecuritySettingsPage />} />
-                              <Route path="/account/devices" element={<DeviceManagementPage />} />
-                                        <Route path="/account/privacy" element={<PrivacySettingsPage />} />
-                                                  <Route path="/account/notifications" element={<NotificationPreferencesPage />} />
-                                                            <Route path="/account/payments" element={<PaymentMethodsPage />} />
-                                                                      <Route path="/account/orders" element={<OrderHistoryPage />} />
-                                                                                <Route path="/account/apps" element={<ConnectedAppsPage />} />
-                                                                                          <Route path="/account/activity" element={<ActivityLogsPage />} />
+          <Route path="/account/security" element={<SecuritySettingsPage />} />
+          <Route path="/account/devices" element={<DeviceManagementPage />} />
+          <Route path="/account/privacy" element={<PrivacySettingsPage />} />
+          <Route path="/account/notifications" element={<NotificationPreferencesPage />} />
+          <Route path="/account/payments" element={<PaymentMethodsPage />} />
+          <Route path="/account/orders" element={<OrderHistoryPage />} />
+          <Route path="/account/apps" element={<ConnectedAppsPage />} />
+          <Route path="/account/activity" element={<ActivityLogsPage />} />
+          <Route path="/account/wishlist" element={<WishlistPage />} />
+          <Route path="/account/cart" element={<CartPage />} />
+          <Route path="/account/wallet" element={<WalletPage />} />
+          <Route path="/account/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/account/addresses" element={<AddressesPage />} />
+          <Route path="/account/rewards" element={<RewardsPage />} />
+          <Route path="/account/preferences" element={<PreferencesPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
