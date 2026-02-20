@@ -122,11 +122,13 @@ const SecuritySettingsPage: React.FC = () => {
 
   const loadLoginHistory = async (userId: string) => {
     try {
+      // Query user_activity_logs table for login activities
       const { data, error } = await supabase
-        .from('login_history')
+        .from('user_activity_logs')
         .select('*')
         .eq('user_id', userId)
-        .order('login_time', { ascending: false })
+        .ilike('action', '%login%')  // Filter for login-related actions
+        .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
@@ -134,13 +136,13 @@ const SecuritySettingsPage: React.FC = () => {
       if (data) {
         setLoginHistory(data.map((item: any) => ({
           id: item.id,
-          device_name: item.device_name || 'Unknown Device',
+          device_name: item.device_name || item.device_type || 'Unknown Device',
           device_type: item.device_type || 'desktop',
           browser: item.browser || 'Unknown Browser',
           location: item.location || 'Unknown Location',
           ip_address: item.ip_address || '***.***.***.***',
-          login_time: item.login_time,
-          is_current: item.is_current || false
+          login_time: item.created_at,
+          is_current: item.session_id === localStorage.getItem('zpria_session_id') // Compare with current session
         })));
       }
     } catch (err) {

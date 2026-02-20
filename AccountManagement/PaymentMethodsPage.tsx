@@ -40,10 +40,39 @@ const PaymentMethodsPage: React.FC = () => {
   const [cardCvv, setCardCvv] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [makeDefault, setMakeDefault] = useState(false);
+  const [userCountry, setUserCountry] = useState<string | null>(null);
 
   useEffect(() => {
     loadPaymentMethods();
+    detectUserLocation();
   }, []);
+
+  const detectUserLocation = async () => {
+    try {
+      // First try to get location from user profile
+      const savedUser = localStorage.getItem('zpria_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        if (userData.country) {
+          setUserCountry(userData.country);
+          return;
+        }
+      }
+
+      // Fallback: use IP geolocation service
+      const response = await fetch('https://ipapi.co/json/');
+      const locationData = await response.json();
+      if (locationData.country) {
+        setUserCountry(locationData.country);
+      } else {
+        // Default to showing all options if location detection fails
+        setUserCountry('US'); // Default to US if unable to detect
+      }
+    } catch (error) {
+      console.warn('Could not detect user location, defaulting to showing all payment methods', error);
+      setUserCountry('US'); // Default to US if error occurs
+    }
+  };
 
   const loadPaymentMethods = async () => {
     try {
@@ -424,24 +453,33 @@ const PaymentMethodsPage: React.FC = () => {
 
               {/* Payment Type Selection */}
               <div className="grid grid-cols-3 gap-2 mb-6">
-                {(['card', 'bkash', 'nagad'] as PaymentType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setSelectedType(type)}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      selectedType === type
-                        ? 'border-[#0071e3] bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      {getPaymentIcon(type)}
-                      <span className="text-xs font-medium">
-                        {type === 'card' ? 'Card' : type}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                {(['card', 'bkash', 'nagad'] as PaymentType[])
+                  .filter(type => {
+                    // Show bKash and Nagad only if user is in Bangladesh
+                    if (type === 'bkash' || type === 'nagad') {
+                      return userCountry === 'BD' || userCountry === 'Bangladesh';
+                    }
+                    // Always show card option
+                    return true;
+                  })
+                  .map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedType(type)}
+                      className={`p-3 rounded-xl border-2 transition-all ${
+                        selectedType === type
+                          ? 'border-[#0071e3] bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        {getPaymentIcon(type)}
+                        <span className="text-xs font-medium">
+                          {type === 'card' ? 'Card' : type}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
               </div>
 
               {/* Card Form */}

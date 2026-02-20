@@ -50,29 +50,29 @@ const ConnectedAppsPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
-      // Load connected apps
+      // Load connected apps - only show internal ZPRIA/Ripple apps
       const { data: connectedData, error: connectedError } = await supabase
         .from('user_connected_apps')
         .select(`
-          *,
-          app:app_id (*)
+          *
         `)
         .eq('user_id', userData.id)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .ilike('app_category', '%zipra_product%'); // Only show internal ZPRIA apps
 
       if (connectedError) throw connectedError;
 
       if (connectedData) {
         setConnectedApps(connectedData.map((conn: any) => ({
           id: conn.id,
-          app_name: conn.app?.name || 'Unknown App',
-          app_icon: conn.app?.icon,
-          app_description: conn.app?.description || '',
+          app_name: conn.app_name || 'Unknown App',
+          app_icon: conn.app_icon_url || conn.app_icon_svg,
+          app_description: conn.app_description || '',
           connected_at: conn.connected_at,
           last_used: conn.last_used || conn.connected_at,
           permissions: conn.permissions || [],
           is_active: conn.is_active,
-          app_url: conn.app?.app_url
+          app_url: conn.app_url
         })));
       }
 

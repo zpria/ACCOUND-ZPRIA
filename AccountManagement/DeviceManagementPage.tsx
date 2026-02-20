@@ -57,7 +57,7 @@ const DeviceManagementPage: React.FC = () => {
         
         setDevices(data.map((device: any) => ({
           id: device.id,
-          device_name: device.device_name || 'Unknown Device',
+          device_name: device.device_name || generateDeviceDisplayName(device),
           device_type: device.device_type || 'desktop',
           browser: device.browser || 'Unknown Browser',
           os: device.os || 'Unknown OS',
@@ -74,6 +74,21 @@ const DeviceManagementPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const generateDeviceDisplayName = (device: any): string => {
+    if (device.os && device.device_type) {
+      if (device.device_type === 'mobile') {
+        return `${device.os} Phone`;
+      } else if (device.device_type === 'tablet') {
+        return `${device.os} Tablet`;
+      } else {
+        return `${device.os} Computer`;
+      }
+    } else if (device.browser) {
+      return `${device.browser} on ${device.device_type}`;
+    }
+    return 'Unknown Device';
   };
 
   const handleLogoutDevice = async (deviceId: string) => {
