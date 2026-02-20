@@ -114,8 +114,7 @@ const ProfilePage: React.FC = () => {
           language: data.language || 'bn',
           religion: data.religion || '',
           lifestyle: data.lifestyle || '',
-          avatarUrl: data.avatarUrl || '',
-          coverPhotoUrl: data.coverPhotoUrl || '',
+          avatarUrl: data.avatarUrl || data.avatar_url || '',
         });
       }
     } catch (err: any) {
@@ -392,8 +391,8 @@ const ProfilePage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-[#86868b] mb-2">Has Children</label>
                   <select
-                    value={profile.has_children ? 'yes' : 'no'}
-                    onChange={(e) => handleChange('has_children', e.target.value === 'yes')}
+                    value={profile.hasChildren ? 'yes' : 'no'}
+                    onChange={(e) => handleChange('hasChildren', e.target.value === 'yes')}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
                   >
                     <option value="no">No</option>
@@ -477,8 +476,8 @@ const ProfilePage: React.FC = () => {
                 <label className="block text-sm font-medium text-[#86868b] mb-2">Postal Code</label>
                 <input
                   type="text"
-                  value={profile.postal_code || ''}
-                  onChange={(e) => handleChange('postal_code', e.target.value)}
+                  value={profile.postalCode || ''}
+                  onChange={(e) => handleChange('postalCode', e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all"
                 />
               </div>
