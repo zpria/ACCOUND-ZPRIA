@@ -62,48 +62,31 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
   const finalizeRegistration = async () => {
     setIsLoading(true);
     try {
-      // In a real app, we'd verify the phone OTP here.
-      // Since this is a demo, we assume verification success and log the user in.
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (user) {
-        const profile: UserProfile = {
-          id: user.id,
-          username: user.username,
-          login_id: user.login_id,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          email: user.email,
-          mobile: user.mobile,
-          address: user.address,
-          dob: user.dob,
-          gender: user.gender,
-          isEmailVerified: user.is_email_verified,
-          themePreference: user.theme_preference,
-          accountStatus: user.account_status
-        };
-        
-        onLogin(profile);
-        localStorage.removeItem('zpria_signup_draft');
-        localStorage.removeItem('zpria_verification_email');
-        navigate('/product-hub');
-      } else {
-        navigate('/signin');
-      }
+      // User is already logged in from email verification
+      // Just clean up and go to product hub
+      localStorage.removeItem('zpria_signup_draft');
+      localStorage.removeItem('zpria_verification_email');
+      navigate('/product-hub');
     } catch (err) {
       console.error("Finalization failed", err);
-      navigate('/signin');
+      navigate('/product-hub');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    const code = otp.join('');
+    
+    // If user entered OTP, verify it (optional)
+    // If not, just skip to product hub
+    if (code.length === 8) {
+      // Optional: verify phone OTP here if you implement it later
+      console.log('Phone OTP entered:', code);
+    }
+    
+    // Always go to product hub - phone verification is optional
     finalizeRegistration();
   };
 
@@ -154,7 +137,7 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
             <button type="button" onClick={finalizeRegistration} className="apple-btn-secondary flex-1">Skip</button>
             <button 
               type="submit" 
-              disabled={isLoading || otp.some(d => !d)} 
+              disabled={isLoading} 
               className="apple-btn-primary flex-1"
             >
               {isLoading ? "Verifying..." : "Continue"}
