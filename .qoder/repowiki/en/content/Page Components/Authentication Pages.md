@@ -9,6 +9,9 @@
 - [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx)
 - [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx)
 - [FloatingInput.tsx](file://components/FloatingInput.tsx)
 - [Captcha.tsx](file://components/Captcha.tsx)
 - [supabaseService.ts](file://services/supabaseService.ts)
@@ -17,32 +20,46 @@
 - [constants.tsx](file://constants.tsx)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Added comprehensive documentation for new two-factor authentication setup workflow
+- Documented device management and active sessions monitoring capabilities
+- Enhanced security page with integrated security status and management options
+- Updated authentication flow architecture to include security features
+- Added new security-related components and their integration patterns
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Project Structure](#project-structure)
 3. [Core Components](#core-components)
 4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+5. [Enhanced Security Features](#enhanced-security-features)
+6. [Detailed Component Analysis](#detailed-component-analysis)
+7. [Dependency Analysis](#dependency-analysis)
+8. [Performance Considerations](#performance-considerations)
+9. [Troubleshooting Guide](#troubleshooting-guide)
+10. [Conclusion](#conclusion)
 
 ## Introduction
-This document provides comprehensive documentation for the authentication pages in the ZPRIA application. It covers the Sign In, Sign Up, Forgot Password, Reset Password, Email Verification, and Phone Verification pages. The documentation explains form validation systems, password strength indicators, multi-step verification processes, authentication flow orchestration, error handling patterns, user feedback mechanisms, email and SMS verification workflows, token validation processes, session management, responsive design adaptations, and accessibility features. It also includes examples of form state management, real-time validation, and integration with Supabase authentication services.
+This document provides comprehensive documentation for the enhanced authentication pages in the ZPRIA application. The system now includes advanced security features including two-factor authentication setup, device management, and comprehensive security workflows. It covers the Sign In, Sign Up, Forgot Password, Reset Password, Email Verification, Phone Verification, Two-Factor Authentication Setup, Security Management, and Device Monitoring pages. The documentation explains form validation systems, password strength indicators, multi-step verification processes, authentication flow orchestration, error handling patterns, user feedback mechanisms, email and SMS verification workflows, token validation processes, session management, responsive design adaptations, accessibility features, and the integration of advanced security measures.
 
 ## Project Structure
-The authentication system is organized around dedicated pages under the pages directory, shared UI components in the components directory, and service integrations in the services directory. The main application orchestrates routing and user session state.
+The authentication system is organized around dedicated pages under the pages directory, shared UI components in the components directory, and service integrations in the services directory. The main application orchestrates routing and user session state with enhanced security features.
 
 ```mermaid
 graph TB
-subgraph "Pages"
+subgraph "Authentication Pages"
 SignIn["SigninPage.tsx"]
 SignUp["SignupPage.tsx"]
 Forgot["ForgotPasswordPage.tsx"]
 Reset["ResetPasswordPage.tsx"]
 VerifyEmail["VerifyEmailPage.tsx"]
 VerifyPhone["VerifyPhonePage.tsx"]
+end
+subgraph "Security Enhancement Pages"
+TwoFactorSetup["TwoFactorSetupPage.tsx"]
+Security["SecurityPage.tsx"]
+Devices["DevicesPage.tsx"]
 end
 subgraph "Components"
 FloatInput["FloatingInput.tsx"]
@@ -63,12 +80,18 @@ App --> Forgot
 App --> Reset
 App --> VerifyEmail
 App --> VerifyPhone
+App --> TwoFactorSetup
+App --> Security
+App --> Devices
 SignIn --> Supabase
 SignUp --> Supabase
 Forgot --> Supabase
 Reset --> Supabase
 VerifyEmail --> Supabase
 VerifyPhone --> Supabase
+TwoFactorSetup --> Supabase
+Security --> Supabase
+Devices --> Supabase
 SignUp --> Email
 VerifyEmail --> Email
 Reset --> Email
@@ -78,44 +101,39 @@ Forgot --> FloatInput
 Reset --> FloatInput
 VerifyEmail --> FloatInput
 VerifyPhone --> FloatInput
+TwoFactorSetup --> FloatInput
+Security --> FloatInput
+Devices --> FloatInput
 SignUp --> Captcha
 App --> Types
 App --> Constants
 ```
 
 **Diagram sources**
-- [App.tsx](file://App.tsx#L252-L272)
-- [SigninPage.tsx](file://pages/SigninPage.tsx#L1-L231)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L293)
-- [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L1-L265)
-- [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx#L1-L236)
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L255)
-- [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
-- [FloatingInput.tsx](file://components/FloatingInput.tsx#L1-L85)
-- [Captcha.tsx](file://components/Captcha.tsx#L1-L117)
-- [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
-- [emailService.ts](file://services/emailService.ts#L1-L194)
-- [types.ts](file://types.ts#L1-L79)
-- [constants.tsx](file://constants.tsx#L1-L361)
+- [App.tsx](file://App.tsx#L274-L276)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L1-L348)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L1-L265)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L1-L354)
 
 **Section sources**
-- [App.tsx](file://App.tsx#L252-L272)
+- [App.tsx](file://App.tsx#L252-L285)
 - [constants.tsx](file://constants.tsx#L1-L361)
 
 ## Core Components
 - Form Inputs: FloatingInput provides floating label behavior and validation styling for all forms.
 - Human Verification: Captcha generates and validates visual challenges during registration.
-- Authentication Services: Supabase integration handles user lookup, password hashing, availability checks, and login attempts with lockout logic.
+- Authentication Services: Supabase integration handles user lookup, password hashing, availability checks, login attempts with lockout logic, and security settings management.
 - Email Delivery: EmailJS integration sends OTPs and security alerts with contextual information.
+- Security Management: Enhanced security features including two-factor authentication setup, device monitoring, and security status tracking.
 
 **Section sources**
 - [FloatingInput.tsx](file://components/FloatingInput.tsx#L1-L85)
 - [Captcha.tsx](file://components/Captcha.tsx#L1-L117)
-- [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
+- [supabaseService.ts](file://services/supabaseService.ts#L1-L73)
 - [emailService.ts](file://services/emailService.ts#L1-L194)
 
 ## Architecture Overview
-The authentication flow is orchestrated by the main App component, which manages user session state and routes. Each page implements specific steps in the authentication lifecycle, interacting with Supabase for data operations and EmailJS for notifications.
+The authentication flow is orchestrated by the main App component, which manages user session state and routes. Each page implements specific steps in the authentication lifecycle, interacting with Supabase for data operations and EmailJS for notifications. The enhanced system now includes comprehensive security management with two-factor authentication setup, device monitoring, and security status tracking.
 
 ```mermaid
 sequenceDiagram
@@ -127,6 +145,9 @@ participant FP as "ForgotPasswordPage.tsx"
 participant RP as "ResetPasswordPage.tsx"
 participant VE as "VerifyEmailPage.tsx"
 participant VP as "VerifyPhonePage.tsx"
+participant TFS as "TwoFactorSetupPage.tsx"
+participant SEC as "SecurityPage.tsx"
+participant DEV as "DevicesPage.tsx"
 participant SB as "supabaseService.ts"
 participant ES as "emailService.ts"
 U->>App : Navigate to "/signin"
@@ -136,293 +157,214 @@ SI->>SB : Hash password and authenticate
 SB-->>SI : User profile or error
 SI->>ES : Send welcome alert
 SI-->>App : onLogin(userProfile)
-U->>App : Navigate to "/signup"
-App->>SU : Render SignupPage
-SU->>SB : Check availability (username, email)
-SU->>SB : Insert pending registration
-SU->>ES : Send OTP
-SU-->>App : Navigate to "/verify-email"
-U->>App : Navigate to "/forgot-password"
-App->>FP : Render ForgotPasswordPage
-FP->>SB : Search users by identifier
-FP->>ES : Send OTP (password reset)
-FP-->>App : Navigate to "/verify-email?mode=reset"
-U->>App : Navigate to "/verify-email?mode=reset"
-App->>VE : Render VerifyEmailPage
-VE->>SB : Validate OTP and mark used
-VE-->>App : Navigate to "/reset-password"
-App->>RP : Render ResetPasswordPage
-RP->>SB : Update password hash
-RP->>ES : Send password change alert
-RP-->>App : Auto-login and redirect to "/"
+U->>App : Navigate to "/security"
+App->>SEC : Render SecurityPage
+SEC->>SB : Fetch security status
+SEC-->>U : Display security options
+U->>App : Navigate to "/security/2fa-setup"
+App->>TFS : Render TwoFactorSetupPage
+TFS->>SB : Check existing 2FA status
+TFS->>SB : Generate backup codes
+TFS->>SB : Enable 2FA with selected method
+TFS-->>U : Setup complete
+U->>App : Navigate to "/security/devices"
+App->>DEV : Render DevicesPage
+DEV->>SB : Fetch active sessions
+DEV-->>U : Display device list
 ```
 
 **Diagram sources**
-- [App.tsx](file://App.tsx#L252-L272)
-- [SigninPage.tsx](file://pages/SigninPage.tsx#L53-L95)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L117-L142)
-- [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L81-L110)
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L107-L162)
-- [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx#L68-L125)
-- [supabaseService.ts](file://services/supabaseService.ts#L26-L66)
-- [emailService.ts](file://services/emailService.ts#L139-L193)
+- [App.tsx](file://App.tsx#L274-L276)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L26-L122)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L26-L52)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L31-L80)
+
+## Enhanced Security Features
+
+### Two-Factor Authentication Setup
+The TwoFactorSetupPage provides a comprehensive workflow for enabling two-factor authentication with multiple methods:
+
+- **Multiple Authentication Methods**: SMS, Email, and Authenticator App options
+- **Backup Code Generation**: 10 unique backup codes with copy functionality
+- **Verification Workflow**: Multi-step setup with OTP verification
+- **Security Status Tracking**: Real-time status updates and management options
+
+```mermaid
+flowchart TD
+Start(["User accesses 2FA Setup"]) --> CheckStatus["Check existing 2FA status"]
+CheckStatus --> Has2FA{"2FA already enabled?"}
+Has2FA --> |Yes| ShowManagement["Show management interface"]
+Has2FA --> |No| ShowMethods["Display authentication methods"]
+ShowMethods --> SelectMethod["User selects method (SMS/Email/Authenticator)"]
+SelectMethod --> GenerateCodes["Generate 10 backup codes"]
+GenerateCodes --> VerifySetup["Verify setup completion"]
+VerifySetup --> Enable2FA["Enable 2FA with selected method"]
+Enable2FA --> Complete["Setup complete with backup codes"]
+```
+
+**Diagram sources**
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L26-L122)
+
+### Device Management and Monitoring
+The DevicesPage provides comprehensive device management capabilities:
+
+- **Active Session Tracking**: Real-time monitoring of all active sessions
+- **Device Identification**: Browser, location, and device type detection
+- **Security Controls**: Individual device sign-out and bulk sign-out functionality
+- **Trust Management**: Trusted device designation and management
+
+```mermaid
+flowchart TD
+LoadDevices["Load active sessions"] --> DisplayDevices["Display device list"]
+DisplayDevices --> CheckCurrent["Identify current device"]
+CheckCurrent --> ShowStatus["Show device status indicators"]
+ShowStatus --> UserAction{"User action?"}
+UserAction --> |Sign out device| ConfirmSignOut["Show confirmation modal"]
+UserAction --> |Sign out all| ConfirmSignOutAll["Show bulk sign-out modal"]
+UserAction --> |Manage trust| ToggleTrust["Toggle trust status"]
+ConfirmSignOut --> ExecuteSignOut["Execute device sign-out"]
+ConfirmSignOutAll --> ExecuteSignOutAll["Execute bulk sign-out"]
+ExecuteSignOut --> UpdateList["Update device list"]
+ExecuteSignOutAll --> UpdateList
+ToggleTrust --> UpdateList
+UpdateList --> DisplayDevices
+```
+
+**Diagram sources**
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L31-L123)
+
+### Security Management Interface
+The SecurityPage provides centralized security management:
+
+- **Security Status Dashboard**: Real-time security status visualization
+- **Integrated Management**: Direct access to all security features
+- **Security Recommendations**: Actionable security tips and recommendations
+- **Quick Access**: One-click access to security settings and management tools
+
+**Section sources**
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L1-L348)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L1-L354)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L1-L265)
 
 ## Detailed Component Analysis
 
-### Sign In Page
-The Sign In page implements a two-step authentication flow:
-- Step 1: Identifier lookup to locate the user account.
-- Step 2: Password submission and authentication against Supabase.
+### Enhanced Sign In Page
+The Sign In page now integrates with the enhanced security system:
 
-Key behaviors:
-- Multi-field search across username, login_id, email, and mobile.
-- Real-time error messaging and loading states.
-- Welcome email alert on successful login.
-- Session persistence via onLogin callback.
+- **Multi-step authentication flow** with enhanced security considerations
+- **Security status awareness** for users with 2FA enabled
+- **Improved error handling** with security protocol messages
+- **Seamless integration** with security management features
+
+**Section sources**
+- [SigninPage.tsx](file://pages/SigninPage.tsx#L1-L234)
+
+### Two-Factor Authentication Setup Page
+The TwoFactorSetupPage implements a comprehensive 2FA configuration workflow:
+
+- **Method Selection Interface**: Three authentication methods with detailed descriptions
+- **Backup Code Management**: Secure generation and storage of backup codes
+- **Verification Process**: Multi-step verification with error handling
+- **Security Status Updates**: Real-time status updates and completion tracking
 
 ```mermaid
 flowchart TD
-Start(["User enters identifier"]) --> ValidateId["Validate non-empty identifier"]
-ValidateId --> |Valid| QueryUsers["Query users by identifier"]
-QueryUsers --> Found{"User found?"}
-Found --> |No| ShowError["Show error message"]
-Found --> |Yes| SetUser["Set found user state"]
-SetUser --> SwitchStep["Switch to password step"]
-SwitchStep --> SubmitPassword["Submit password"]
-SubmitPassword --> HashPass["Hash password"]
-HashPass --> Authenticate["Authenticate via Supabase"]
-Authenticate --> Success{"Authenticated?"}
-Success --> |No| ShowAuthError["Show authentication error"]
-Success --> |Yes| BuildProfile["Build user profile"]
-BuildProfile --> SendAlert["Send welcome alert"]
-SendAlert --> OnLogin["Invoke onLogin callback"]
-OnLogin --> End(["Redirect to dashboard"])
+Methods["Method Selection"] --> SMS["SMS Setup"]
+Methods --> Email["Email Setup"]
+Methods --> Authenticator["Authenticator App Setup"]
+SMS --> PhoneInput["Phone Number Input"]
+PhoneInput --> SendOTP["Send Verification Code"]
+SendOTP --> VerifyOTP["OTP Verification"]
+Email --> EmailInput["Email Input"]
+Authenticator --> QRGen["Generate QR Code"]
+Authenticator --> SecretKey["Display Secret Key"]
+VerifyOTP --> BackupCodes["Generate Backup Codes"]
+QRGen --> BackupCodes
+SecretKey --> BackupCodes
+BackupCodes --> Enable2FA["Enable 2FA"]
+Enable2FA --> Complete["Setup Complete"]
 ```
 
 **Diagram sources**
-- [SigninPage.tsx](file://pages/SigninPage.tsx#L23-L95)
-- [supabaseService.ts](file://services/supabaseService.ts#L26-L66)
-- [emailService.ts](file://services/emailService.ts#L152-L172)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L51-L122)
 
 **Section sources**
-- [SigninPage.tsx](file://pages/SigninPage.tsx#L14-L95)
-- [supabaseService.ts](file://services/supabaseService.ts#L26-L66)
-- [emailService.ts](file://services/emailService.ts#L152-L172)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L1-L348)
 
-### Sign Up Page
-The Sign Up page implements a comprehensive registration flow with:
-- Multi-step form state persisted in localStorage.
-- Real-time password strength validation with visual indicator.
-- Age validation and country/currency selection.
-- CAPTCHA verification for human validation.
-- OTP-based email verification workflow.
+### Device Management Page
+The DevicesPage provides comprehensive device monitoring and control:
+
+- **Real-time Device Tracking**: Live monitoring of active sessions
+- **Device Information Display**: Comprehensive device identification and status
+- **Security Controls**: Granular control over individual devices
+- **Bulk Operations**: Efficient management of multiple devices
 
 ```mermaid
 flowchart TD
-Start(["Form initialized"]) --> LoadDraft["Load draft from localStorage"]
-LoadDraft --> InputFields["User fills form fields"]
-InputFields --> ValidateAge["Validate age >= 16"]
-ValidateAge --> ValidatePassword["Check password strength"]
-ValidatePassword --> ValidateCAPTCHA["Verify CAPTCHA"]
-ValidateCAPTCHA --> Submit["Submit registration"]
-Submit --> CheckAvail["Check availability (username, email)"]
-CheckAvail --> InsertPending["Insert pending registration"]
-InsertPending --> CreateOTP["Generate OTP"]
-CreateOTP --> SendEmail["Send OTP via EmailJS"]
-SendEmail --> SaveEmail["Save email to session/localStorage"]
-SaveEmail --> NavigateVerify["Navigate to /verify-email"]
-NavigateVerify --> End(["Await verification"])
+LoadData["Load device data"] --> ParseData["Parse session data"]
+ParseData --> IdentifyCurrent["Identify current device"]
+IdentifyCurrent --> FormatDevices["Format device list"]
+FormatDevices --> DisplayList["Display device cards"]
+DisplayList --> UserInteraction{"User interaction?"}
+UserInteraction --> |Sign out device| ShowModal["Show sign-out modal"]
+UserInteraction --> |Sign out all| ShowAllModal["Show bulk sign-out modal"]
+UserInteraction --> |Toggle trust| UpdateTrust["Update trust status"]
+ShowModal --> ConfirmAction["Confirm action"]
+ShowAllModal --> ConfirmAll["Confirm bulk action"]
+ConfirmAction --> ExecuteAction["Execute sign-out"]
+ConfirmAll --> ExecuteAll["Execute bulk sign-out"]
+ExecuteAction --> RefreshList["Refresh device list"]
+ExecuteAll --> RefreshList
+UpdateTrust --> RefreshList
+RefreshList --> DisplayList
 ```
 
 **Diagram sources**
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L20-L149)
-- [Captcha.tsx](file://components/Captcha.tsx#L14-L87)
-- [emailService.ts](file://services/emailService.ts#L139-L147)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L31-L123)
 
 **Section sources**
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L12-L149)
-- [Captcha.tsx](file://components/Captcha.tsx#L9-L87)
-- [emailService.ts](file://services/emailService.ts#L139-L147)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L1-L354)
 
-### Forgot Password Page
-The Forgot Password page enables account recovery via:
-- Identifier-based search across multiple fields.
-- Multi-account selection when multiple matches are found.
-- Recovery method selection (email/SMS/password).
-- OTP delivery and redirection to verification.
+### Security Management Page
+The SecurityPage serves as the central hub for all security-related activities:
 
-```mermaid
-sequenceDiagram
-participant U as "User"
-participant FP as "ForgotPasswordPage.tsx"
-participant SB as "supabaseService.ts"
-participant ES as "emailService.ts"
-U->>FP : Enter identifier and submit
-FP->>SB : Search users by identifier
-SB-->>FP : Matching users
-alt Single match
-FP->>FP : Select method (email/SMS/password)
-else Multiple matches
-FP->>FP : Show account selection list
-FP->>FP : User selects account
-FP->>FP : Select method
-end
-FP->>ES : Send OTP (password reset)
-FP-->>U : Redirect to /verify-email?mode=reset
-```
-
-**Diagram sources**
-- [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L34-L110)
-- [emailService.ts](file://services/emailService.ts#L139-L147)
-
-**Section sources**
-- [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L12-L110)
-- [emailService.ts](file://services/emailService.ts#L139-L147)
-
-### Reset Password Page
-The Reset Password page enforces strong password requirements and:
-- Validates password strength in real-time.
-- Confirms password match.
-- Updates the user’s password hash in Supabase.
-- Sends password change alerts and auto-logs the user in.
+- **Security Status Dashboard**: Comprehensive security overview
+- **Quick Access Interface**: Direct links to all security features
+- **Security Recommendations**: Actionable security advice and tips
+- **Integration Points**: Seamless integration with all security features
 
 ```mermaid
 flowchart TD
-Start(["Open /reset-password"]) --> CheckSession["Check reset session"]
-CheckSession --> LoadEmail["Load reset email from session"]
-LoadEmail --> FocusPassword["Focus password field"]
-FocusPassword --> ValidateStrength["Validate strength requirements"]
-ValidateStrength --> ConfirmMatch["Confirm passwords match"]
-ConfirmMatch --> UpdatePassword["Update password hash in Supabase"]
-UpdatePassword --> SendAlert["Send password change alert"]
-SendAlert --> AutoLogin["Prepare user profile and login"]
-AutoLogin --> NavigateHome["Navigate to '/'"]
+LoadStatus["Load security status"] --> DisplayDashboard["Display security dashboard"]
+DisplayDashboard --> ShowStatus["Show security status cards"]
+ShowStatus --> ShowOptions["Show security options"]
+ShowOptions --> UserAction{"User action?"}
+UserAction --> |Enable 2FA| Navigate2FA["Navigate to 2FA setup"]
+UserAction --> |Manage devices| NavigateDevices["Navigate to devices page"]
+UserAction --> |Change password| NavigatePassword["Navigate to password change"]
+UserAction --> |View history| NavigateHistory["Navigate to login history"]
+Navigate2FA --> UpdateStatus["Update security status"]
+NavigateDevices --> UpdateStatus
+NavigatePassword --> UpdateStatus
+NavigateHistory --> UpdateStatus
+UpdateStatus --> DisplayDashboard
 ```
 
 **Diagram sources**
-- [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx#L23-L125)
-- [supabaseService.ts](file://services/supabaseService.ts#L9-L15)
-- [emailService.ts](file://services/emailService.ts#L177-L193)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L26-L52)
 
 **Section sources**
-- [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx#L14-L125)
-- [supabaseService.ts](file://services/supabaseService.ts#L9-L15)
-- [emailService.ts](file://services/emailService.ts#L177-L193)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L1-L265)
 
-### Email Verification Page
-The Email Verification page implements:
-- 8-digit OTP input with auto-focus navigation.
-- Resend timer with countdown UI.
-- Mode detection for registration vs password reset.
-- OTP validation and subsequent actions.
+### Enhanced Shared Components and Services
 
-```mermaid
-flowchart TD
-Start(["Open /verify-email"]) --> LoadEmail["Load email from localStorage/session"]
-LoadEmail --> InputOTP["User inputs 8-digit OTP"]
-InputOTP --> ValidateLength{"OTP length == 8?"}
-ValidateLength --> |No| DisableButton["Disable Continue button"]
-ValidateLength --> |Yes| SubmitOTP["Submit OTP"]
-SubmitOTP --> CheckOTP["Check OTP validity in database"]
-CheckOTP --> Valid{"Valid and unused?"}
-Valid --> |No| ShowError["Show invalid code error"]
-Valid --> |Yes| MarkUsed["Mark OTP as used"]
-MarkUsed --> Mode{"Reset mode?"}
-Mode --> |Yes| SetSession["Set reset session flags"]
-SetSession --> NavigateReset["Navigate to /reset-password"]
-Mode --> |No| FinalizeReg["Finalize registration"]
-FinalizeReg --> SendWelcome["Send welcome alert"]
-SendWelcome --> NavigatePhone["Navigate to /verify-phone"]
-```
+#### Supabase Service Enhancements
+The Supabase service now includes enhanced security features:
 
-**Diagram sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L26-L162)
-- [emailService.ts](file://services/emailService.ts#L152-L172)
-
-**Section sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L8-L162)
-- [emailService.ts](file://services/emailService.ts#L152-L172)
-
-### Phone Verification Page
-The Phone Verification page:
-- Loads draft and saved email for context.
-- Implements OTP input with navigation.
-- Provides options for resend and change number.
-- Finalizes registration and logs the user in.
-
-```mermaid
-flowchart TD
-Start(["Open /verify-phone"]) --> LoadContext["Load draft and email"]
-LoadContext --> InputOTP["User inputs phone OTP"]
-InputOTP --> ValidateOTP{"All digits filled?"}
-ValidateOTP --> |No| DisableButton["Disable Continue button"]
-ValidateOTP --> |Yes| Finalize["Finalize registration"]
-Finalize --> BuildProfile["Build user profile"]
-BuildProfile --> AutoLogin["Invoke onLogin callback"]
-AutoLogin --> ClearStorage["Clear registration drafts"]
-ClearStorage --> NavigateHome["Navigate to '/'"]
-```
-
-**Diagram sources**
-- [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L21-L97)
-
-**Section sources**
-- [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L12-L97)
-
-### Shared Components and Services
-
-#### FloatingInput Component
-FloatingInput provides:
-- Floating label behavior that responds to focus and value state.
-- Consistent styling for inputs and select elements.
-- Validation state styling with invalid state support.
-
-```mermaid
-classDiagram
-class FloatingInput {
-+React.FC<Props>
-+label : string
-+isSelect? : boolean
-+isInvalid? : boolean
-+children? : React.ReactNode
-+className? : string
-+onFocus(e)
-+onBlur(e)
-}
-```
-
-**Diagram sources**
-- [FloatingInput.tsx](file://components/FloatingInput.tsx#L11-L82)
-
-**Section sources**
-- [FloatingInput.tsx](file://components/FloatingInput.tsx#L1-L85)
-
-#### Captcha Component
-Captcha generates a random 5-character code, renders it on a canvas with noise and distortion, and validates user input against the generated text.
-
-```mermaid
-classDiagram
-class Captcha {
-+React.FC<Props>
-+onVerify : (isValid : boolean) => void
-+refreshKey? : number
-+generateCaptcha()
-+renderCanvas()
-+handleInputChange(e)
-}
-```
-
-**Diagram sources**
-- [Captcha.tsx](file://components/Captcha.tsx#L9-L87)
-
-**Section sources**
-- [Captcha.tsx](file://components/Captcha.tsx#L1-L117)
-
-#### Supabase Service
-Supabase service provides:
-- SHA-256 password hashing.
-- Availability checks for username and email.
-- Login attempt handling with lockout logic and failed attempt tracking.
+- **Security Settings Management**: Integration with user_security_settings table
+- **Session Management**: Enhanced session tracking and device management
+- **Security Status Queries**: Comprehensive security status reporting
+- **Backup Code Storage**: Secure storage and management of backup codes
 
 ```mermaid
 classDiagram
@@ -430,39 +372,31 @@ class SupabaseService {
 +hashPassword(password) : Promise<string>
 +checkAvailability(field, value) : Promise<boolean>
 +handleLoginAttempt(identifier, passwordHash) : Promise<User>
++getUserSecuritySettings(userId) : Promise<SecuritySettings>
++updateSecuritySettings(userId, settings) : Promise<void>
++manageUserSessions(userId) : Promise<Sessions[]>
 }
 ```
 
 **Diagram sources**
-- [supabaseService.ts](file://services/supabaseService.ts#L9-L66)
+- [supabaseService.ts](file://services/supabaseService.ts#L9-L73)
 
 **Section sources**
-- [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
+- [supabaseService.ts](file://services/supabaseService.ts#L1-L73)
 
-#### Email Service
-Email service integrates with EmailJS to:
-- Send OTP emails with security context.
-- Send welcome and password change alerts.
-- Normalize text and include unsubscribe links and physical address.
+#### Enhanced Email Service
+The Email service maintains its role in security-related communications:
 
-```mermaid
-classDiagram
-class EmailService {
-+sendZpriaEmail(params) : Promise<boolean>
-+sendOTP(params) : Promise<boolean>
-+sendWelcomeAlert(params) : Promise<boolean>
-+sendPasswordChangeAlert(params) : Promise<boolean>
-}
-```
-
-**Diagram sources**
-- [emailService.ts](file://services/emailService.ts#L70-L193)
+- **Security Alert Integration**: Enhanced integration with security events
+- **Backup Code Delivery**: Secure delivery of backup codes
+- **Security Notification Templates**: Specialized templates for security events
+- **Multi-channel Communication**: Support for various security notification channels
 
 **Section sources**
 - [emailService.ts](file://services/emailService.ts#L1-L194)
 
 ## Dependency Analysis
-Authentication pages depend on shared components and services for consistent UX and reliable backend operations.
+The enhanced authentication system maintains the same dependency structure while adding new security-related dependencies.
 
 ```mermaid
 graph TB
@@ -473,54 +407,54 @@ FP["ForgotPasswordPage.tsx"] --> FI
 RP["ResetPasswordPage.tsx"] --> FI
 VE["VerifyEmailPage.tsx"] --> FI
 VP["VerifyPhonePage.tsx"] --> FI
+TFS["TwoFactorSetupPage.tsx"] --> FI
+SEC["SecurityPage.tsx"] --> FI
+DEV["DevicesPage.tsx"] --> FI
 SI --> SB["supabaseService.ts"]
 SU --> SB
 FP --> SB
 RP --> SB
 VE --> SB
 VP --> SB
+TFS --> SB
+SEC --> SB
+DEV --> SB
 SU --> ES["emailService.ts"]
 VE --> ES
 RP --> ES
+TFS --> ES
 ```
 
 **Diagram sources**
-- [SigninPage.tsx](file://pages/SigninPage.tsx#L6-L8)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L5-L8)
-- [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L7-L8)
-- [ResetPasswordPage.tsx](file://pages/ResetPasswordPage.tsx#L5-L7)
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L5-L6)
-- [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L5-L6)
-- [FloatingInput.tsx](file://components/FloatingInput.tsx#L1-L85)
-- [Captcha.tsx](file://components/Captcha.tsx#L1-L117)
-- [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
-- [emailService.ts](file://services/emailService.ts#L1-L194)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L6)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L6)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L6)
 
 **Section sources**
-- [App.tsx](file://App.tsx#L252-L272)
+- [App.tsx](file://App.tsx#L274-L276)
 - [types.ts](file://types.ts#L11-L25)
 - [constants.tsx](file://constants.tsx#L27-L271)
 
 ## Performance Considerations
-- Debounce or throttle real-time validations to reduce unnecessary computations.
-- Use lazy loading for heavy components to improve initial render performance.
-- Cache frequently accessed constants and lists (e.g., country list) to minimize re-renders.
-- Optimize OTP input handling to prevent excessive DOM updates.
-- Minimize network requests by batching operations where possible.
+- **Security Feature Optimization**: Implement caching for security status queries
+- **Device List Pagination**: Consider pagination for large device lists
+- **2FA Setup Optimization**: Optimize backup code generation and storage
+- **Session Monitoring**: Implement efficient polling for active session updates
+- **Security Status Updates**: Use debounced updates for security status changes
 
 ## Troubleshooting Guide
-Common issues and resolutions:
-- Invalid credentials: The login attempt handler increments failed attempts and locks the account after five consecutive failures. Users receive a lockout message indicating remaining minutes.
-- Session expiration: Email verification relies on stored email in localStorage or temporary session storage. If missing, the page displays an error prompting re-registration.
-- OTP validation errors: The verification page throws errors for invalid or expired codes and marks OTPs as used after successful validation.
-- CAPTCHA failures: The CAPTCHA component resets verification state and refreshes the challenge on failure.
-- Email delivery failures: The email service logs errors and returns false for failed dispatches.
+Common issues and resolutions for the enhanced security features:
+
+- **2FA Setup Failures**: Verify backup code generation and storage in database
+- **Device Management Issues**: Check session table permissions and device detection logic
+- **Security Status Errors**: Validate security settings table structure and access permissions
+- **Backup Code Validation**: Ensure backup codes are properly stored and marked as used
+- **Session Expiration**: Implement proper session cleanup and device sign-out procedures
 
 **Section sources**
-- [supabaseService.ts](file://services/supabaseService.ts#L38-L65)
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L114-L118)
-- [Captcha.tsx](file://components/Captcha.tsx#L83-L87)
-- [emailService.ts](file://services/emailService.ts#L114-L137)
+- [TwoFactorSetupPage.tsx](file://pages/TwoFactorSetupPage.tsx#L95-L122)
+- [DevicesPage.tsx](file://pages/DevicesPage.tsx#L82-L123)
+- [SecurityPage.tsx](file://pages/SecurityPage.tsx#L26-L52)
 
 ## Conclusion
-The authentication system provides a robust, multi-step user journey with strong validation, real-time feedback, and secure backend integration. The modular design ensures maintainability and scalability, while consistent UI components deliver a cohesive user experience across devices. The combination of Supabase and EmailJS enables secure identity management and timely notifications, supporting both registration and recovery workflows.
+The enhanced authentication system provides a comprehensive, multi-layered security approach with robust two-factor authentication setup, device management capabilities, and centralized security management. The modular design ensures maintainability and scalability while delivering a seamless user experience across all security features. The integration of advanced security measures with the existing authentication infrastructure creates a unified, secure platform that protects user identities while maintaining ease of use and accessibility.

@@ -13,7 +13,14 @@
 - [services/supabaseService.ts](file://services/supabaseService.ts)
 - [constants.tsx](file://constants.tsx)
 - [types.ts](file://types.ts)
+- [vercel.json](file://vercel.json)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added Vercel deployment configuration section documenting SPA routing support
+- Updated deployment preparation section to include Vercel-specific considerations
+- Enhanced deployment topology options to include Vercel platform capabilities
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -44,11 +51,12 @@ E --> G["services/supabaseService.ts<br/>Auth and Storage"]
 B --> H["tsconfig.json<br/>TypeScript Settings"]
 E --> I["constants.tsx<br/>UI Themes and Lists"]
 E --> J["types.ts<br/>Shared Types"]
+K["vercel.json<br/>Vercel Deployment Config"] --> L["SPA Routing Rules"]
 ```
 
 **Diagram sources**
 - [package.json](file://package.json#L1-L27)
-- [vite.config.ts](file://vite.config.ts#L1-L24)
+- [vite.config.ts](file://vite.config.ts#L1-L25)
 - [index.html](file://index.html#L1-L108)
 - [index.tsx](file://index.tsx#L1-L17)
 - [App.tsx](file://App.tsx#L1-L279)
@@ -57,23 +65,26 @@ E --> J["types.ts<br/>Shared Types"]
 - [tsconfig.json](file://tsconfig.json#L1-L29)
 - [constants.tsx](file://constants.tsx#L1-L361)
 - [types.ts](file://types.ts#L1-L79)
+- [vercel.json](file://vercel.json#L1-L6)
 
 **Section sources**
 - [package.json](file://package.json#L1-L27)
-- [vite.config.ts](file://vite.config.ts#L1-L24)
+- [vite.config.ts](file://vite.config.ts#L1-L25)
 - [tsconfig.json](file://tsconfig.json#L1-L29)
 - [README.md](file://README.md#L1-L21)
 - [index.html](file://index.html#L1-L108)
 - [index.tsx](file://index.tsx#L1-L17)
 - [App.tsx](file://App.tsx#L1-L279)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ## Core Components
 - Build and Dev Server: Vite configuration defines the dev server port, plugin stack, environment variable injection, and path aliases.
 - TypeScript Compilation: Strict compiler options enable modern JS features, module resolution, and JSX generation.
-- Environment Variables: GEMINI_API_KEY is loaded via Vite’s environment loading and injected into the app at build time.
+- Environment Variables: GEMINI_API_KEY is loaded via Vite's environment loading and injected into the app at build time.
 - Runtime Entry: index.tsx mounts the React root and renders App.tsx.
 - Services: Gemini integration for AI-generated content and Supabase integration for authentication and storage.
 - UI and Types: Shared constants and types support routing, theming, and data modeling.
+- **Vercel Deployment**: SPA routing configuration for React Router applications with catch-all rewrites.
 
 **Section sources**
 - [vite.config.ts](file://vite.config.ts#L5-L23)
@@ -84,9 +95,10 @@ E --> J["types.ts<br/>Shared Types"]
 - [services/supabaseService.ts](file://services/supabaseService.ts#L1-L67)
 - [constants.tsx](file://constants.tsx#L1-L361)
 - [types.ts](file://types.ts#L1-L79)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ## Architecture Overview
-The application uses a client-side React architecture with Vite for development and production builds. Environment variables are injected at build time, and the HTML shell loads ES modules via import maps for efficient delivery.
+The application uses a client-side React architecture with Vite for development and production builds. Environment variables are injected at build time, and the HTML shell loads ES modules via import maps for efficient delivery. The Vercel configuration ensures proper SPA routing for React Router applications.
 
 ```mermaid
 graph TB
@@ -104,6 +116,10 @@ R2 --> A2["App.tsx"]
 A2 --> S1
 A2 --> S2
 end
+subgraph "Vercel Deployment"
+VERCEL["vercel.json<br/>Rewrite Rules"] --> SPA["Catch-all SPA Routing"]
+SPA --> APP["React Router Routes"]
+end
 subgraph "Environment"
 ENV["GEMINI_API_KEY<br/>Injected at Build"]
 end
@@ -117,6 +133,7 @@ ENV -. "used in services" .-> S1
 - [index.tsx](file://index.tsx#L1-L17)
 - [App.tsx](file://App.tsx#L1-L279)
 - [services/geminiService.ts](file://services/geminiService.ts#L1-L39)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ## Detailed Component Analysis
 
@@ -189,6 +206,28 @@ Service-->>App : "Fallback message if key missing"
 **Section sources**
 - [vite.config.ts](file://vite.config.ts#L5-L16)
 - [services/geminiService.ts](file://services/geminiService.ts#L1-L39)
+
+### Vercel Deployment Configuration
+**Updated** Added Vercel-specific deployment configuration for SPA routing support.
+
+- Rewrite Rules: The vercel.json file contains rewrite rules that route all requests to index.html, enabling client-side routing for React Router applications.
+- SPA Support: The catch-all rewrite `{ "source": "/(.*)", "destination": "/index.html" }` ensures that deep links and browser refresh work correctly in production.
+- Static Generation: Vercel automatically serves the static build output from the dist directory created by Vite.
+
+```mermaid
+flowchart TD
+Request["Incoming Request"] --> Check["Check for Static File"]
+Check --> |Found| Serve["Serve Static File"]
+Check --> |Not Found| Rewrite["Apply Rewrite Rule"]
+Rewrite --> Index["Serve index.html"]
+Index --> Router["React Router Handles Navigation"]
+```
+
+**Diagram sources**
+- [vercel.json](file://vercel.json#L1-L6)
+
+**Section sources**
+- [vercel.json](file://vercel.json#L1-L6)
 
 ### Package Scripts and Dependency Management
 - Scripts:
@@ -328,12 +367,18 @@ D2 --> P2
   - Use the preview script to serve built assets locally before deployment.
 - Static Hosting:
   - Serve the dist folder generated by the build script from any static host.
+- **Vercel Deployment**:
+  - Vercel automatically detects the Vite build output and applies SPA routing rules.
+  - The vercel.json configuration ensures proper client-side routing for React Router.
 - Environment:
   - Ensure GEMINI_API_KEY is present during build for production deployments.
+
+**Updated** Added Vercel-specific deployment preparation steps.
 
 **Section sources**
 - [package.json](file://package.json#L6-L10)
 - [README.md](file://README.md#L16-L20)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ### Environment-Specific Settings and Security Considerations
 - Environment Variables:
@@ -373,10 +418,14 @@ D2 --> P2
 ### Deployment Topology Options
 - Static Hosting:
   - Deploy dist to platforms supporting static sites.
-- Edge/CDN:
-  - Use edge networks for low-latency delivery.
+- **Vercel Platform**:
+  - **Updated** Vercel provides automatic SPA routing with catch-all rewrites for React Router applications.
+  - Zero-config deployment with automatic build detection and environment variable management.
+  - Edge network distribution for low-latency global delivery.
 - Containerization:
   - Package the app in a minimal container image and run behind a reverse proxy.
+
+**Updated** Added Vercel platform deployment option with specific SPA routing capabilities.
 
 [No sources needed since this section provides general guidance]
 
@@ -393,6 +442,7 @@ App --> Supabase["@supabase/supabase-js"]
 Build["vite.config.ts"] --> Vite["vite"]
 Build --> ReactPlugin["@vitejs/plugin-react"]
 Types["tsconfig.json"] --> TS["typescript"]
+Vercel["vercel.json"] --> SPA["SPA Routing"]
 ```
 
 **Diagram sources**
@@ -400,11 +450,13 @@ Types["tsconfig.json"] --> TS["typescript"]
 - [package.json](file://package.json#L12-L25)
 - [vite.config.ts](file://vite.config.ts#L1-L3)
 - [tsconfig.json](file://tsconfig.json#L21-L24)
+- [vercel.json](file://vercel.json#L1-L6)
 
 **Section sources**
 - [package.json](file://package.json#L12-L25)
 - [vite.config.ts](file://vite.config.ts#L1-L3)
 - [tsconfig.json](file://tsconfig.json#L21-L24)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ## Performance Considerations
 - Prefer lazy loading for non-critical routes.
@@ -424,14 +476,18 @@ Types["tsconfig.json"] --> TS["typescript"]
 - Build Failures:
   - Symptoms: Type errors or plugin conflicts.
   - Action: Run lint script and ensure dependencies are installed.
+- **Vercel SPA Routing Issues**:
+  - **Updated** Symptoms: 404 errors on deep links or browser refresh.
+  - **Updated** Action: Ensure vercel.json rewrite rules are properly configured and deployed.
 
 **Section sources**
 - [services/geminiService.ts](file://services/geminiService.ts#L4-L20)
 - [services/supabaseService.ts](file://services/supabaseService.ts#L36-L66)
 - [package.json](file://package.json#L10-L10)
+- [vercel.json](file://vercel.json#L1-L6)
 
 ## Conclusion
-ZPRIA’s configuration leverages Vite for a fast developer experience and optimized production builds, TypeScript for safety, and environment injection for secure API key handling. By following the outlined deployment and optimization practices, teams can reliably deliver and maintain the application across environments.
+ZPRIA's configuration leverages Vite for a fast developer experience and optimized production builds, TypeScript for safety, and environment injection for secure API key handling. The addition of Vercel deployment configuration ensures proper SPA routing for React Router applications. By following the outlined deployment and optimization practices, teams can reliably deliver and maintain the application across environments, including Vercel's zero-config deployment platform.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
@@ -453,3 +509,13 @@ ZPRIA’s configuration leverages Vite for a fast developer experience and optim
 **Section sources**
 - [package.json](file://package.json#L6-L10)
 - [README.md](file://README.md#L16-L20)
+
+### Appendix C: Vercel Deployment Configuration
+**New** Vercel-specific deployment configuration details.
+
+- vercel.json: Contains rewrite rules for SPA routing support.
+- Rewrite Rule: `{ "source": "/(.*)", "destination": "/index.html" }` enables client-side routing.
+- Automatic Detection: Vercel automatically detects Vite builds and applies SPA routing.
+
+**Section sources**
+- [vercel.json](file://vercel.json#L1-L6)

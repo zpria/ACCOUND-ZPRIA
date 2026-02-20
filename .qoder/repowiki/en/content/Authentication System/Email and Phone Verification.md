@@ -14,11 +14,11 @@
 
 ## Update Summary
 **Changes Made**
-- Enhanced email verification process with improved error handling mechanisms
-- Streamlined countdown timer implementation with better user feedback
-- Improved multi-step guidance presentation in verification workflows
-- Added comprehensive error state management and user experience improvements
+- Enhanced OTP handling with improved error management and better user experience flows
+- Streamlined countdown timer implementation with automatic cleanup and visual feedback
+- Improved multi-step guidance presentation with mode detection for registration and password reset
 - Enhanced security context capture with timeout handling for better performance
+- Added comprehensive error state management with shake animations and loading states
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -35,7 +35,7 @@
 ## Introduction
 This document explains the email and phone verification systems used during registration and password reset flows. It covers OTP generation, email delivery, phone verification, and account activation. It documents the implementation of VerifyEmailPage and VerifyPhonePage components, email service integration, and user account status updates. It also addresses common verification scenarios, delivery failures, expired verifications, and troubleshooting verification issues, along with security measures such as OTP expiration, retry limits, and verification status tracking.
 
-**Updated** Enhanced with improved error handling, streamlined countdown timers, and better multi-step guidance presentation.
+**Updated** Enhanced with improved error handling, streamlined countdown timers, and better multi-step guidance presentation for both registration and password reset scenarios.
 
 ## Project Structure
 The verification system spans several pages and services:
@@ -72,8 +72,8 @@ F --> C
 ```
 
 **Diagram sources**
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L310)
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L314)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
 - [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L1-L278)
 - [emailService.ts](file://services/emailService.ts#L1-L209)
@@ -82,7 +82,7 @@ F --> C
 - [constants.tsx](file://constants.tsx#L1-L361)
 
 **Section sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
 - [emailService.ts](file://services/emailService.ts#L1-L209)
 - [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
@@ -98,11 +98,11 @@ F --> C
 - ForgotPasswordPage: Initiates password reset, generates OTP, and triggers email delivery for password reset.
 
 **Section sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
 - [emailService.ts](file://services/emailService.ts#L1-L209)
 - [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L310)
+- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L314)
 - [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L1-L278)
 
 ## Architecture Overview
@@ -165,7 +165,7 @@ Key behaviors:
 - Registration flow: Inserts user record with is_email_verified=true and account_status='active'; sends welcome alert; deletes pending registration; navigates to phone verification.
 - Password reset flow: Sets session flags and navigates to reset-password.
 
-**Updated** Enhanced with improved error handling, streamlined countdown timer, and better user feedback mechanisms.
+**Updated** Enhanced with improved error handling, streamlined countdown timer, and better user feedback mechanisms including shake animations and loading states.
 
 ```mermaid
 flowchart TD
@@ -188,7 +188,7 @@ Cleanup --> NavigatePhone["Navigate to /verify-phone"]
 - [emailService.ts](file://services/emailService.ts#L167-L187)
 
 **Section sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 
 ### VerifyPhonePage Component
 Responsibilities:
@@ -313,7 +313,7 @@ SP->>SP : Navigate to /verify-email
 - [emailService.ts](file://services/emailService.ts#L143-L162)
 
 **Section sources**
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L310)
+- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L314)
 
 ### Password Reset Workflow (ForgotPasswordPage.tsx)
 Responsibilities:
@@ -370,6 +370,8 @@ The verification process now provides clearer step-by-step guidance:
 - **Session Persistence**: Better handling of verification sessions across page reloads
 - **Navigation Support**: Clear back navigation options and progress indication
 
+**Updated** Enhanced with improved error management including shake animations, loading states, and better user feedback mechanisms.
+
 **Section sources**
 - [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L16-L45)
 - [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L68-L110)
@@ -401,17 +403,17 @@ FP --> ES
 ```
 
 **Diagram sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L310)
+- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L314)
 - [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L1-L278)
 - [emailService.ts](file://services/emailService.ts#L1-L209)
 - [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
 
 **Section sources**
-- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L268)
+- [VerifyEmailPage.tsx](file://pages/VerifyEmailPage.tsx#L1-L286)
 - [VerifyPhonePage.tsx](file://pages/VerifyPhonePage.tsx#L1-L159)
-- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L310)
+- [SignupPage.tsx](file://pages/SignupPage.tsx#L1-L314)
 - [ForgotPasswordPage.tsx](file://pages/ForgotPasswordPage.tsx#L1-L278)
 - [emailService.ts](file://services/emailService.ts#L1-L209)
 - [supabaseService.ts](file://services/supabaseService.ts#L1-L67)
@@ -442,7 +444,7 @@ Common issues and resolutions:
   - Resolution: Integrate SMS provider for production; implement actual OTP validation.
 - **Updated** Enhanced error states:
   - Cause: Various validation and system errors during verification.
-  - Resolution: Check error messages displayed; ensure proper loading states; verify network connectivity.
+  - Resolution: Check error messages displayed with shake animations; ensure proper loading states; verify network connectivity.
 
 Security measures:
 - OTP expiration: Stored with expires_at set to 10 minutes; verification rejects expired codes.

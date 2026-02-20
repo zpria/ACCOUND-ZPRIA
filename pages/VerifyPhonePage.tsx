@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { UserProfile } from '../types';
@@ -25,7 +25,17 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
     if (draft) {
       try {
         const parsed = JSON.parse(draft);
-        setMobile(parsed.mobile || 'your phone number');
+        // Get country code and format full mobile number
+        const countryCode = parsed.countryCode || 'BD';
+        const mobileNum = parsed.mobile || '';
+        
+        // Find country dial code
+        const country = COUNTRY_LIST.find((c: any) => c.value === countryCode);
+        const dialCode = country?.code || '+880';
+        
+        // Format: +880 1XXX-XXXXXX
+        const cleanMobile = mobileNum.startsWith('0') ? mobileNum.slice(1) : mobileNum;
+        setMobile(`${dialCode} ${cleanMobile}`);
       } catch (e) {
         setMobile('your phone number');
       }
@@ -80,7 +90,7 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
         onLogin(profile);
         localStorage.removeItem('zpria_signup_draft');
         localStorage.removeItem('zpria_verification_email');
-        navigate('/');
+        navigate('/product-hub');
       } else {
         navigate('/signin');
       }
