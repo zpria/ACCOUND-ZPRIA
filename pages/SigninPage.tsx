@@ -34,7 +34,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
       const normalizedId = identifier.trim().toLowerCase();
       const { data: user, error: queryError } = await supabase
         .from('users')
-        .select('id, first_name, last_name, username, login_id, mobile, email, address, dob, gender, is_email_verified, theme_preference, account_status')
+        .select('id, first_name, last_name, username, login_id, mobile, email, address, dob, gender, is_email_verified, theme_preference, account_status, theme_color, avatar_url')
         .or(`username.eq.${normalizedId},login_id.eq.${normalizedId},mobile.eq.${normalizedId},email.eq.${normalizedId}`)
         .maybeSingle();
 

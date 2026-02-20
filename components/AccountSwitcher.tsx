@@ -60,8 +60,8 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
           id: currentUser.id,
           username: currentUser.username || currentUser.login_id,
           email: currentUser.email,
-          first_name: currentUser.first_name || '',
-          last_name: currentUser.last_name || '',
+          first_name: currentUser.firstName || '',
+          last_name: currentUser.lastName || '',
           avatar_url: currentUser.avatar_url,
           theme_color: currentUser.theme_color || '#0071e3',
           is_active: true
@@ -100,8 +100,27 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
       if (error) throw error;
 
       if (data) {
+        // Convert to UserProfile format
+        const userProfile = {
+          id: data.id,
+          username: data.username,
+          login_id: data.login_id,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          email: data.email,
+          mobile: data.mobile,
+          address: data.address,
+          dob: data.dob,
+          gender: data.gender,
+          isEmailVerified: data.is_email_verified,
+          themePreference: data.theme_preference,
+          accountStatus: data.account_status,
+          theme_color: data.theme_color,
+          avatar_url: data.avatar_url
+        };
+        
         // Update localStorage with new user
-        localStorage.setItem('zpria_user', JSON.stringify(data));
+        localStorage.setItem('zpria_user', JSON.stringify(userProfile));
         
         // Update accounts list
         const updatedAccounts = accounts.map(acc => ({
