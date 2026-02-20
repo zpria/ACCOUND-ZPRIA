@@ -967,12 +967,1040 @@ function mapUserAddressToDatabase(address: Partial<UserAddress>): any {
   };
 }
 
+// Additional mapper functions
+function mapDatabaseToUserPaymentMethod(data: any): UserPaymentMethod {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    methodType: data.method_type,
+    label: data.label,
+    lastFour: data.last_four,
+    cardBrand: data.card_brand,
+    expiryMonth: data.expiry_month,
+    expiryYear: data.expiry_year,
+    accountNumberMasked: data.account_number_masked,
+    isDefault: data.is_default,
+    isVerified: data.is_verified,
+    tokenReference: data.token_reference,
+    createdAt: data.created_at,
+    // Additional fields from SQL schema
+    nickname: data.nickname,
+    billingName: data.billing_name,
+    billingAddressId: data.billing_address_id,
+    isExpired: data.is_expired,
+    lastUsedAt: data.last_used_at,
+    useCount: data.use_count,
+    failedCount: data.failed_count
+  };
+}
+
+function mapUserPaymentMethodToDatabase(paymentMethod: Partial<UserPaymentMethod>): any {
+  return {
+    user_id: paymentMethod.userId,
+    method_type: paymentMethod.methodType,
+    label: paymentMethod.label,
+    last_four: paymentMethod.lastFour,
+    card_brand: paymentMethod.cardBrand,
+    expiry_month: paymentMethod.expiryMonth,
+    expiry_year: paymentMethod.expiryYear,
+    account_number_masked: paymentMethod.accountNumberMasked,
+    is_default: paymentMethod.isDefault,
+    is_verified: paymentMethod.isVerified,
+    token_reference: paymentMethod.tokenReference,
+    // Additional fields from SQL schema
+    nickname: paymentMethod.nickname,
+    billing_name: paymentMethod.billingName,
+    billing_address_id: paymentMethod.billingAddressId,
+    is_expired: paymentMethod.isExpired,
+    last_used_at: paymentMethod.lastUsedAt,
+    use_count: paymentMethod.useCount,
+    failed_count: paymentMethod.failedCount
+  };
+}
+
+function mapDatabaseToUserDevice(data: any): UserDevice {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    deviceName: data.device_name,
+    deviceType: data.device_type,
+    os: data.os,
+    osVersion: data.os_version,
+    browser: data.browser,
+    browserVersion: data.browser_version,
+    appVersion: data.app_version,
+    screenSize: data.screen_size,
+    deviceFingerprint: data.device_fingerprint,
+    ipAddress: data.ip_address,
+    location: data.location,
+    isTrusted: data.is_trusted,
+    isCurrent: data.is_current,
+    lastUsedAt: data.last_used_at,
+    firstSeenAt: data.first_seen_at,
+    // Additional fields from SQL schema
+    lastActive: data.last_active,
+    is2faDevice: data.is_2fa_device,
+    pushToken: data.push_token,
+    notificationEnabled: data.notification_enabled,
+    autoLoginEnabled: data.auto_login_enabled,
+    biometricRegistered: data.biometric_registered,
+    removedAt: data.removed_at,
+    removeReason: data.remove_reason,
+    deviceNickname: data.device_nickname,
+    countryCode: data.country_code,
+    cityName: data.city_name
+  };
+}
+
+function mapUserDeviceToDatabase(device: Partial<UserDevice>): any {
+  return {
+    user_id: device.userId,
+    device_name: device.deviceName,
+    device_type: device.deviceType,
+    os: device.os,
+    os_version: device.osVersion,
+    browser: device.browser,
+    browser_version: device.browserVersion,
+    app_version: device.appVersion,
+    screen_size: device.screenSize,
+    device_fingerprint: device.deviceFingerprint,
+    ip_address: device.ipAddress,
+    location: device.location,
+    is_trusted: device.isTrusted,
+    is_current: device.isCurrent,
+    last_used_at: device.lastUsedAt,
+    first_seen_at: device.firstSeenAt,
+    // Additional fields from SQL schema
+    last_active: device.lastActive,
+    is_2fa_device: device.is2faDevice,
+    push_token: device.pushToken,
+    notification_enabled: device.notificationEnabled,
+    auto_login_enabled: device.autoLoginEnabled,
+    biometric_registered: device.biometricRegistered,
+    removed_at: device.removedAt,
+    remove_reason: device.removeReason,
+    device_nickname: device.deviceNickname,
+    country_code: device.countryCode,
+    city_name: device.cityName
+  };
+}
+
+function mapDatabaseToUserSession(data: any): UserSession {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    sessionToken: data.session_token,
+    deviceType: data.device_type,
+    os: data.os,
+    browser: data.browser,
+    ipAddress: data.ip_address,
+    location: data.location,
+    rememberMe: data.remember_me,
+    createdAt: data.created_at,
+    expiresAt: data.expires_at,
+    lastActivity: data.last_activity,
+    deviceFingerprint: data.device_fingerprint,
+    isTrustedDevice: data.is_trusted_device,
+    userAgent: data.user_agent,
+    browserFingerprint: data.browser_fingerprint,
+    // Additional fields from SQL schema
+    loginMethod: data.login_method,
+    isSuspicious: data.is_suspicious,
+    riskScore: data.risk_score,
+    loggedOutAt: data.logged_out_at,
+    logoutReason: data.logout_reason,
+    loginNotificationSent: data.login_notification_sent,
+    countryCode: data.country_code,
+    cityName: data.city_name,
+    osName: data.os_name,
+    browserName: data.browser_name
+  };
+}
+
+function mapUserSessionToDatabase(session: Partial<UserSession>): any {
+  return {
+    user_id: session.userId,
+    session_token: session.sessionToken,
+    device_type: session.deviceType,
+    os: session.os,
+    browser: session.browser,
+    ip_address: session.ipAddress,
+    location: session.location,
+    remember_me: session.rememberMe,
+    created_at: session.createdAt,
+    expires_at: session.expiresAt,
+    last_activity: session.lastActivity,
+    device_fingerprint: session.deviceFingerprint,
+    is_trusted_device: session.isTrustedDevice,
+    user_agent: session.userAgent,
+    browser_fingerprint: session.browserFingerprint,
+    // Additional fields from SQL schema
+    login_method: session.loginMethod,
+    is_suspicious: session.isSuspicious,
+    risk_score: session.riskScore,
+    logged_out_at: session.loggedOutAt,
+    logout_reason: session.logoutReason,
+    login_notification_sent: session.loginNotificationSent,
+    country_code: session.countryCode,
+    city_name: session.cityName,
+    os_name: session.osName,
+    browser_name: session.browserName
+  };
+}
+
+function mapDatabaseToUserConnectedApp(data: any): UserConnectedApp {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    appId: data.app_id,
+    appName: data.app_name,
+    appIcon: data.app_icon,
+    scopes: data.scopes,
+    permissions: data.permissions,
+    accessTokenRef: data.access_token_ref,
+    refreshTokenRef: data.refresh_token_ref,
+    tokenExpiresAt: data.token_expires_at,
+    isActive: data.is_active,
+    lastUsedAt: data.last_used_at,
+    createdAt: data.created_at,
+    // Additional fields from SQL schema
+    appSlug: data.app_slug,
+    appIconSvg: data.app_icon_svg,
+    appDescription: data.app_description,
+    appCategory: data.app_category,
+    connectionType: data.connection_type,
+    provider: data.provider,
+    zipraAppId: data.zipra_app_id,
+    providerUserId: data.provider_user_id,
+    providerEmail: data.provider_email,
+    providerUsername: data.provider_username,
+    providerAvatar: data.provider_avatar,
+    lastSyncedAt: data.last_synced_at,
+    syncError: data.sync_error,
+    disconnectedAt: data.disconnected_at,
+    extraData: data.extra_data,
+    dataAccessLastReviewedAt: data.data_access_last_reviewed_at,
+    autoRevokeAfterDays: data.auto_revoke_after_days,
+    canPostOnBehalf: data.can_post_on_behalf,
+    canReadMessages: data.can_read_messages,
+    canAccessContacts: data.can_access_contacts,
+    canAccessLocation: data.can_access_location,
+    riskLevel: data.risk_level
+  };
+}
+
+function mapUserConnectedAppToDatabase(app: Partial<UserConnectedApp>): any {
+  return {
+    user_id: app.userId,
+    app_id: app.appId,
+    app_name: app.appName,
+    app_icon: app.appIcon,
+    scopes: app.scopes,
+    permissions: app.permissions,
+    access_token_ref: app.accessTokenRef,
+    refresh_token_ref: app.refreshTokenRef,
+    token_expires_at: app.tokenExpiresAt,
+    is_active: app.isActive,
+    last_used_at: app.lastUsedAt,
+    created_at: app.createdAt,
+    // Additional fields from SQL schema
+    app_slug: app.appSlug,
+    app_icon_svg: app.appIconSvg,
+    app_description: app.appDescription,
+    app_category: app.appCategory,
+    connection_type: app.connectionType,
+    provider: app.provider,
+    zipra_app_id: app.zipraAppId,
+    provider_user_id: app.providerUserId,
+    provider_email: app.providerEmail,
+    provider_username: app.providerUsername,
+    provider_avatar: app.providerAvatar,
+    last_synced_at: app.lastSyncedAt,
+    sync_error: app.syncError,
+    disconnected_at: app.disconnectedAt,
+    extra_data: app.extraData,
+    data_access_last_reviewed_at: app.dataAccessLastReviewedAt,
+    auto_revoke_after_days: app.autoRevokeAfterDays,
+    can_post_on_behalf: app.canPostOnBehalf,
+    can_read_messages: app.canReadMessages,
+    can_access_contacts: app.canAccessContacts,
+    can_access_location: app.canAccessLocation,
+    risk_level: app.riskLevel
+  };
+}
+
+function mapDatabaseToUserNotificationSetting(data: any): UserNotificationSetting {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    notificationType: data.notification_type,
+    emailEnabled: data.email_enabled,
+    smsEnabled: data.sms_enabled,
+    pushEnabled: data.push_enabled,
+    inAppEnabled: data.in_app_enabled,
+    whatsappEnabled: data.whatsapp_enabled,
+    frequency: data.frequency,
+    quietHoursEnabled: data.quiet_hours_enabled,
+    quietHoursStart: data.quiet_hours_start,
+    quietHoursEnd: data.quiet_hours_end,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    // Additional fields from SQL schema
+    telegramEnabled: data.telegram_enabled,
+    desktopEnabled: data.desktop_enabled,
+    soundEnabled: data.sound_enabled,
+    vibrationEnabled: data.vibration_enabled,
+    badgeCountEnabled: data.badge_count_enabled,
+    previewInNotification: data.preview_in_notification,
+    groupNotifications: data.group_notifications,
+    notificationSound: data.notification_sound,
+    priorityLevel: data.priority_level
+  };
+}
+
+function mapUserNotificationSettingToDatabase(setting: Partial<UserNotificationSetting>): any {
+  return {
+    user_id: setting.userId,
+    notification_type: setting.notificationType,
+    email_enabled: setting.emailEnabled,
+    sms_enabled: setting.smsEnabled,
+    push_enabled: setting.pushEnabled,
+    in_app_enabled: setting.inAppEnabled,
+    whatsapp_enabled: setting.whatsappEnabled,
+    frequency: setting.frequency,
+    quiet_hours_enabled: setting.quietHoursEnabled,
+    quiet_hours_start: setting.quietHoursStart,
+    quiet_hours_end: setting.quietHoursEnd,
+    created_at: setting.createdAt,
+    updated_at: setting.updatedAt,
+    // Additional fields from SQL schema
+    telegram_enabled: setting.telegramEnabled,
+    desktop_enabled: setting.desktopEnabled,
+    sound_enabled: setting.soundEnabled,
+    vibration_enabled: setting.vibrationEnabled,
+    badge_count_enabled: setting.badgeCountEnabled,
+    preview_in_notification: setting.previewInNotification,
+    group_notifications: setting.groupNotifications,
+    notification_sound: setting.notificationSound,
+    priority_level: setting.priorityLevel
+  };
+}
+
+function mapDatabaseToUserPrivacySetting(data: any): UserPrivacySetting {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    analyticsConsent: data.analytics_consent,
+    marketingConsent: data.marketing_consent,
+    personalizationConsent: data.personalization_consent,
+    thirdPartySharing: data.third_party_sharing,
+    cookieConsent: data.cookie_consent,
+    dataRetentionYears: data.data_retention_years,
+    consentedAt: data.consented_at,
+    lastUpdated: data.last_updated,
+    // Additional fields from SQL schema
+    profileSearchVisibility: data.profile_search_visibility,
+    showOnlineStatus: data.show_online_status,
+    showLastSeen: data.show_last_seen,
+    showReadReceipts: data.show_read_receipts,
+    allowFriendRequests: data.allow_friend_requests
+  };
+}
+
+function mapUserPrivacySettingToDatabase(setting: Partial<UserPrivacySetting>): any {
+  return {
+    user_id: setting.userId,
+    analytics_consent: setting.analyticsConsent,
+    marketing_consent: setting.marketingConsent,
+    personalization_consent: setting.personalizationConsent,
+    third_party_sharing: setting.thirdPartySharing,
+    cookie_consent: setting.cookieConsent,
+    data_retention_years: setting.dataRetentionYears,
+    consented_at: setting.consentedAt,
+    last_updated: setting.lastUpdated,
+    // Additional fields from SQL schema
+    profile_search_visibility: setting.profileSearchVisibility,
+    show_online_status: setting.showOnlineStatus,
+    show_last_seen: setting.showLastSeen,
+    show_read_receipts: setting.showReadReceipts,
+    allow_friend_requests: setting.allowFriendRequests
+  };
+}
+
+function mapDatabaseToUserActivityLog(data: any): UserActivityLog {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    action: data.action,
+    metadata: data.metadata,
+    deviceType: data.device_type,
+    deviceName: data.device_name,
+    browser: data.browser,
+    os: data.os,
+    ipAddress: data.ip_address,
+    location: data.location,
+    createdAt: data.created_at,
+    isSuspicious: data.is_suspicious
+  };
+}
+
+function mapUserActivityLogToDatabase(log: Partial<UserActivityLog>): any {
+  return {
+    user_id: log.userId,
+    action: log.action,
+    metadata: log.metadata,
+    device_type: log.deviceType,
+    device_name: log.deviceName,
+    browser: log.browser,
+    os: log.os,
+    ip_address: log.ipAddress,
+    location: log.location,
+    is_suspicious: log.isSuspicious
+  };
+}
+
+function mapDatabaseToUserWallet(data: any): UserWallet {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    balance: data.balance,
+    currency: data.currency,
+    isActive: data.is_active,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    // Additional fields from SQL schema
+    dailyLimit: data.daily_limit,
+    monthlyLimit: data.monthly_limit,
+    withdrawalPinHash: data.withdrawal_pin_hash,
+    isFrozen: data.is_frozen,
+    freezeReason: data.freeze_reason,
+    cashbackBalance: data.cashback_balance,
+    rewardBalance: data.reward_balance
+  };
+}
+
+function mapUserWalletToDatabase(wallet: Partial<UserWallet>): any {
+  return {
+    user_id: wallet.userId,
+    balance: wallet.balance,
+    currency: wallet.currency,
+    is_active: wallet.isActive,
+    // Additional fields from SQL schema
+    daily_limit: wallet.dailyLimit,
+    monthly_limit: wallet.monthlyLimit,
+    withdrawal_pin_hash: wallet.withdrawalPinHash,
+    is_frozen: wallet.isFrozen,
+    freeze_reason: wallet.freezeReason,
+    cashback_balance: wallet.cashbackBalance,
+    reward_balance: wallet.rewardBalance
+  };
+}
+
+function mapDatabaseToUserWalletTransaction(data: any): UserWalletTransaction {
+  return {
+    id: data.id,
+    walletId: data.wallet_id,
+    userId: data.user_id,
+    type: data.type,
+    amount: data.amount,
+    balanceAfter: data.balance_after,
+    description: data.description,
+    referenceId: data.reference_id,
+    status: data.status,
+    createdAt: data.created_at
+  };
+}
+
+function mapUserWalletTransactionToDatabase(transaction: Partial<UserWalletTransaction>): any {
+  return {
+    wallet_id: transaction.walletId,
+    user_id: transaction.userId,
+    type: transaction.type,
+    amount: transaction.amount,
+    balance_after: transaction.balanceAfter,
+    description: transaction.description,
+    reference_id: transaction.referenceId,
+    status: transaction.status
+  };
+}
+
+function mapDatabaseToUserSubscription(data: any): UserSubscription {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    planName: data.plan_name,
+    planType: data.plan_type,
+    billingCycle: data.billing_cycle,
+    price: data.price,
+    currency: data.currency,
+    status: data.status,
+    trialEndsAt: data.trial_ends_at,
+    currentPeriodStart: data.current_period_start,
+    currentPeriodEnd: data.current_period_end,
+    cancelledAt: data.cancelled_at,
+    cancelReason: data.cancel_reason,
+    paymentMethod: data.payment_method,
+    autoRenew: data.auto_renew,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    planId: data.plan_id,
+    // Additional fields from SQL schema
+    upgradeFromPlan: data.upgrade_from_plan,
+    downgradeToPlan: data.downgrade_to_plan,
+    pauseReason: data.pause_reason,
+    pauseUntil: data.pause_until,
+    renewalReminderSent: data.renewal_reminder_sent,
+    failedPaymentCount: data.failed_payment_count,
+    lastFailedPaymentAt: data.last_failed_payment_at
+  };
+}
+
+function mapUserSubscriptionToDatabase(subscription: Partial<UserSubscription>): any {
+  return {
+    user_id: subscription.userId,
+    plan_name: subscription.planName,
+    plan_type: subscription.planType,
+    billing_cycle: subscription.billingCycle,
+    price: subscription.price,
+    currency: subscription.currency,
+    status: subscription.status,
+    trial_ends_at: subscription.trialEndsAt,
+    current_period_start: subscription.currentPeriodStart,
+    current_period_end: subscription.currentPeriodEnd,
+    cancelled_at: subscription.cancelledAt,
+    cancel_reason: subscription.cancelReason,
+    payment_method: subscription.paymentMethod,
+    auto_renew: subscription.autoRenew,
+    plan_id: subscription.planId,
+    // Additional fields from SQL schema
+    upgrade_from_plan: subscription.upgradeFromPlan,
+    downgrade_to_plan: subscription.downgradeToPlan,
+    pause_reason: subscription.pauseReason,
+    pause_until: subscription.pauseUntil,
+    renewal_reminder_sent: subscription.renewalReminderSent,
+    failed_payment_count: subscription.failedPaymentCount,
+    last_failed_payment_at: subscription.lastFailedPaymentAt
+  };
+}
+
+function mapDatabaseToUserPurchase(data: any): UserPurchase {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    orderId: data.order_id,
+    productId: data.product_id,
+    productName: data.product_name,
+    category: data.category,
+    quantity: data.quantity,
+    unitPrice: data.unit_price,
+    totalPrice: data.total_price,
+    discountAmount: data.discount_amount,
+    couponCode: data.coupon_code,
+    paymentMethod: data.payment_method,
+    currency: data.currency,
+    status: data.status,
+    isGift: data.is_gift,
+    giftFor: data.gift_for,
+    deviceType: data.device_type,
+    ipAddress: data.ip_address,
+    purchasedAt: data.purchased_at,
+    refundedAt: data.refunded_at,
+    isEcoFriendly: data.is_eco_friendly,
+    carbonFootprintKg: data.carbon_footprint_kg,
+    sustainabilityScore: data.sustainability_score,
+    // Additional fields from SQL schema
+    deliveryDate: data.delivery_date,
+    reviewReminderSent: data.review_reminder_sent,
+    isDigital: data.is_digital,
+    downloadLink: data.download_link,
+    warrantyExpiresAt: data.warranty_expires_at,
+    insuranceAdded: data.insurance_added
+  };
+}
+
+function mapUserPurchaseToDatabase(purchase: Partial<UserPurchase>): any {
+  return {
+    user_id: purchase.userId,
+    order_id: purchase.orderId,
+    product_id: purchase.productId,
+    product_name: purchase.productName,
+    category: purchase.category,
+    quantity: purchase.quantity,
+    unit_price: purchase.unitPrice,
+    total_price: purchase.totalPrice,
+    discount_amount: purchase.discountAmount,
+    coupon_code: purchase.couponCode,
+    payment_method: purchase.paymentMethod,
+    currency: purchase.currency,
+    status: purchase.status,
+    is_gift: purchase.isGift,
+    gift_for: purchase.giftFor,
+    device_type: purchase.deviceType,
+    ip_address: purchase.ipAddress,
+    purchased_at: purchase.purchasedAt,
+    refunded_at: purchase.refundedAt,
+    is_eco_friendly: purchase.isEcoFriendly,
+    carbon_footprint_kg: purchase.carbonFootprintKg,
+    sustainability_score: purchase.sustainabilityScore,
+    // Additional fields from SQL schema
+    delivery_date: purchase.deliveryDate,
+    review_reminder_sent: purchase.reviewReminderSent,
+    is_digital: purchase.isDigital,
+    download_link: purchase.downloadLink,
+    warranty_expires_at: purchase.warrantyExpiresAt,
+    insurance_added: purchase.insuranceAdded
+  };
+}
+
+function mapDatabaseToUserWishlist(data: any): UserWishlist {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    productId: data.product_id,
+    productName: data.product_name,
+    priceWhenAdded: data.price_when_added,
+    currentPrice: data.current_price,
+    priceDropped: data.price_dropped,
+    addedAt: data.added_at,
+    listId: data.list_id
+  };
+}
+
+function mapUserWishlistToDatabase(wishlist: Partial<UserWishlist>): any {
+  return {
+    user_id: wishlist.userId,
+    product_id: wishlist.productId,
+    product_name: wishlist.productName,
+    price_when_added: wishlist.priceWhenAdded,
+    current_price: wishlist.currentPrice,
+    price_dropped: wishlist.priceDropped,
+    list_id: wishlist.listId
+  };
+}
+
+function mapDatabaseToUserCart(data: any): UserCart {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    productId: data.product_id,
+    productName: data.product_name,
+    quantity: data.quantity,
+    unitPrice: data.unit_price,
+    totalPrice: data.total_price,
+    addedAt: data.added_at,
+    updatedAt: data.updated_at
+  };
+}
+
+function mapUserCartToDatabase(cart: Partial<UserCart>): any {
+  return {
+    user_id: cart.userId,
+    product_id: cart.productId,
+    product_name: cart.productName,
+    quantity: cart.quantity,
+    unit_price: cart.unitPrice,
+    total_price: cart.totalPrice,
+    updated_at: cart.updatedAt
+  };
+}
+
+function mapDatabaseToUserSocialAccount(data: any): UserSocialAccount {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    provider: data.provider,
+    providerUserId: data.provider_user_id,
+    providerEmail: data.provider_email,
+    providerName: data.provider_name,
+    providerAvatar: data.provider_avatar,
+    accessTokenRef: data.access_token_ref,
+    isPrimary: data.is_primary,
+    linkedAt: data.linked_at,
+    lastUsedAt: data.last_used_at,
+    // Additional fields from SQL schema
+    isVerified: data.is_verified,
+    followerCount: data.follower_count,
+    scopeGranted: data.scope_granted,
+    canPost: data.can_post,
+    autoShareEnabled: data.auto_share_enabled
+  };
+}
+
+function mapUserSocialAccountToDatabase(account: Partial<UserSocialAccount>): any {
+  return {
+    user_id: account.userId,
+    provider: account.provider,
+    provider_user_id: account.providerUserId,
+    provider_email: account.providerEmail,
+    provider_name: account.providerName,
+    provider_avatar: account.providerAvatar,
+    access_token_ref: account.accessTokenRef,
+    is_primary: account.isPrimary,
+    linked_at: account.linkedAt,
+    last_used_at: account.lastUsedAt,
+    // Additional fields from SQL schema
+    is_verified: account.isVerified,
+    follower_count: account.followerCount,
+    scope_granted: account.scopeGranted,
+    can_post: account.canPost,
+    auto_share_enabled: account.autoShareEnabled
+  };
+}
+
+function mapDatabaseToUserBadge(data: any): UserBadge {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    badgeId: data.badge_id,
+    badgeName: data.badge_name,
+    badgeIcon: data.badge_icon,
+    badgeDescription: data.badge_description,
+    earnedAt: data.earned_at,
+    isDisplayed: data.is_displayed,
+    displayOrder: data.display_order
+  };
+}
+
+function mapUserBadgeToDatabase(badge: Partial<UserBadge>): any {
+  return {
+    user_id: badge.userId,
+    badge_id: badge.badgeId,
+    badge_name: badge.badgeName,
+    badge_icon: badge.badgeIcon,
+    badge_description: badge.badgeDescription,
+    is_displayed: badge.isDisplayed,
+    display_order: badge.displayOrder
+  };
+}
+
+function mapDatabaseToUserMilestone(data: any): UserMilestone {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    milestoneType: data.milestone_type,
+    title: data.title,
+    description: data.description,
+    pointsAwarded: data.points_awarded,
+    achievedAt: data.achieved_at
+  };
+}
+
+function mapUserMilestoneToDatabase(milestone: Partial<UserMilestone>): any {
+  return {
+    user_id: milestone.userId,
+    milestone_type: milestone.milestoneType,
+    title: milestone.title,
+    description: milestone.description,
+    points_awarded: milestone.pointsAwarded
+  };
+}
+
+function mapDatabaseToUserStreak(data: any): UserStreak {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    currentStreak: data.current_streak,
+    longestStreak: data.longest_streak,
+    lastCheckinDate: data.last_checkin_date,
+    streakStartedAt: data.streak_started_at,
+    totalCheckins: data.total_checkins
+  };
+}
+
+function mapUserStreakToDatabase(streak: Partial<UserStreak>): any {
+  return {
+    user_id: streak.userId,
+    current_streak: streak.currentStreak,
+    longest_streak: streak.longestStreak,
+    last_checkin_date: streak.lastCheckinDate,
+    streak_started_at: streak.streakStartedAt,
+    total_checkins: streak.totalCheckins
+  };
+}
+
+function mapDatabaseToUserNote(data: any): UserNote {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    orgId: data.org_id,
+    title: data.title,
+    content: data.content,
+    contentJson: data.content_json,
+    type: data.type,
+    color: data.color,
+    isPinned: data.is_pinned,
+    isShared: data.is_shared,
+    isTrashed: data.is_trashed,
+    tags: data.tags,
+    wordCount: data.word_count,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+  };
+}
+
+function mapUserNoteToDatabase(note: Partial<UserNote>): any {
+  return {
+    user_id: note.userId,
+    org_id: note.orgId,
+    title: note.title,
+    content: note.content,
+    content_json: note.contentJson,
+    type: note.type,
+    color: note.color,
+    is_pinned: note.isPinned,
+    is_shared: note.isShared,
+    is_trashed: note.isTrashed,
+    tags: note.tags,
+    word_count: note.wordCount,
+    updated_at: note.updatedAt
+  };
+}
+
+function mapDatabaseToUserSupportTicket(data: any): UserSupportTicket {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    ticketNumber: data.ticket_number,
+    category: data.category,
+    priority: data.priority,
+    subject: data.subject,
+    message: data.message,
+    status: data.status,
+    assignedTo: data.assigned_to,
+    resolution: data.resolution,
+    satisfactionRating: data.satisfaction_rating,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    resolvedAt: data.resolved_at,
+    assignedAgentId: data.assigned_agent_id
+  };
+}
+
+function mapUserSupportTicketToDatabase(ticket: Partial<UserSupportTicket>): any {
+  return {
+    user_id: ticket.userId,
+    ticket_number: ticket.ticketNumber,
+    category: ticket.category,
+    priority: ticket.priority,
+    subject: ticket.subject,
+    message: ticket.message,
+    status: ticket.status,
+    assigned_to: ticket.assignedTo,
+    resolution: ticket.resolution,
+    satisfaction_rating: ticket.satisfactionRating,
+    resolved_at: ticket.resolvedAt,
+    assigned_agent_id: ticket.assignedAgentId
+  };
+}
+
+function mapDatabaseToUserNotification(data: any): UserNotification {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    type: data.type,
+    category: data.category,
+    title: data.title,
+    body: data.body,
+    data: data.data,
+    segmentCode: data.segment_code,
+    campaignId: data.campaign_id,
+    isSent: data.is_sent,
+    isDelivered: data.is_delivered,
+    isOpened: data.is_opened,
+    isClicked: data.is_clicked,
+    sentAt: data.sent_at,
+    deliveredAt: data.delivered_at,
+    openedAt: data.opened_at,
+    clickedAt: data.clicked_at,
+    scheduledAt: data.scheduled_at,
+    createdAt: data.created_at
+  };
+}
+
+function mapUserNotificationToDatabase(notification: Partial<UserNotification>): any {
+  return {
+    user_id: notification.userId,
+    type: notification.type,
+    category: notification.category,
+    title: notification.title,
+    body: notification.body,
+    data: notification.data,
+    segment_code: notification.segmentCode,
+    campaign_id: notification.campaignId,
+    is_sent: notification.isSent,
+    is_delivered: notification.isDelivered,
+    is_opened: notification.isOpened,
+    is_clicked: notification.isClicked,
+    sent_at: notification.sentAt,
+    delivered_at: notification.deliveredAt,
+    opened_at: notification.openedAt,
+    clicked_at: notification.clickedAt,
+    scheduled_at: notification.scheduledAt
+  };
+}
+
+function mapDatabaseToUserTwoFA(data: any): UserTwoFA {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    method: data.method,
+    secretRef: data.secret_key,
+    backupCodes: data.backup_codes,
+    isEnabled: data.is_enabled,
+    isVerified: data.is_verified,
+    createdAt: data.created_at,
+    lastUsedAt: data.last_used_at,
+    // Additional fields from SQL schema
+    totpAppName: data.totp_app_name,
+    smsPhone: data.sms_phone,
+    backupCodesGeneratedAt: data.backup_codes_generated_at,
+    backupCodesUsedCount: data.backup_codes_used_count,
+    recoveryCodesRemaining: data.recovery_codes_remaining,
+    gracePeriodEndsAt: data.grace_period_ends_at,
+    hardwareKeyType: data.hardware_key_type,
+    hardwareKeyRegisteredAt: data.hardware_key_registered_at
+  };
+}
+
+function mapUserTwoFAToDatabase(twoFA: Partial<UserTwoFA>): any {
+  return {
+    user_id: twoFA.userId,
+    method: twoFA.method,
+    secret_key: twoFA.secretRef,
+    backup_codes: twoFA.backupCodes,
+    is_enabled: twoFA.isEnabled,
+    is_verified: twoFA.isVerified,
+    last_used_at: twoFA.lastUsedAt,
+    // Additional fields from SQL schema
+    totp_app_name: twoFA.totpAppName,
+    sms_phone: twoFA.smsPhone,
+    backup_codes_generated_at: twoFA.backupCodesGeneratedAt,
+    backup_codes_used_count: twoFA.backupCodesUsedCount,
+    recovery_codes_remaining: twoFA.recoveryCodesRemaining,
+    grace_period_ends_at: twoFA.gracePeriodEndsAt,
+    hardware_key_type: twoFA.hardwareKeyType,
+    hardware_key_registered_at: twoFA.hardwareKeyRegisteredAt
+  };
+}
+
+function mapDatabaseToUserPasskey(data: any): UserPasskey {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    credentialId: data.credential_id,
+    publicKey: data.public_key,
+    counter: data.counter,
+    deviceType: data.device_type,
+    deviceName: data.device_name,
+    aaguid: data.aaguid,
+    transports: data.transports,
+    isBackupEligible: data.is_backup_eligible,
+    isBackupState: data.is_backup_state,
+    createdAt: data.created_at,
+    lastUsedAt: data.last_used_at
+  };
+}
+
+function mapUserPasskeyToDatabase(passkey: Partial<UserPasskey>): any {
+  return {
+    user_id: passkey.userId,
+    credential_id: passkey.credentialId,
+    public_key: passkey.publicKey,
+    counter: passkey.counter,
+    device_type: passkey.deviceType,
+    device_name: passkey.deviceName,
+    aaguid: passkey.aaguid,
+    transports: passkey.transports,
+    is_backup_eligible: passkey.isBackupEligible,
+    is_backup_state: passkey.isBackupState,
+    last_used_at: passkey.lastUsedAt
+  };
+}
+
+function mapDatabaseToUserOnboarding(data: any): UserOnboarding {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    stepProfileDone: data.step_profile_done,
+    stepInterestsDone: data.step_interests_done,
+    stepFirstProductViewed: data.step_first_product_viewed,
+    stepFirstPurchaseDone: data.step_first_purchase_done,
+    stepNotificationSetup: data.step_notification_setup,
+    stepReferralShared: data.step_referral_shared,
+    onboardingCompleted: data.onboarding_completed,
+    completedAt: data.completed_at,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+  };
+}
+
+function mapUserOnboardingToDatabase(onboarding: Partial<UserOnboarding>): any {
+  return {
+    user_id: onboarding.userId,
+    step_profile_done: onboarding.stepProfileDone,
+    step_interests_done: onboarding.stepInterestsDone,
+    step_first_product_viewed: onboarding.stepFirstProductViewed,
+    step_first_purchase_done: onboarding.stepFirstPurchaseDone,
+    step_notification_setup: onboarding.stepNotificationSetup,
+    step_referral_shared: onboarding.stepReferralShared,
+    onboarding_completed: onboarding.onboardingCompleted,
+    completed_at: onboarding.completedAt,
+    updated_at: onboarding.updatedAt
+  };
+}
+
 // Export all mapper functions
 export const mappers = {
   mapDatabaseToUserProfile,
   mapUserProfileToDatabase,
   mapDatabaseToUserAddress,
-  mapUserAddressToDatabase
+  mapUserAddressToDatabase,
+  mapDatabaseToUserPaymentMethod,
+  mapUserPaymentMethodToDatabase,
+  mapDatabaseToUserDevice,
+  mapUserDeviceToDatabase,
+  mapDatabaseToUserSession,
+  mapUserSessionToDatabase,
+  mapDatabaseToUserConnectedApp,
+  mapUserConnectedAppToDatabase,
+  mapDatabaseToUserNotificationSetting,
+  mapUserNotificationSettingToDatabase,
+  mapDatabaseToUserPrivacySetting,
+  mapUserPrivacySettingToDatabase,
+  mapDatabaseToUserActivityLog,
+  mapUserActivityLogToDatabase,
+  mapDatabaseToUserWallet,
+  mapUserWalletToDatabase,
+  mapDatabaseToUserWalletTransaction,
+  mapUserWalletTransactionToDatabase,
+  mapDatabaseToUserSubscription,
+  mapUserSubscriptionToDatabase,
+  mapDatabaseToUserPurchase,
+  mapUserPurchaseToDatabase,
+  mapDatabaseToUserWishlist,
+  mapUserWishlistToDatabase,
+  mapDatabaseToUserCart,
+  mapUserCartToDatabase,
+  mapDatabaseToUserSocialAccount,
+  mapUserSocialAccountToDatabase,
+  mapDatabaseToUserBadge,
+  mapUserBadgeToDatabase,
+  mapDatabaseToUserMilestone,
+  mapUserMilestoneToDatabase,
+  mapDatabaseToUserStreak,
+  mapUserStreakToDatabase,
+  mapDatabaseToUserNote,
+  mapUserNoteToDatabase,
+  mapDatabaseToUserSupportTicket,
+  mapUserSupportTicketToDatabase,
+  mapDatabaseToUserNotification,
+  mapUserNotificationToDatabase,
+  mapDatabaseToUserTwoFA,
+  mapUserTwoFAToDatabase,
+  mapDatabaseToUserPasskey,
+  mapUserPasskeyToDatabase,
+  mapDatabaseToUserOnboarding,
+  mapUserOnboardingToDatabase
 };
 
 export default {
