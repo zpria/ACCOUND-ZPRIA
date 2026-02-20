@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { UserProfile, ZipraProduct, ProductType } from '../types';
 import { supabase } from '../services/supabaseService';
-import { ZPRIA_MAIN_LOGO } from './constants';
+import { ZPRIA_MAIN_LOGO } from '../constants';
 
 interface Props {
   user: UserProfile | null;
