@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Smartphone, User, Lock, ChevronRight } from 'lucide-react';
+import { Shield, Smartphone, User, Lock, ChevronRight, Bell, CreditCard, ShoppingBag, Link2 } from 'lucide-react';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 
 const AccountServicesPage: React.FC = () => {
@@ -19,7 +19,7 @@ const AccountServicesPage: React.FC = () => {
       title: 'Security',
       description: 'Manage passwords, two-factor authentication, and active sessions',
       icon: Shield,
-      path: '/security',
+      path: '/account/security',
       color: 'bg-green-500',
     },
     {
@@ -27,7 +27,7 @@ const AccountServicesPage: React.FC = () => {
       title: 'Devices',
       description: 'View and manage devices signed in to your account',
       icon: Smartphone,
-      path: '/security/devices',
+      path: '/account/devices',
       color: 'bg-purple-500',
     },
     {
@@ -35,8 +35,40 @@ const AccountServicesPage: React.FC = () => {
       title: 'Privacy & Data',
       description: 'Control your privacy settings and manage your data',
       icon: Lock,
-      path: '/privacy',
+      path: '/account/privacy',
       color: 'bg-orange-500',
+    },
+    {
+      id: 'notifications',
+      title: 'Notifications',
+      description: 'Choose what you want to be notified about via email, SMS, and push',
+      icon: Bell,
+      path: '/account/notifications',
+      color: 'bg-pink-500',
+    },
+    {
+      id: 'payments',
+      title: 'Payment Methods',
+      description: 'Manage your credit cards, bKash, Nagad, and other payment options',
+      icon: CreditCard,
+      path: '/account/payments',
+      color: 'bg-cyan-500',
+    },
+    {
+      id: 'orders',
+      title: 'Order History',
+      description: 'View and track your purchases, download invoices',
+      icon: ShoppingBag,
+      path: '/account/orders',
+      color: 'bg-teal-500',
+    },
+    {
+      id: 'apps',
+      title: 'Connected Apps',
+      description: 'Manage SSO connections to other ZPRIA products',
+      icon: Link2,
+      path: '/account/apps',
+      color: 'bg-indigo-500',
     },
   ];
 
