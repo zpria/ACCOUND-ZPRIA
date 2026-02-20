@@ -34,7 +34,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
       const normalizedId = identifier.trim().toLowerCase();
       const { data: user, error: queryError } = await supabase
         .from('users')
-        .select('id, first_name, last_name, username, login_id, mobile, email, address, dob, gender, is_email_verified, theme_preference, account_status, theme_color, avatar_url')
+        .select('id, first_name, last_name, username, login_id, mobile, email, address, dob, gender, is_email_verified, theme_preference, account_status, avatar_url')
         .or(`username.eq.${normalizedId},login_id.eq.${normalizedId},mobile.eq.${normalizedId},email.eq.${normalizedId}`)
         .maybeSingle();
 
@@ -74,6 +74,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
       });
       
       const userProfile: UserProfile = {
+        // Core Identity
         id: user.id,
         username: user.username,
         login_id: user.login_id,
@@ -84,10 +85,202 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
         address: user.address,
         dob: user.dob,
         gender: user.gender,
+        
+        // Verification & Status
         isEmailVerified: user.is_email_verified,
-        themePreference: user.theme_preference,
+        isMobileVerified: user.is_mobile_verified ?? false,
         accountStatus: user.account_status,
-        theme_color: user.theme_color || '#0071e3'
+        
+        // Security
+        failedLoginAttempts: user.failed_login_attempts ?? 0,
+        lastFailedLogin: user.last_failed_login,
+        lockedUntil: user.locked_until,
+        twoFactorEnabled: user.two_factor_enabled ?? false,
+        
+        // Preferences
+        themePreference: user.theme_preference ?? 'purple',
+        preferredFontSize: user.preferred_font_size,
+        preferredLayout: user.preferred_layout,
+        preferredContentType: user.preferred_content_type,
+        preferredLanguage: user.preferred_language ?? 'bn',
+        preferredPaymentMethod: user.preferred_payment_method,
+        preferredNotificationTime: user.preferred_notification_time,
+        preferredCategory: user.preferred_category,
+        
+        // Profile Media
+        avatarUrl: user.avatar_url,
+        avatarBase64: user.avatar_base64,
+        coverPhotoUrl: user.cover_photo_url,
+        bio: user.bio,
+        
+        // Personal Info
+        maritalStatus: user.marital_status,
+        hasChildren: user.has_children ?? false,
+        education: user.education,
+        occupation: user.occupation,
+        companyName: user.company_name,
+        industry: user.industry,
+        monthlyIncomeRange: user.monthly_income_range,
+        religion: user.religion,
+        lifestyle: user.lifestyle,
+        
+        // Location
+        country: user.country,
+        city: user.city,
+        area: user.area,
+        postalCode: user.postal_code,
+        timezone: user.timezone,
+        language: user.language ?? 'bn',
+        currency: user.currency ?? 'BDT',
+        
+        // Notifications
+        emailNewsletter: user.email_newsletter ?? true,
+        smsNotification: user.sms_notification ?? false,
+        whatsappNotification: user.whatsapp_notification ?? false,
+        pushNotification: user.push_notification ?? true,
+        
+        // Activity Patterns
+        mostActiveDay: user.most_active_day,
+        purchaseDayPreference: user.purchase_day_preference,
+        mostActiveHour: user.most_active_hour,
+        isMorningUser: user.is_morning_user ?? false,
+        isNightOwl: user.is_night_owl ?? false,
+        isWeekendShopper: user.is_weekend_shopper ?? false,
+        
+        // Interests
+        interests: user.interests ?? {
+          music: false, gaming: false, sports: false, travel: false,
+          parenting: false, automotive: false, technology: false,
+          environment: false, photography: false, real_estate: false,
+          food_cooking: false, ai_automation: false, books_reading: false,
+          fashion_style: false, politics_news: false, health_fitness: false,
+          education_learning: false, finance_investment: false,
+          movies_entertainment: false, business_entrepreneurship: false
+        },
+        interestScores: user.interest_scores ?? {},
+        
+        // Device Info
+        deviceType: user.device_type,
+        os: user.os,
+        browser: user.browser,
+        screenSize: user.screen_size,
+        connectionType: user.connection_type,
+        appVersion: user.app_version,
+        locationPermission: user.location_permission ?? false,
+        cameraPermission: user.camera_permission ?? false,
+        deviceFingerprint: user.device_fingerprint,
+        timezoneOffset: user.timezone_offset,
+        
+        // Behavior Data
+        behaviorData: user.behavior_data ?? {
+          ad_history: [], cart_count: 0, share_count: 0,
+          bounce_count: 0, cart_abandoned: false, wishlist_count: 0,
+          payment_started: false, unused_features: [],
+          scroll_depth_avg: 0, checkout_abandoned: false
+        },
+        
+        // Visit Stats
+        firstVisitAt: user.first_visit_at,
+        totalVisitCount: user.total_visit_count ?? 0,
+        totalSessionMinutes: user.total_session_minutes ?? 0,
+        avgSessionMinutes: user.avg_session_minutes ?? 0,
+        visitsPerWeek: user.visits_per_week ?? 0,
+        pagesPerSession: user.pages_per_session ?? 0,
+        daysSinceLastActivity: user.days_since_last_activity ?? 0,
+        
+        // Ad Stats
+        adsSeenCount: user.ads_seen_count ?? 0,
+        adsClickedCount: user.ads_clicked_count ?? 0,
+        adCtr: user.ad_ctr ?? 0,
+        
+        // E-commerce Status
+        hasWishlist: user.has_wishlist ?? false,
+        hasCartItem: user.has_cart_item ?? false,
+        cartAbandoned: user.cart_abandoned ?? false,
+        checkoutAbandoned: user.checkout_abandoned ?? false,
+        paymentStarted: user.payment_started ?? false,
+        requestedRefund: user.requested_refund ?? false,
+        complaintCount: user.complaint_count ?? 0,
+        doesShare: user.does_share ?? false,
+        doesReview: user.does_review ?? false,
+        
+        // Purchase Stats
+        purchaseHourPreference: user.purchase_hour_preference,
+        totalPurchaseCount: user.total_purchase_count ?? 0,
+        totalSpent: user.total_spent ?? 0,
+        averageOrderValue: user.average_order_value ?? 0,
+        maxSingleOrderValue: user.max_single_order_value ?? 0,
+        firstPurchaseDate: user.first_purchase_date,
+        lastPurchaseDate: user.last_purchase_date,
+        topPurchaseCategory: user.top_purchase_category,
+        topPurchaseProduct: user.top_purchase_product,
+        
+        // Subscription
+        isSubscriber: user.is_subscriber ?? false,
+        subscriptionPlan: user.subscription_plan,
+        usedCoupon: user.used_coupon ?? false,
+        usedDiscount: user.used_discount ?? false,
+        isTrialUser: user.is_trial_user ?? false,
+        hasUpgraded: user.has_upgraded ?? false,
+        hasDowngraded: user.has_downgraded ?? false,
+        isBulkBuyer: user.is_bulk_buyer ?? false,
+        isGiftBuyer: user.is_gift_buyer ?? false,
+        
+        // Referral
+        referralSource: user.referral_source,
+        referredBy: user.referred_by,
+        referralCount: user.referral_count ?? 0,
+        
+        // Social
+        isCommunityActive: user.is_community_active ?? false,
+        isInfluencer: user.is_influencer ?? false,
+        socialFollowerCount: user.social_follower_count ?? 0,
+        socialFollowingCount: user.social_following_count ?? 0,
+        helpfulReviewCount: user.helpful_review_count ?? 0,
+        
+        // User Feedback
+        useCase: user.use_case,
+        painPoint: user.pain_point,
+        skillLevel: user.skill_level ?? 'beginner',
+        teamOrSolo: user.team_or_solo ?? 'solo',
+        useType: user.use_type ?? 'personal',
+        previousCompetitor: user.previous_competitor,
+        switchReason: user.switch_reason,
+        favoriteFeature: user.favorite_feature,
+        dislikedFeature: user.disliked_feature,
+        futureGoals: user.future_goals,
+        
+        // RFM Scores
+        rfmRecencyScore: user.rfm_recency_score ?? 0,
+        rfmFrequencyScore: user.rfm_frequency_score ?? 0,
+        rfmMonetaryScore: user.rfm_monetary_score ?? 0,
+        rfmTotalScore: user.rfm_total_score ?? 0,
+        
+        // Segmentation
+        userSegment: user.user_segment ?? 'L1_COLD',
+        funnelLevel: user.funnel_level ?? 1,
+        funnelStage: user.funnel_stage ?? 'Awareness',
+        segmentUpdatedAt: user.segment_updated_at ?? new Date().toISOString(),
+        
+        // Risk
+        churnRiskScore: user.churn_risk_score ?? 0,
+        isAtRisk: user.is_at_risk ?? false,
+        isChurned: user.is_churned ?? false,
+        isPriceSensitive: user.is_price_sensitive ?? false,
+        isPremiumSeeker: user.is_premium_seeker ?? false,
+        isDealHunter: user.is_deal_hunter ?? false,
+        isMobileOnly: user.is_mobile_only ?? false,
+        isDesktopOnly: user.is_desktop_only ?? false,
+        
+        // Timestamps
+        lastLogin: user.last_login,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+        
+        // Extra Data
+        extraData: user.extra_data,
+        dynamicData: user.dynamic_data ?? {},
+        authUserId: user.auth_user_id
       };
 
       // Handle multi-account
@@ -103,7 +296,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
         first_name: user.first_name,
         last_name: user.last_name,
         avatar_url: user.avatar_url,
-        theme_color: user.theme_color || '#0071e3',
+        theme_preference: user.theme_preference || 'purple',
         is_active: true
       };
       

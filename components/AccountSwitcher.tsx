@@ -12,7 +12,7 @@ interface Account {
   first_name: string;
   last_name: string;
   avatar_url?: string;
-  theme_color: string;
+  theme_preference: string;
   is_active: boolean;
 }
 
@@ -63,7 +63,7 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
           first_name: currentUser.firstName || '',
           last_name: currentUser.lastName || '',
           avatar_url: currentUser.avatar_url,
-          theme_color: currentUser.theme_color || '#0071e3',
+          theme_preference: currentUser.theme_preference || 'purple',
           is_active: true
         };
         setAccounts([account]);
@@ -115,8 +115,8 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
           isEmailVerified: data.is_email_verified,
           themePreference: data.theme_preference,
           accountStatus: data.account_status,
-          theme_color: data.theme_color,
-          avatar_url: data.avatar_url
+
+          avatarUrl: data.avatar_url
         };
         
         // Update localStorage with new user
@@ -184,7 +184,7 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
         >
           <div 
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-            style={{ backgroundColor: currentUser.theme_color || '#0071e3' }}
+            style={{ backgroundColor: '#0071e3' }}
           >
             {currentUser.first_name?.[0]}{currentUser.last_name?.[0]}
           </div>
@@ -212,7 +212,7 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
                 >
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                    style={{ backgroundColor: account.theme_color }}
+                    style={{ backgroundColor: '#0071e3' }}
                   >
                     {getInitials(account)}
                   </div>

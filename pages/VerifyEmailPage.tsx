@@ -7,6 +7,7 @@ import { supabase } from '../services/supabaseService';
 import { sendOTP, sendWelcomeAlert } from '../services/emailService';
 import { autoGenerateProfileImage } from '../services/aiImageService';
 import { logActivity } from '../services/deviceDetection';
+import { UserProfile } from '../types';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -182,7 +183,8 @@ const VerifyEmailPage: React.FC = () => {
         }
 
         // Create user session (auto login)
-        const user = {
+        const user: UserProfile = {
+          // Core Identity
           id: pending.username,
           username: pending.username,
           login_id: pending.login_id,
@@ -190,7 +192,146 @@ const VerifyEmailPage: React.FC = () => {
           lastName: pending.last_name,
           email: pending.email,
           mobile: pending.mobile,
-          themePreference: 'default'
+          address: pending.address || 'Dhaka, Bangladesh',
+          dob: pending.dob,
+          gender: pending.gender,
+          
+          // Verification & Status
+          isEmailVerified: true,
+          isMobileVerified: false,
+          accountStatus: 'active',
+          
+          // Security
+          failedLoginAttempts: 0,
+          twoFactorEnabled: false,
+          
+          // Preferences
+          themePreference: 'purple',
+          preferredLanguage: 'bn',
+          language: 'bn',
+          currency: 'BDT',
+          
+          // Notifications
+          emailNewsletter: true,
+          smsNotification: false,
+          whatsappNotification: false,
+          pushNotification: true,
+          
+          // Personal Info
+          hasChildren: false,
+          
+          // Activity Patterns
+          isMorningUser: false,
+          isNightOwl: false,
+          isWeekendShopper: false,
+          
+          // Interests
+          interests: {
+            music: false, gaming: false, sports: false, travel: false,
+            parenting: false, automotive: false, technology: false,
+            environment: false, photography: false, real_estate: false,
+            food_cooking: false, ai_automation: false, books_reading: false,
+            fashion_style: false, politics_news: false, health_fitness: false,
+            education_learning: false, finance_investment: false,
+            movies_entertainment: false, business_entrepreneurship: false
+          },
+          interestScores: {},
+          
+          // Device Info
+          locationPermission: false,
+          cameraPermission: false,
+          
+          // Behavior Data
+          behaviorData: {
+            ad_history: [], cart_count: 0, share_count: 0,
+            bounce_count: 0, cart_abandoned: false, wishlist_count: 0,
+            payment_started: false, unused_features: [],
+            scroll_depth_avg: 0, checkout_abandoned: false
+          },
+          
+          // Visit Stats
+          totalVisitCount: 0,
+          totalSessionMinutes: 0,
+          avgSessionMinutes: 0,
+          visitsPerWeek: 0,
+          pagesPerSession: 0,
+          daysSinceLastActivity: 0,
+          
+          // Ad Stats
+          adsSeenCount: 0,
+          adsClickedCount: 0,
+          adCtr: 0,
+          
+          // E-commerce Status
+          hasWishlist: false,
+          hasCartItem: false,
+          cartAbandoned: false,
+          checkoutAbandoned: false,
+          paymentStarted: false,
+          requestedRefund: false,
+          complaintCount: 0,
+          doesShare: false,
+          doesReview: false,
+          
+          // Purchase Stats
+          totalPurchaseCount: 0,
+          totalSpent: 0,
+          averageOrderValue: 0,
+          maxSingleOrderValue: 0,
+          
+          // Subscription
+          isSubscriber: false,
+          usedCoupon: false,
+          usedDiscount: false,
+          isTrialUser: false,
+          hasUpgraded: false,
+          hasDowngraded: false,
+          isBulkBuyer: false,
+          isGiftBuyer: false,
+          
+          // Referral
+          referralCount: 0,
+          
+          // Social
+          isCommunityActive: false,
+          isInfluencer: false,
+          socialFollowerCount: 0,
+          socialFollowingCount: 0,
+          helpfulReviewCount: 0,
+          
+          // User Feedback
+          skillLevel: 'beginner',
+          teamOrSolo: 'solo',
+          useType: 'personal',
+          
+          // RFM Scores
+          rfmRecencyScore: 0,
+          rfmFrequencyScore: 0,
+          rfmMonetaryScore: 0,
+          rfmTotalScore: 0,
+          
+          // Segmentation
+          userSegment: 'L1_COLD',
+          funnelLevel: 1,
+          funnelStage: 'Awareness',
+          segmentUpdatedAt: new Date().toISOString(),
+          
+          // Risk
+          churnRiskScore: 0,
+          isAtRisk: false,
+          isChurned: false,
+          isPriceSensitive: false,
+          isPremiumSeeker: false,
+          isDealHunter: false,
+          isMobileOnly: false,
+          isDesktopOnly: false,
+          
+          // Timestamps
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          
+          // Extra Data
+          dynamicData: {}
         };
         localStorage.setItem('zpria_user', JSON.stringify(user));
 
