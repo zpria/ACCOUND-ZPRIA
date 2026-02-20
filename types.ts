@@ -243,6 +243,100 @@ export interface UserProfile {
   extraData?: any;
   dynamicData: Record<string, any>;
   authUserId?: string;
+  
+  // Additional fields from SQL schema
+  favoriteColor?: string;
+  middleName?: string;
+  namePronunciation?: string;
+  pronouns?: string;
+  customPronouns?: string;
+  profileUrl?: string;
+  websiteUrl?: string;
+  profileCompletionPercent?: number;
+  isVerifiedUser?: boolean;
+  verifiedAt?: string;
+  verificationBadgeType?: string;
+  accountType?: string;
+  isPublicFigure?: boolean;
+  profileVisibility?: string;
+  bioVisibility?: string;
+  dobVisibility?: string;
+  genderVisibility?: string;
+  phoneVisibility?: string;
+  emailVisibility?: string;
+  locationVisibility?: string;
+  workVisibility?: string;
+  educationVisibility?: string;
+  friendsVisibility?: string;
+  postsVisibility?: string;
+  taggedPostsVisibility?: string;
+  mobileSecondary?: string;
+  recoveryEmail?: string;
+  recoveryPhone?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  loginNotifyEveryLogin?: boolean;
+  loginNotifyNewDeviceOnly?: boolean;
+  loginNotifyViaEmail?: boolean;
+  loginNotifyViaSms?: boolean;
+  loginNotifyViaPush?: boolean;
+  suspiciousLoginBlock?: boolean;
+  passwordChangeNotify?: boolean;
+  emailChangeNotify?: boolean;
+  phoneChangeNotify?: boolean;
+  lastPasswordChange?: string;
+  passwordStrengthScore?: number;
+  passkeyEnabled?: boolean;
+  magicLinkEnabled?: boolean;
+  biometricEnabled?: boolean;
+  autoLogoutMinutes?: number;
+  sessionLimit?: number;
+  requirePasswordOnSensitive?: boolean;
+  searchVisibility?: boolean;
+  discoverableByEmail?: boolean;
+  discoverableByPhone?: boolean;
+  showOnlineStatus?: boolean;
+  showLastSeen?: boolean;
+  showReadReceipts?: boolean;
+  showTypingIndicator?: boolean;
+  allowFriendRequests?: boolean;
+  allowMessageFrom?: string;
+  allowTagFrom?: string;
+  allowMentionFrom?: string;
+  hideFromSearchEngines?: boolean;
+  faceRecognitionOptOut?: boolean;
+  aiTrainingOptOut?: boolean;
+  sensitiveContentFilter?: boolean;
+  crossAppTrackingDisabled?: boolean;
+  dataDownloadRequestedAt?: string;
+  accountDeleteRequestedAt?: string;
+  accountDeleteScheduledAt?: string;
+  notifEmailMaster?: boolean;
+  notifSmsMaster?: boolean;
+  notifPushMaster?: boolean;
+  notifInAppMaster?: boolean;
+  notifWhatsappMaster?: boolean;
+  darkMode?: boolean;
+  autoDarkMode?: boolean;
+  compactMode?: boolean;
+  animationEnabled?: boolean;
+  highContrast?: boolean;
+  reduceMotion?: boolean;
+  sidebarCollapsed?: boolean;
+  fontScale?: number;
+  dateFormat?: string;
+  timeFormat?: string;
+  firstDayOfWeek?: string;
+  numberFormat?: string;
+  measurementUnit?: string;
+  screenReaderEnabled?: boolean;
+  keyboardShortcutsEnabled?: boolean;
+  focusMode?: boolean;
+  dyslexiaFriendlyFont?: boolean;
+  colorBlindMode?: string;
+  closedCaptionsEnabled?: boolean;
+  audioDescriptionEnabled?: boolean;
 }
 
 export interface AuthState {
@@ -332,6 +426,15 @@ export interface UserPaymentMethod {
   isVerified: boolean;
   tokenReference?: string;
   createdAt: string;
+  
+  // Additional fields from SQL schema
+  nickname?: string;
+  billingName?: string;
+  billingAddressId?: string;
+  isExpired?: boolean;
+  lastUsedAt?: string;
+  useCount?: number;
+  failedCount?: number;
 }
 
 export interface UserDevice {
@@ -352,6 +455,19 @@ export interface UserDevice {
   isCurrent: boolean;
   lastUsedAt: string;
   firstSeenAt: string;
+  
+  // Additional fields from SQL schema
+  lastActive?: string;
+  is2faDevice?: boolean;
+  pushToken?: string;
+  notificationEnabled?: boolean;
+  autoLoginEnabled?: boolean;
+  biometricRegistered?: boolean;
+  removedAt?: string;
+  removeReason?: string;
+  deviceNickname?: string;
+  countryCode?: string;
+  cityName?: string;
 }
 
 export interface UserSession {
@@ -371,6 +487,18 @@ export interface UserSession {
   isTrustedDevice: boolean;
   userAgent?: string;
   browserFingerprint?: any;
+  
+  // Additional fields from SQL schema
+  loginMethod?: string;
+  isSuspicious?: boolean;
+  riskScore?: number;
+  loggedOutAt?: string;
+  logoutReason?: string;
+  loginNotificationSent?: boolean;
+  countryCode?: string;
+  cityName?: string;
+  osName?: string;
+  browserName?: string;
 }
 
 export interface UserConnectedApp {
@@ -387,6 +515,30 @@ export interface UserConnectedApp {
   isActive: boolean;
   lastUsedAt?: string;
   createdAt: string;
+  
+  // Additional fields from SQL schema
+  appSlug?: string;
+  appIconSvg?: string;
+  appDescription?: string;
+  appCategory?: string;
+  connectionType?: string;
+  provider?: string;
+  zipraAppId?: string;
+  providerUserId?: string;
+  providerEmail?: string;
+  providerUsername?: string;
+  providerAvatar?: string;
+  lastSyncedAt?: string;
+  syncError?: string;
+  disconnectedAt?: string;
+  extraData?: any;
+  dataAccessLastReviewedAt?: string;
+  autoRevokeAfterDays?: number;
+  canPostOnBehalf?: boolean;
+  canReadMessages?: boolean;
+  canAccessContacts?: boolean;
+  canAccessLocation?: boolean;
+  riskLevel?: string;
 }
 
 export interface UserNotificationSetting {
@@ -404,6 +556,17 @@ export interface UserNotificationSetting {
   quietHoursEnd?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Additional fields from SQL schema
+  telegramEnabled?: boolean;
+  desktopEnabled?: boolean;
+  soundEnabled?: boolean;
+  vibrationEnabled?: boolean;
+  badgeCountEnabled?: boolean;
+  previewInNotification?: boolean;
+  groupNotifications?: boolean;
+  notificationSound?: string;
+  priorityLevel?: string;
 }
 
 export interface UserPrivacySetting {
@@ -417,13 +580,20 @@ export interface UserPrivacySetting {
   dataRetentionYears: number;
   consentedAt: string;
   lastUpdated: string;
+  
+  // Additional fields from SQL schema
+  profileSearchVisibility?: boolean;
+  showOnlineStatus?: boolean;
+  showLastSeen?: boolean;
+  showReadReceipts?: boolean;
+  allowFriendRequests?: boolean;
 }
 
 export interface UserActivityLog {
   id: string;
   userId: string;
   action: string;
-  details?: any;
+  metadata?: any;
   deviceType?: string;
   deviceName?: string;
   browser?: string;
@@ -442,6 +612,15 @@ export interface UserWallet {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  
+  // Additional fields from SQL schema
+  dailyLimit?: number;
+  monthlyLimit?: number;
+  withdrawalPinHash?: string;
+  isFrozen?: boolean;
+  freezeReason?: string;
+  cashbackBalance?: number;
+  rewardBalance?: number;
 }
 
 export interface UserWalletTransaction {
@@ -476,6 +655,15 @@ export interface UserSubscription {
   createdAt: string;
   updatedAt: string;
   planId?: string;
+  
+  // Additional fields from SQL schema
+  upgradeFromPlan?: string;
+  downgradeToPlan?: string;
+  pauseReason?: string;
+  pauseUntil?: string;
+  renewalReminderSent?: boolean;
+  failedPaymentCount?: number;
+  lastFailedPaymentAt?: string;
 }
 
 export interface UserPurchase {
@@ -502,6 +690,14 @@ export interface UserPurchase {
   isEcoFriendly: boolean;
   carbonFootprintKg?: number;
   sustainabilityScore?: number;
+  
+  // Additional fields from SQL schema
+  deliveryDate?: string;
+  reviewReminderSent?: boolean;
+  isDigital?: boolean;
+  downloadLink?: string;
+  warrantyExpiresAt?: string;
+  insuranceAdded?: boolean;
 }
 
 export interface UserWishlist {
@@ -526,7 +722,6 @@ export interface UserCart {
   totalPrice: number;
   addedAt: string;
   updatedAt: string;
-  savedForLater: boolean;
 }
 
 export interface UserSocialAccount {
@@ -541,6 +736,13 @@ export interface UserSocialAccount {
   isPrimary: boolean;
   linkedAt: string;
   lastUsedAt?: string;
+  
+  // Additional fields from SQL schema
+  isVerified?: boolean;
+  followerCount?: number;
+  scopeGranted?: string[];
+  canPost?: boolean;
+  autoShareEnabled?: boolean;
 }
 
 export interface UserBadge {
@@ -643,6 +845,16 @@ export interface UserTwoFA {
   isVerified: boolean;
   createdAt: string;
   lastUsedAt?: string;
+  
+  // Additional fields from SQL schema
+  totpAppName?: string;
+  smsPhone?: string;
+  backupCodesGeneratedAt?: string;
+  backupCodesUsedCount?: number;
+  recoveryCodesRemaining?: number;
+  gracePeriodEndsAt?: string;
+  hardwareKeyType?: string;
+  hardwareKeyRegisteredAt?: string;
 }
 
 export interface UserPasskey {
