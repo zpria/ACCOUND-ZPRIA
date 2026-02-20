@@ -7,10 +7,6 @@ import LoadingOverlay from '../components/LoadingOverlay';
 
 interface SecuritySettings {
   two_factor_enabled: boolean;
-  two_factor_method: 'sms' | 'email' | 'app' | null;
-  password_last_changed: string;
-  login_notifications: boolean;
-  suspicious_activity_alerts: boolean;
 }
 
 interface LoginHistoryItem {
@@ -33,11 +29,7 @@ const SecuritySettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'password' | '2fa' | 'history'>('password');
   
   const [settings, setSettings] = useState<SecuritySettings>({
-    two_factor_enabled: false,
-    two_factor_method: null,
-    password_last_changed: '',
-    login_notifications: true,
-    suspicious_activity_alerts: true
+    two_factor_enabled: false
   });
 
   const [loginHistory, setLoginHistory] = useState<LoginHistoryItem[]>([]);
@@ -80,7 +72,7 @@ const SecuritySettingsPage: React.FC = () => {
       // Fetch security settings
       const { data, error } = await supabase
         .from('users')
-        .select('two_factor_enabled, two_factor_method, password_last_changed, login_notifications, suspicious_activity_alerts')
+        .select('two_factor_enabled')
         .eq('id', userData.id)
         .single();
 
@@ -88,11 +80,7 @@ const SecuritySettingsPage: React.FC = () => {
 
       if (data) {
         setSettings({
-          two_factor_enabled: data.two_factor_enabled || false,
-          two_factor_method: data.two_factor_method || null,
-          password_last_changed: data.password_last_changed || '',
-          login_notifications: data.login_notifications !== false,
-          suspicious_activity_alerts: data.suspicious_activity_alerts !== false
+          two_factor_enabled: data.two_factor_enabled || false
         });
       }
 
@@ -190,7 +178,7 @@ const SecuritySettingsPage: React.FC = () => {
         .from('users')
         .update({
           password_hash: newHash,
-          password_last_changed: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', userData.id);
 
@@ -318,7 +306,7 @@ const SecuritySettingsPage: React.FC = () => {
               <div>
                 <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-2">Change Password</h2>
                 <p className="text-[#86868b] mb-6">
-                  Last changed: {formatDate(settings.password_last_changed)}
+                  Update your password to keep your account secure
                 </p>
               </div>
 
@@ -467,36 +455,6 @@ const SecuritySettingsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Security Alerts */}
-              <div className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="font-semibold text-[#1d1d1f]">Security Alerts</h3>
-                
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="font-medium text-[#1d1d1f]">Login Notifications</p>
-                    <p className="text-sm text-[#86868b]">Get notified when someone logs into your account</p>
-                  </div>
-                  <button
-                    onClick={() => handleSettingChange('login_notifications', !settings.login_notifications)}
-                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notifications ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
-                  >
-                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notifications ? 'translate-x-7' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="font-medium text-[#1d1d1f]">Suspicious Activity Alerts</p>
-                    <p className="text-sm text-[#86868b]">Get alerted about unusual account activity</p>
-                  </div>
-                  <button
-                    onClick={() => handleSettingChange('suspicious_activity_alerts', !settings.suspicious_activity_alerts)}
-                    className={`w-14 h-8 rounded-full transition-all ${settings.suspicious_activity_alerts ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
-                  >
-                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.suspicious_activity_alerts ? 'translate-x-7' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 

@@ -203,7 +203,7 @@ export const saveDeviceToDatabase = async (userId: string, deviceInfo: DeviceInf
       await supabase
         .from('user_devices')
         .update({
-          last_active: new Date().toISOString(),
+          last_used_at: new Date().toISOString(),
           is_current: true
         })
         .eq('id', existingDevice.id);
@@ -230,7 +230,7 @@ export const saveDeviceToDatabase = async (userId: string, deviceInfo: DeviceInf
         timezone: deviceInfo.timezone,
         is_current: true,
         is_trusted: false,
-        last_active: new Date().toISOString()
+        last_used_at: new Date().toISOString()
       }])
       .select('id')
       .single();

@@ -32,9 +32,9 @@ const TwoFactorSetupPage: React.FC = () => {
       }
 
       const { data } = await supabase
-        .from('user_security_settings')
-        .select('two_factor_enabled, two_factor_method')
-        .eq('user_id', user.id)
+        .from('users')
+        .select('two_factor_enabled')
+        .eq('id', user.id)
         .single();
 
       if (data?.two_factor_enabled) {
@@ -104,14 +104,12 @@ const TwoFactorSetupPage: React.FC = () => {
 
       // Save 2FA settings
       await supabase
-        .from('user_security_settings')
-        .upsert({
-          user_id: user.id,
+        .from('users')
+        .update({
           two_factor_enabled: true,
-          two_factor_method: selectedMethod,
-          backup_codes: backupCodes,
           updated_at: new Date().toISOString(),
-        });
+        })
+        .eq('id', user.id);
 
       setStep('complete');
     } catch (err: any) {

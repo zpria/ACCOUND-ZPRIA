@@ -31,6 +31,7 @@ export interface UserProfile {
   lastFailedLogin?: string;
   lockedUntil?: string;
   twoFactorEnabled: boolean;
+  twoFactorMethod?: 'totp' | 'sms' | 'email' | 'backup_code';
   
   // Preferences
   themePreference: 'purple' | 'ocean' | 'dark' | 'coral' | 'lime' | 'forest' | 'indigo' | 'royal' | 'sunset' | 'nature';
@@ -295,4 +296,382 @@ export interface ZipraProduct {
   meta_description: string;
   keywords: string;
   launched_at: string;
+}
+
+// ==================== USER RELATED TABLES ====================
+
+export interface UserAddress {
+  id: string;
+  userId: string;
+  addressType: 'home' | 'work' | 'billing' | 'shipping' | 'other';
+  label?: string;
+  streetAddress: string;
+  apartment?: string;
+  city: string;
+  state?: string;
+  postalCode?: string;
+  country: string;
+  isDefault: boolean;
+  latitude?: number;
+  longitude?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPaymentMethod {
+  id: string;
+  userId: string;
+  methodType: 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay' | 'bank_transfer' | 'paypal' | 'stripe' | 'crypto' | 'other';
+  label?: string;
+  lastFour?: string;
+  cardBrand?: string;
+  expiryMonth?: number;
+  expiryYear?: number;
+  accountNumberMasked?: string;
+  isDefault: boolean;
+  isVerified: boolean;
+  tokenReference?: string;
+  createdAt: string;
+}
+
+export interface UserDevice {
+  id: string;
+  userId: string;
+  deviceName?: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop' | 'smartwatch' | 'tv' | 'other';
+  os?: string;
+  osVersion?: string;
+  browser?: string;
+  browserVersion?: string;
+  appVersion?: string;
+  screenSize?: string;
+  deviceFingerprint?: string;
+  ipAddress?: string;
+  location?: string;
+  isTrusted: boolean;
+  isCurrent: boolean;
+  lastUsedAt: string;
+  firstSeenAt: string;
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  sessionToken: string;
+  deviceType?: string;
+  os?: string;
+  browser?: string;
+  ipAddress?: string;
+  location?: string;
+  rememberMe: boolean;
+  createdAt: string;
+  expiresAt: string;
+  lastActivity: string;
+  deviceFingerprint?: string;
+  isTrustedDevice: boolean;
+  userAgent?: string;
+  browserFingerprint?: any;
+}
+
+export interface UserConnectedApp {
+  id: string;
+  userId: string;
+  appId: string;
+  appName: string;
+  appIcon?: string;
+  scopes: string[];
+  permissions: string[];
+  accessTokenRef?: string;
+  refreshTokenRef?: string;
+  tokenExpiresAt?: string;
+  isActive: boolean;
+  lastUsedAt?: string;
+  createdAt: string;
+}
+
+export interface UserNotificationSetting {
+  id: string;
+  userId: string;
+  notificationType: 'security_alerts' | 'account_activity' | 'product_updates' | 'newsletter' | 'social_activity' | 'promotions' | 'marketing' | 'verification_codes' | 'appointments' | 'messages' | 'mentions' | 'likes' | 'comments' | 'followers' | 'order_updates' | 'tips_tutorials' | 'achievements' | 'recommendations';
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  pushEnabled: boolean;
+  inAppEnabled: boolean;
+  whatsappEnabled: boolean;
+  frequency: 'immediate' | 'daily' | 'weekly' | 'never';
+  quietHoursEnabled: boolean;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPrivacySetting {
+  id: string;
+  userId: string;
+  analyticsConsent: boolean;
+  marketingConsent: boolean;
+  personalizationConsent: boolean;
+  thirdPartySharing: boolean;
+  cookieConsent: boolean;
+  dataRetentionYears: number;
+  consentedAt: string;
+  lastUpdated: string;
+}
+
+export interface UserActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  details?: any;
+  deviceType?: string;
+  deviceName?: string;
+  browser?: string;
+  os?: string;
+  ipAddress?: string;
+  location?: string;
+  createdAt: string;
+  isSuspicious?: boolean;
+}
+
+export interface UserWallet {
+  id: string;
+  userId: string;
+  balance: number;
+  currency: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserWalletTransaction {
+  id: string;
+  walletId: string;
+  userId: string;
+  type: 'topup' | 'purchase' | 'refund' | 'bonus' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'cashback';
+  amount: number;
+  balanceAfter: number;
+  description?: string;
+  referenceId?: string;
+  status: 'pending' | 'completed' | 'failed' | 'reversed';
+  createdAt: string;
+}
+
+export interface UserSubscription {
+  id: string;
+  userId: string;
+  planName: string;
+  planType: 'free' | 'basic' | 'pro' | 'enterprise' | 'custom';
+  billingCycle?: 'monthly' | 'yearly' | 'lifetime';
+  price: number;
+  currency: string;
+  status: 'trial' | 'active' | 'paused' | 'cancelled' | 'expired';
+  trialEndsAt?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  paymentMethod?: string;
+  autoRenew: boolean;
+  createdAt: string;
+  updatedAt: string;
+  planId?: string;
+}
+
+export interface UserPurchase {
+  id: string;
+  userId: string;
+  orderId: string;
+  productId: string;
+  productName?: string;
+  category?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  discountAmount: number;
+  couponCode?: string;
+  paymentMethod?: string;
+  currency: string;
+  status: 'pending' | 'processing' | 'completed' | 'refunded' | 'cancelled';
+  isGift: boolean;
+  giftFor?: string;
+  deviceType?: string;
+  ipAddress?: string;
+  purchasedAt: string;
+  refundedAt?: string;
+  isEcoFriendly: boolean;
+  carbonFootprintKg?: number;
+  sustainabilityScore?: number;
+}
+
+export interface UserWishlist {
+  id: string;
+  userId: string;
+  productId: string;
+  productName?: string;
+  priceWhenAdded?: number;
+  currentPrice?: number;
+  priceDropped: boolean;
+  addedAt: string;
+  listId?: string;
+}
+
+export interface UserCart {
+  id: string;
+  userId: string;
+  productId: string;
+  productName?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  addedAt: string;
+  updatedAt: string;
+  savedForLater: boolean;
+}
+
+export interface UserSocialAccount {
+  id: string;
+  userId: string;
+  provider: 'google' | 'facebook' | 'apple' | 'twitter' | 'github' | 'linkedin' | 'tiktok';
+  providerUserId: string;
+  providerEmail?: string;
+  providerName?: string;
+  providerAvatar?: string;
+  accessTokenRef?: string;
+  isPrimary: boolean;
+  linkedAt: string;
+  lastUsedAt?: string;
+}
+
+export interface UserBadge {
+  id: string;
+  userId: string;
+  badgeId: string;
+  badgeName: string;
+  badgeIcon?: string;
+  badgeDescription?: string;
+  earnedAt: string;
+  isDisplayed: boolean;
+  displayOrder: number;
+}
+
+export interface UserMilestone {
+  id: string;
+  userId: string;
+  milestoneType: 'first_login' | 'first_purchase' | '100_days' | '1_year' | 'spend_1000' | 'spend_10000' | 'referral_10' | 'review_10' | 'top_buyer_month' | 'top_buyer_year' | 'custom';
+  title: string;
+  description?: string;
+  pointsAwarded: number;
+  achievedAt: string;
+}
+
+export interface UserStreak {
+  id: string;
+  userId: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastCheckinDate?: string;
+  streakStartedAt?: string;
+  totalCheckins: number;
+}
+
+export interface UserNote {
+  id: string;
+  userId: string;
+  orgId?: string;
+  title?: string;
+  content?: string;
+  contentJson?: any;
+  type: 'note' | 'document' | 'spreadsheet' | 'presentation' | 'kanban' | 'whiteboard';
+  color?: string;
+  isPinned: boolean;
+  isShared: boolean;
+  isTrashed: boolean;
+  tags: string[];
+  wordCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserSupportTicket {
+  id: string;
+  userId?: string;
+  ticketNumber: string;
+  category?: 'billing' | 'technical' | 'account' | 'product' | 'other';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  subject: string;
+  message: string;
+  status: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+  assignedTo?: string;
+  resolution?: string;
+  satisfactionRating?: number;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+  assignedAgentId?: string;
+}
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  type: 'push' | 'email' | 'sms' | 'whatsapp' | 'in_app';
+  category?: 'promotion' | 'reminder' | 'alert' | 'welcome' | 'win_back' | 'cart_recovery' | 'price_drop' | 'new_product' | 'system' | 'custom';
+  title?: string;
+  body?: string;
+  data?: any;
+  segmentCode?: string;
+  campaignId?: string;
+  isSent: boolean;
+  isDelivered: boolean;
+  isOpened: boolean;
+  isClicked: boolean;
+  sentAt?: string;
+  deliveredAt?: string;
+  openedAt?: string;
+  clickedAt?: string;
+  scheduledAt?: string;
+  createdAt: string;
+}
+
+export interface UserTwoFA {
+  id: string;
+  userId: string;
+  method: 'totp' | 'sms' | 'email' | 'backup_code';
+  secretRef?: string;
+  backupCodes?: string[];
+  isEnabled: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
+export interface UserPasskey {
+  id: string;
+  userId: string;
+  credentialId: string;
+  publicKey: string;
+  counter: number;
+  deviceType?: 'platform' | 'cross-platform';
+  deviceName?: string;
+  aaguid?: string;
+  transports?: string[];
+  isBackupEligible: boolean;
+  isBackupState: boolean;
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
+export interface UserOnboarding {
+  id: string;
+  userId: string;
+  stepProfileDone: boolean;
+  stepInterestsDone: boolean;
+  stepFirstProductViewed: boolean;
+  stepFirstPurchaseDone: boolean;
+  stepNotificationSetup: boolean;
+  stepReferralShared: boolean;
+  onboardingCompleted: boolean;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }

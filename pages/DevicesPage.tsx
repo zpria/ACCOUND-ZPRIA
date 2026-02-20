@@ -38,10 +38,10 @@ const DevicesPage: React.FC = () => {
 
       // Fetch active sessions/devices
       const { data, error } = await supabase
-        .from('user_sessions')
+        .from('user_devices')
         .select('*')
         .eq('user_id', user.id)
-        .order('last_active', { ascending: false });
+        .order('last_used_at', { ascending: false });
 
       if (error) throw error;
 
@@ -52,7 +52,7 @@ const DevicesPage: React.FC = () => {
         deviceType: session.device_type || 'desktop',
         browser: session.browser || 'Unknown Browser',
         location: session.location || 'Unknown Location',
-        lastActive: session.last_active,
+        lastActive: session.last_used_at,
         isCurrent: session.is_current || index === 0,
         isTrusted: session.is_trusted || false,
       })) || [];

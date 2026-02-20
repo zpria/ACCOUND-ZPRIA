@@ -47,7 +47,7 @@ const DeviceManagementPage: React.FC = () => {
         .from('user_devices')
         .select('*')
         .eq('user_id', userData.id)
-        .order('last_active', { ascending: false });
+        .order('last_used_at', { ascending: false });
 
       if (error) throw error;
 
@@ -63,7 +63,7 @@ const DeviceManagementPage: React.FC = () => {
           os: device.os || 'Unknown OS',
           location: device.location || 'Unknown Location',
           ip_address: device.ip_address || '***.***.***.***',
-          last_active: device.last_active,
+          last_active: device.last_used_at,
           is_current: device.id === currentDeviceId || device.is_current,
           is_trusted: device.is_trusted || false,
           login_time: device.created_at

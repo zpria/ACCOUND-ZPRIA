@@ -115,6 +115,21 @@ CREATE TABLE public.ai_conversations (
   CONSTRAINT ai_conversations_pkey PRIMARY KEY (id),
   CONSTRAINT ai_conversations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.ai_generated_content (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  content_type text CHECK (content_type = ANY (ARRAY['text'::text, 'image'::text, 'code'::text, 'email'::text, 'document'::text, 'social_post'::text, 'product_description'::text])),
+  prompt text NOT NULL,
+  generated_content text NOT NULL,
+  model_used text,
+  quality_score numeric,
+  is_used boolean DEFAULT false,
+  is_public boolean DEFAULT false,
+  edited_version text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ai_generated_content_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_generated_content_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.ai_messages (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   conversation_id uuid NOT NULL,
@@ -126,6 +141,22 @@ CREATE TABLE public.ai_messages (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT ai_messages_pkey PRIMARY KEY (id),
   CONSTRAINT ai_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.ai_conversations(id)
+);
+CREATE TABLE public.ai_product_recommendations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  product_id text NOT NULL,
+  recommendation_score numeric NOT NULL CHECK (recommendation_score >= 0::numeric AND recommendation_score <= 1::numeric),
+  reasoning jsonb,
+  model_version text,
+  factors jsonb,
+  is_shown boolean DEFAULT false,
+  is_clicked boolean DEFAULT false,
+  is_purchased boolean DEFAULT false,
+  generated_at timestamp with time zone DEFAULT now(),
+  expires_at timestamp with time zone DEFAULT (now() + '7 days'::interval),
+  CONSTRAINT ai_product_recommendations_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_product_recommendations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.ai_usage_stats (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -220,7 +251,11 @@ CREATE TABLE public.badges (
   condition_value integer,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT badges_pkey PRIMARY KEY (id)
+  parent_badge_id uuid,
+  achievement_tier integer DEFAULT 1,
+  is_secret boolean DEFAULT false,
+  CONSTRAINT badges_pkey PRIMARY KEY (id),
+  CONSTRAINT badges_parent_badge_id_fkey FOREIGN KEY (parent_badge_id) REFERENCES public.badges(id)
 );
 CREATE TABLE public.bank_accounts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -238,6 +273,21 @@ CREATE TABLE public.bank_accounts (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT bank_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT bank_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.bnpl_plans (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  order_id text NOT NULL,
+  total_amount numeric NOT NULL,
+  installments integer NOT NULL CHECK (installments = ANY (ARRAY[3, 4, 6, 12])),
+  installment_amount numeric NOT NULL,
+  paid_installments integer DEFAULT 0,
+  next_payment_date date,
+  status text DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'completed'::text, 'defaulted'::text, 'cancelled'::text])),
+  provider text CHECK (provider = ANY (ARRAY['internal'::text, 'klarna'::text, 'afterpay'::text, 'affirm'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT bnpl_plans_pkey PRIMARY KEY (id),
+  CONSTRAINT bnpl_plans_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.calendar_events (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -301,6 +351,15 @@ CREATE TABLE public.chat_messages (
   CONSTRAINT chat_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.chat_conversations(id),
   CONSTRAINT chat_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.circle_members (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  circle_id uuid NOT NULL,
+  member_user_id uuid NOT NULL,
+  added_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT circle_members_pkey PRIMARY KEY (id),
+  CONSTRAINT circle_members_circle_id_fkey FOREIGN KEY (circle_id) REFERENCES public.user_circles(id),
+  CONSTRAINT circle_members_member_user_id_fkey FOREIGN KEY (member_user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.cohort_data (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   cohort_month date NOT NULL,
@@ -311,6 +370,36 @@ CREATE TABLE public.cohort_data (
   revenue_generated numeric DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT cohort_data_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.collaborative_tasks (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  workspace_id uuid,
+  task_title text NOT NULL,
+  description text,
+  assigned_to uuid,
+  created_by uuid,
+  priority text CHECK (priority = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'urgent'::text])),
+  status text DEFAULT 'todo'::text CHECK (status = ANY (ARRAY['todo'::text, 'in_progress'::text, 'in_review'::text, 'completed'::text, 'cancelled'::text])),
+  due_date timestamp with time zone,
+  tags ARRAY,
+  attachments jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT collaborative_tasks_pkey PRIMARY KEY (id),
+  CONSTRAINT collaborative_tasks_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.shared_workspaces(id),
+  CONSTRAINT collaborative_tasks_assigned_to_fkey FOREIGN KEY (assigned_to) REFERENCES public.users(id),
+  CONSTRAINT collaborative_tasks_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
+);
+CREATE TABLE public.collection_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  collection_id uuid NOT NULL,
+  item_type text NOT NULL CHECK (item_type = ANY (ARRAY['product'::text, 'media'::text, 'post'::text, 'url'::text, 'note'::text])),
+  item_id text NOT NULL,
+  notes text,
+  position integer DEFAULT 0,
+  added_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT collection_items_pkey PRIMARY KEY (id),
+  CONSTRAINT collection_items_collection_id_fkey FOREIGN KEY (collection_id) REFERENCES public.user_collections(id)
 );
 CREATE TABLE public.community_comments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -476,6 +565,37 @@ CREATE TABLE public.cron_job_logs (
   completed_at timestamp with time zone,
   CONSTRAINT cron_job_logs_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.crypto_transactions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  wallet_id uuid,
+  transaction_hash text UNIQUE,
+  transaction_type text CHECK (transaction_type = ANY (ARRAY['deposit'::text, 'withdrawal'::text, 'purchase'::text, 'swap'::text, 'stake'::text, 'unstake'::text])),
+  cryptocurrency text NOT NULL,
+  amount numeric NOT NULL,
+  usd_value numeric,
+  fee_amount numeric,
+  status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirming'::text, 'completed'::text, 'failed'::text, 'cancelled'::text])),
+  confirmations integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT crypto_transactions_pkey PRIMARY KEY (id),
+  CONSTRAINT crypto_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
+  CONSTRAINT crypto_transactions_wallet_id_fkey FOREIGN KEY (wallet_id) REFERENCES public.crypto_wallets(id)
+);
+CREATE TABLE public.crypto_wallets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  wallet_address text NOT NULL,
+  blockchain text NOT NULL CHECK (blockchain = ANY (ARRAY['ethereum'::text, 'bitcoin'::text, 'binance_smart_chain'::text, 'polygon'::text, 'solana'::text])),
+  wallet_type text CHECK (wallet_type = ANY (ARRAY['hot'::text, 'cold'::text, 'hardware'::text, 'custodial'::text])),
+  is_primary boolean DEFAULT false,
+  is_verified boolean DEFAULT false,
+  balance_cache jsonb,
+  last_sync_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT crypto_wallets_pkey PRIMARY KEY (id),
+  CONSTRAINT crypto_wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.currency_rates (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   from_currency text NOT NULL,
@@ -484,6 +604,35 @@ CREATE TABLE public.currency_rates (
   source text DEFAULT 'openexchangerates'::text,
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT currency_rates_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.daily_challenges (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  challenge_date date NOT NULL UNIQUE,
+  challenge_type text CHECK (challenge_type = ANY (ARRAY['shopping'::text, 'social'::text, 'content'::text, 'engagement'::text, 'learning'::text])),
+  challenge_title text NOT NULL,
+  challenge_description text NOT NULL,
+  challenge_goal jsonb NOT NULL,
+  reward_points integer DEFAULT 0,
+  reward_badge uuid,
+  difficulty text CHECK (difficulty = ANY (ARRAY['easy'::text, 'medium'::text, 'hard'::text, 'expert'::text])),
+  is_active boolean DEFAULT true,
+  CONSTRAINT daily_challenges_pkey PRIMARY KEY (id),
+  CONSTRAINT daily_challenges_reward_badge_fkey FOREIGN KEY (reward_badge) REFERENCES public.badges(id)
+);
+CREATE TABLE public.daily_health_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  log_date date NOT NULL,
+  weight numeric,
+  steps integer,
+  calories_consumed integer,
+  calories_burned integer,
+  water_intake_ml integer,
+  sleep_hours numeric,
+  mood text CHECK (mood = ANY (ARRAY['excellent'::text, 'good'::text, 'okay'::text, 'bad'::text, 'terrible'::text])),
+  notes text,
+  CONSTRAINT daily_health_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT daily_health_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.dashboard_widgets (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -663,6 +812,22 @@ CREATE TABLE public.error_logs (
   last_seen_at timestamp with time zone DEFAULT now(),
   CONSTRAINT error_logs_pkey PRIMARY KEY (id),
   CONSTRAINT error_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.external_connections (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  service_name text NOT NULL,
+  service_type text CHECK (service_type = ANY (ARRAY['calendar'::text, 'email'::text, 'crm'::text, 'accounting'::text, 'analytics'::text, 'shipping'::text, 'payment'::text])),
+  access_token_encrypted text,
+  refresh_token_encrypted text,
+  token_expires_at timestamp with time zone,
+  scope ARRAY,
+  is_active boolean DEFAULT true,
+  last_sync_at timestamp with time zone,
+  sync_status text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT external_connections_pkey PRIMARY KEY (id),
+  CONSTRAINT external_connections_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.feature_flags (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -868,6 +1033,20 @@ CREATE TABLE public.hashtags (
   is_banned boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT hashtags_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.health_goals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  goal_type text CHECK (goal_type = ANY (ARRAY['weight_loss'::text, 'weight_gain'::text, 'fitness'::text, 'nutrition'::text, 'sleep'::text, 'mental_health'::text])),
+  target_value numeric,
+  current_value numeric,
+  unit text,
+  start_date date DEFAULT CURRENT_DATE,
+  target_date date,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT health_goals_pkey PRIMARY KEY (id),
+  CONSTRAINT health_goals_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.ip_rules (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -1172,6 +1351,16 @@ CREATE TABLE public.media_watch_history (
   CONSTRAINT media_watch_history_pkey PRIMARY KEY (id),
   CONSTRAINT media_watch_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT media_watch_history_media_id_fkey FOREIGN KEY (media_id) REFERENCES public.media_items(id)
+);
+CREATE TABLE public.micro_conversions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  conversion_type text NOT NULL CHECK (conversion_type = ANY (ARRAY['email_signup'::text, 'profile_complete'::text, 'first_search'::text, 'first_product_view'::text, 'first_add_to_cart'::text, 'first_wishlist'::text, 'account_verified'::text, 'first_share'::text, 'first_review'::text, 'newsletter_signup'::text, 'app_download'::text, 'notification_enabled'::text])),
+  value_score integer DEFAULT 1,
+  metadata jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT micro_conversions_pkey PRIMARY KEY (id),
+  CONSTRAINT micro_conversions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.note_collaborators (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -1534,6 +1723,41 @@ CREATE TABLE public.platform_metrics (
   recorded_at timestamp with time zone DEFAULT now(),
   CONSTRAINT platform_metrics_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.podcast_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  episode_id text NOT NULL,
+  progress_seconds integer DEFAULT 0,
+  duration_seconds integer,
+  is_completed boolean DEFAULT false,
+  playback_speed numeric DEFAULT 1.0,
+  last_played_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT podcast_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT podcast_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.podcast_subscriptions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  podcast_id text NOT NULL,
+  auto_download boolean DEFAULT false,
+  notification_enabled boolean DEFAULT true,
+  subscribed_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT podcast_subscriptions_pkey PRIMARY KEY (id),
+  CONSTRAINT podcast_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.price_alerts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  product_id text NOT NULL,
+  target_price numeric NOT NULL,
+  current_price numeric,
+  alert_triggered boolean DEFAULT false,
+  alert_sent_at timestamp with time zone,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT price_alerts_pkey PRIMARY KEY (id),
+  CONSTRAINT price_alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.product_analytics (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   product_id text NOT NULL,
@@ -1742,6 +1966,20 @@ CREATE TABLE public.reactions (
   CONSTRAINT reactions_pkey PRIMARY KEY (id),
   CONSTRAINT reactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.reading_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  content_id uuid NOT NULL,
+  content_type text CHECK (content_type = ANY (ARRAY['blog'::text, 'article'::text, 'ebook'::text, 'guide'::text])),
+  progress_percent integer DEFAULT 0 CHECK (progress_percent >= 0 AND progress_percent <= 100),
+  scroll_position integer DEFAULT 0,
+  time_spent_seconds integer DEFAULT 0,
+  is_completed boolean DEFAULT false,
+  completed_at timestamp with time zone,
+  last_read_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT reading_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT reading_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.return_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -1844,6 +2082,20 @@ CREATE TABLE public.seo_settings (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT seo_settings_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.shared_workspaces (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  owner_id uuid NOT NULL,
+  workspace_name text NOT NULL,
+  workspace_type text CHECK (workspace_type = ANY (ARRAY['personal'::text, 'team'::text, 'family'::text, 'business'::text, 'project'::text])),
+  description text,
+  invite_code text UNIQUE,
+  member_limit integer DEFAULT 5,
+  storage_limit_gb integer DEFAULT 10,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT shared_workspaces_pkey PRIMARY KEY (id),
+  CONSTRAINT shared_workspaces_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.shipment_tracking_events (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   shipment_id uuid NOT NULL,
@@ -1853,6 +2105,33 @@ CREATE TABLE public.shipment_tracking_events (
   event_time timestamp with time zone DEFAULT now(),
   CONSTRAINT shipment_tracking_events_pkey PRIMARY KEY (id),
   CONSTRAINT shipment_tracking_events_shipment_id_fkey FOREIGN KEY (shipment_id) REFERENCES public.order_shipments(id)
+);
+CREATE TABLE public.shopping_list_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  list_id uuid NOT NULL,
+  product_id text NOT NULL,
+  quantity integer DEFAULT 1,
+  priority text CHECK (priority = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'urgent'::text])),
+  is_purchased boolean DEFAULT false,
+  purchased_at timestamp with time zone,
+  notes text,
+  added_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT shopping_list_items_pkey PRIMARY KEY (id),
+  CONSTRAINT shopping_list_items_list_id_fkey FOREIGN KEY (list_id) REFERENCES public.smart_shopping_lists(id)
+);
+CREATE TABLE public.smart_shopping_lists (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  list_name text NOT NULL,
+  list_type text CHECK (list_type = ANY (ARRAY['manual'::text, 'auto_replenish'::text, 'subscription'::text, 'gift_registry'::text, 'project_based'::text])),
+  is_recurring boolean DEFAULT false,
+  recurrence_pattern text,
+  next_purchase_date date,
+  budget_limit numeric,
+  is_shared boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT smart_shopping_lists_pkey PRIMARY KEY (id),
+  CONSTRAINT smart_shopping_lists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.sms_queue (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2128,6 +2407,36 @@ CREATE TABLE public.user_addresses (
   CONSTRAINT user_addresses_pkey PRIMARY KEY (id),
   CONSTRAINT user_addresses_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_ai_interactions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  interaction_type text CHECK (interaction_type = ANY (ARRAY['chat'::text, 'recommendation'::text, 'generation'::text, 'analysis'::text, 'translation'::text, 'summarization'::text])),
+  input_text text,
+  output_text text,
+  model_used text,
+  tokens_used integer,
+  response_time_ms integer,
+  satisfaction_rating integer CHECK (satisfaction_rating >= 1 AND satisfaction_rating <= 5),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_ai_interactions_pkey PRIMARY KEY (id),
+  CONSTRAINT user_ai_interactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_ai_preferences (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  ai_assistant_enabled boolean DEFAULT true,
+  ai_recommendations_enabled boolean DEFAULT true,
+  ai_content_generation_enabled boolean DEFAULT true,
+  preferred_ai_model text DEFAULT 'claude-sonnet'::text,
+  ai_personality text DEFAULT 'balanced'::text CHECK (ai_personality = ANY (ARRAY['professional'::text, 'casual'::text, 'creative'::text, 'balanced'::text, 'technical'::text])),
+  ai_language_preference text DEFAULT 'bn'::text,
+  conversation_memory_enabled boolean DEFAULT true,
+  personalization_level text DEFAULT 'high'::text CHECK (personalization_level = ANY (ARRAY['none'::text, 'low'::text, 'medium'::text, 'high'::text, 'maximum'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_ai_preferences_pkey PRIMARY KEY (id),
+  CONSTRAINT user_ai_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_app_access (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2143,6 +2452,21 @@ CREATE TABLE public.user_app_access (
   CONSTRAINT user_app_access_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_access_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_app_access_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.zipra_apps(id)
+);
+CREATE TABLE public.user_automations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  automation_name text NOT NULL,
+  trigger_type text NOT NULL,
+  trigger_config jsonb NOT NULL,
+  action_type text NOT NULL,
+  action_config jsonb NOT NULL,
+  is_enabled boolean DEFAULT true,
+  run_count integer DEFAULT 0,
+  last_run_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_automations_pkey PRIMARY KEY (id),
+  CONSTRAINT user_automations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_badges (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2180,6 +2504,18 @@ CREATE TABLE public.user_blocks (
   CONSTRAINT user_blocks_blocker_id_fkey FOREIGN KEY (blocker_id) REFERENCES public.users(id),
   CONSTRAINT user_blocks_blocked_id_fkey FOREIGN KEY (blocked_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_carbon_footprint (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  month date NOT NULL,
+  shipping_emissions_kg numeric DEFAULT 0,
+  product_emissions_kg numeric DEFAULT 0,
+  total_emissions_kg numeric DEFAULT 0,
+  offset_purchased_kg numeric DEFAULT 0,
+  trees_equivalent numeric DEFAULT 0,
+  CONSTRAINT user_carbon_footprint_pkey PRIMARY KEY (id),
+  CONSTRAINT user_carbon_footprint_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_carts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2191,6 +2527,45 @@ CREATE TABLE public.user_carts (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_carts_pkey PRIMARY KEY (id),
   CONSTRAINT user_carts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_challenge_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  challenge_id uuid NOT NULL,
+  progress integer DEFAULT 0,
+  is_completed boolean DEFAULT false,
+  completed_at timestamp with time zone,
+  reward_claimed boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_challenge_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT user_challenge_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
+  CONSTRAINT user_challenge_progress_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES public.daily_challenges(id)
+);
+CREATE TABLE public.user_circles (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  circle_name text NOT NULL,
+  description text,
+  is_default boolean DEFAULT false,
+  member_count integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_circles_pkey PRIMARY KEY (id),
+  CONSTRAINT user_circles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_collections (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  collection_name text NOT NULL,
+  description text,
+  cover_image_url text,
+  collection_type text CHECK (collection_type = ANY (ARRAY['products'::text, 'media'::text, 'posts'::text, 'mixed'::text, 'inspiration'::text])),
+  is_public boolean DEFAULT false,
+  is_collaborative boolean DEFAULT false,
+  item_count integer DEFAULT 0,
+  follower_count integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_collections_pkey PRIMARY KEY (id),
+  CONSTRAINT user_collections_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_compare_lists (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2229,9 +2604,11 @@ CREATE TABLE public.user_connected_apps (
   connected_at timestamp with time zone DEFAULT now(),
   disconnected_at timestamp with time zone,
   extra_data jsonb DEFAULT '{}'::jsonb,
+  app_id uuid,
   CONSTRAINT user_connected_apps_pkey PRIMARY KEY (id),
   CONSTRAINT user_connected_apps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
-  CONSTRAINT user_connected_apps_zipra_app_id_fkey FOREIGN KEY (zipra_app_id) REFERENCES public.zipra_apps(id)
+  CONSTRAINT user_connected_apps_zipra_app_id_fkey FOREIGN KEY (zipra_app_id) REFERENCES public.zipra_apps(id),
+  CONSTRAINT user_connected_apps_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.zipra_apps(id)
 );
 CREATE TABLE public.user_connections (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2243,6 +2620,33 @@ CREATE TABLE public.user_connections (
   CONSTRAINT user_connections_pkey PRIMARY KEY (id),
   CONSTRAINT user_connections_requester_id_fkey FOREIGN KEY (requester_id) REFERENCES public.users(id),
   CONSTRAINT user_connections_addressee_id_fkey FOREIGN KEY (addressee_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_consents (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  consent_type text NOT NULL CHECK (consent_type = ANY (ARRAY['terms_of_service'::text, 'privacy_policy'::text, 'marketing'::text, 'analytics'::text, 'cookies'::text, 'third_party_sharing'::text, 'data_processing'::text, 'age_verification'::text])),
+  version text NOT NULL,
+  is_granted boolean DEFAULT false,
+  granted_at timestamp with time zone,
+  withdrawn_at timestamp with time zone,
+  ip_address inet,
+  user_agent text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_consents_pkey PRIMARY KEY (id),
+  CONSTRAINT user_consents_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_credit_scores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  credit_score integer DEFAULT 500 CHECK (credit_score >= 300 AND credit_score <= 850),
+  payment_history_score integer,
+  purchase_consistency_score integer,
+  account_age_score integer,
+  return_rate_impact integer,
+  last_calculated_at timestamp with time zone DEFAULT now(),
+  calculation_details jsonb,
+  CONSTRAINT user_credit_scores_pkey PRIMARY KEY (id),
+  CONSTRAINT user_credit_scores_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_custom_themes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2307,8 +2711,23 @@ CREATE TABLE public.user_devices (
   is_current boolean DEFAULT false,
   last_used_at timestamp with time zone DEFAULT now(),
   first_seen_at timestamp with time zone DEFAULT now(),
+  last_active timestamp with time zone,
   CONSTRAINT user_devices_pkey PRIMARY KEY (id),
   CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_engagement_scores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  overall_score integer DEFAULT 0 CHECK (overall_score >= 0 AND overall_score <= 100),
+  activity_score integer DEFAULT 0,
+  social_score integer DEFAULT 0,
+  purchase_score integer DEFAULT 0,
+  content_score integer DEFAULT 0,
+  loyalty_score integer DEFAULT 0,
+  last_calculated_at timestamp with time zone DEFAULT now(),
+  calculation_factors jsonb,
+  CONSTRAINT user_engagement_scores_pkey PRIMARY KEY (id),
+  CONSTRAINT user_engagement_scores_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_events (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2472,6 +2891,35 @@ CREATE TABLE public.user_invoices (
   CONSTRAINT user_invoices_pkey PRIMARY KEY (id),
   CONSTRAINT user_invoices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_journeys (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  session_id uuid,
+  journey_type text CHECK (journey_type = ANY (ARRAY['purchase'::text, 'browsing'::text, 'research'::text, 'social'::text, 'support'::text, 'onboarding'::text])),
+  start_page text,
+  end_page text,
+  pages_visited ARRAY,
+  actions_taken jsonb,
+  conversion_achieved boolean DEFAULT false,
+  drop_off_point text,
+  duration_seconds integer,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_journeys_pkey PRIMARY KEY (id),
+  CONSTRAINT user_journeys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_levels (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  current_level integer DEFAULT 1,
+  current_xp integer DEFAULT 0,
+  xp_to_next_level integer DEFAULT 100,
+  total_xp_earned integer DEFAULT 0,
+  level_title text DEFAULT 'Beginner'::text,
+  perks_unlocked jsonb DEFAULT '[]'::jsonb,
+  level_updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_levels_pkey PRIMARY KEY (id),
+  CONSTRAINT user_levels_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_locations (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2485,6 +2933,18 @@ CREATE TABLE public.user_locations (
   recorded_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_locations_pkey PRIMARY KEY (id),
   CONSTRAINT user_locations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_login_methods (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  method text NOT NULL CHECK (method = ANY (ARRAY['password'::text, 'passkey'::text, 'sso'::text, 'oauth'::text, 'magic_link'::text, 'otp'::text, 'biometric'::text])),
+  provider text,
+  is_primary boolean DEFAULT false,
+  is_enabled boolean DEFAULT true,
+  last_used_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_login_methods_pkey PRIMARY KEY (id),
+  CONSTRAINT user_login_methods_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_loyalty_points (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2508,6 +2968,18 @@ CREATE TABLE public.user_loyalty_transactions (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_loyalty_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_loyalty_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_mentions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  content_type text NOT NULL CHECK (content_type = ANY (ARRAY['post'::text, 'comment'::text, 'message'::text, 'review'::text, 'story'::text])),
+  content_id uuid NOT NULL,
+  mentioned_user_id uuid NOT NULL,
+  mentioned_by_user_id uuid NOT NULL,
+  is_read boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_mentions_pkey PRIMARY KEY (id),
+  CONSTRAINT user_mentions_mentioned_user_id_fkey FOREIGN KEY (mentioned_user_id) REFERENCES public.users(id),
+  CONSTRAINT user_mentions_mentioned_by_user_id_fkey FOREIGN KEY (mentioned_by_user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_milestones (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2549,6 +3021,24 @@ CREATE TABLE public.user_notes (
   CONSTRAINT user_notes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_notes_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id)
 );
+CREATE TABLE public.user_notification_settings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  notification_type text NOT NULL CHECK (notification_type = ANY (ARRAY['security_alerts'::text, 'account_activity'::text, 'product_updates'::text, 'newsletter'::text, 'social_activity'::text, 'promotions'::text, 'marketing'::text, 'verification_codes'::text, 'appointments'::text, 'messages'::text, 'mentions'::text, 'likes'::text, 'comments'::text, 'followers'::text, 'order_updates'::text, 'tips_tutorials'::text, 'achievements'::text, 'recommendations'::text])),
+  email_enabled boolean DEFAULT true,
+  sms_enabled boolean DEFAULT false,
+  push_enabled boolean DEFAULT true,
+  in_app_enabled boolean DEFAULT true,
+  whatsapp_enabled boolean DEFAULT false,
+  frequency text DEFAULT 'immediate'::text CHECK (frequency = ANY (ARRAY['immediate'::text, 'daily'::text, 'weekly'::text, 'never'::text])),
+  quiet_hours_enabled boolean DEFAULT false,
+  quiet_hours_start time without time zone,
+  quiet_hours_end time without time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_notification_settings_pkey PRIMARY KEY (id),
+  CONSTRAINT user_notification_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2587,6 +3077,23 @@ CREATE TABLE public.user_onboarding (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_onboarding_pkey PRIMARY KEY (id),
   CONSTRAINT user_onboarding_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_passkeys (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  credential_id text NOT NULL UNIQUE,
+  public_key text NOT NULL,
+  counter bigint DEFAULT 0,
+  device_type text CHECK (device_type = ANY (ARRAY['platform'::text, 'cross-platform'::text])),
+  device_name text,
+  aaguid text,
+  transports ARRAY,
+  is_backup_eligible boolean DEFAULT false,
+  is_backup_state boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  last_used_at timestamp with time zone,
+  CONSTRAINT user_passkeys_pkey PRIMARY KEY (id),
+  CONSTRAINT user_passkeys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_payment_methods (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2668,6 +3175,9 @@ CREATE TABLE public.user_purchases (
   ip_address inet,
   purchased_at timestamp with time zone DEFAULT now(),
   refunded_at timestamp with time zone,
+  is_eco_friendly boolean DEFAULT false,
+  carbon_footprint_kg numeric,
+  sustainability_score integer CHECK (sustainability_score >= 0 AND sustainability_score <= 100),
   CONSTRAINT user_purchases_pkey PRIMARY KEY (id),
   CONSTRAINT user_purchases_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2722,6 +3232,20 @@ CREATE TABLE public.user_reports (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT user_reports_pkey PRIMARY KEY (id),
   CONSTRAINT user_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_reputation (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  reputation_score integer DEFAULT 0,
+  helpful_answers integer DEFAULT 0,
+  quality_reviews integer DEFAULT 0,
+  verified_purchases integer DEFAULT 0,
+  community_contributions integer DEFAULT 0,
+  spam_reports integer DEFAULT 0,
+  level text DEFAULT 'newcomer'::text CHECK (level = ANY (ARRAY['newcomer'::text, 'contributor'::text, 'regular'::text, 'trusted'::text, 'expert'::text, 'legend'::text])),
+  level_updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_reputation_pkey PRIMARY KEY (id),
+  CONSTRAINT user_reputation_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_reviews (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2818,6 +3342,10 @@ CREATE TABLE public.user_sessions (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   expires_at timestamp with time zone NOT NULL,
   last_activity timestamp with time zone NOT NULL DEFAULT now(),
+  device_fingerprint text,
+  is_trusted_device boolean DEFAULT false,
+  user_agent text,
+  browser_fingerprint jsonb,
   CONSTRAINT user_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2889,6 +3417,20 @@ CREATE TABLE public.user_streaks (
   total_checkins integer DEFAULT 0,
   CONSTRAINT user_streaks_pkey PRIMARY KEY (id),
   CONSTRAINT user_streaks_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_subscription_boxes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  box_name text NOT NULL,
+  box_type text CHECK (box_type = ANY (ARRAY['beauty'::text, 'snacks'::text, 'books'::text, 'tech'::text, 'fashion'::text, 'custom'::text])),
+  frequency text CHECK (frequency = ANY (ARRAY['weekly'::text, 'monthly'::text, 'quarterly'::text])),
+  price numeric NOT NULL,
+  preferences jsonb,
+  next_delivery_date date,
+  status text DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'paused'::text, 'cancelled'::text, 'pending'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_subscription_boxes_pkey PRIMARY KEY (id),
+  CONSTRAINT user_subscription_boxes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_subscriptions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -3131,9 +3673,52 @@ CREATE TABLE public.users (
   is_mobile_only boolean DEFAULT false,
   is_desktop_only boolean DEFAULT false,
   two_factor_enabled boolean NOT NULL DEFAULT false,
+  two_factor_method text CHECK (two_factor_method = ANY (ARRAY['totp'::text, 'sms'::text, 'email'::text, 'backup_code'::text])),
   CONSTRAINT users_pkey PRIMARY KEY (id),
   CONSTRAINT users_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES auth.users(id),
   CONSTRAINT users_referred_by_fkey FOREIGN KEY (referred_by) REFERENCES public.users(id)
+);
+CREATE TABLE public.video_calls (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  caller_id uuid NOT NULL,
+  callee_id uuid NOT NULL,
+  call_type text CHECK (call_type = ANY (ARRAY['video'::text, 'audio'::text, 'screen_share'::text])),
+  duration_seconds integer,
+  status text CHECK (status = ANY (ARRAY['completed'::text, 'missed'::text, 'declined'::text, 'failed'::text])),
+  recording_url text,
+  started_at timestamp with time zone DEFAULT now(),
+  ended_at timestamp with time zone,
+  CONSTRAINT video_calls_pkey PRIMARY KEY (id),
+  CONSTRAINT video_calls_caller_id_fkey FOREIGN KEY (caller_id) REFERENCES public.users(id),
+  CONSTRAINT video_calls_callee_id_fkey FOREIGN KEY (callee_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.virtual_try_on_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  product_id text NOT NULL,
+  try_on_type text CHECK (try_on_type = ANY (ARRAY['ar_furniture'::text, 'ar_fashion'::text, 'vr_room'::text, 'color_visualizer'::text, '3d_model'::text])),
+  image_url text,
+  feedback text,
+  did_purchase boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT virtual_try_on_history_pkey PRIMARY KEY (id),
+  CONSTRAINT virtual_try_on_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.voice_messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  sender_id uuid NOT NULL,
+  receiver_id uuid,
+  conversation_id uuid,
+  audio_url text NOT NULL,
+  duration_seconds integer,
+  transcript text,
+  is_transcribed boolean DEFAULT false,
+  is_played boolean DEFAULT false,
+  played_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT voice_messages_pkey PRIMARY KEY (id),
+  CONSTRAINT voice_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id),
+  CONSTRAINT voice_messages_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.webhooks (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -3169,6 +3754,17 @@ CREATE TABLE public.whatsapp_queue (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT whatsapp_queue_pkey PRIMARY KEY (id),
   CONSTRAINT whatsapp_queue_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.workspace_members (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  workspace_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  role text DEFAULT 'member'::text CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'editor'::text, 'viewer'::text, 'guest'::text])),
+  permissions jsonb DEFAULT '{"read": true, "write": false, "delete": false}'::jsonb,
+  joined_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT workspace_members_pkey PRIMARY KEY (id),
+  CONSTRAINT workspace_members_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.shared_workspaces(id),
+  CONSTRAINT workspace_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.zipra_apps (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
