@@ -30,6 +30,8 @@ const TwoFactorSetupPage = React.lazy(() => import('./pages/TwoFactorSetupPage')
 const DevicesPage = React.lazy(() => import('./pages/DevicesPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const SecuritySettingsPage = React.lazy(() => import('./pages/SecuritySettingsPage'));
+const DeviceManagementPage = React.lazy(() => import('./pages/DeviceManagementPage'));
+const PrivacySettingsPage = React.lazy(() => import('./pages/PrivacySettingsPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -278,6 +280,8 @@ const App: React.FC = () => {
           <Route path="/security/devices" element={<DevicesPage />} />
           <Route path="/account/profile" element={<ProfilePage />} />
                     <Route path="/account/security" element={<SecuritySettingsPage />} />
+                              <Route path="/account/devices" element={<DeviceManagementPage />} />
+                                        <Route path="/account/privacy" element={<PrivacySettingsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
