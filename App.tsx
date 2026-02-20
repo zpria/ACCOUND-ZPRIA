@@ -32,6 +32,7 @@ const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const SecuritySettingsPage = React.lazy(() => import('./pages/SecuritySettingsPage'));
 const DeviceManagementPage = React.lazy(() => import('./pages/DeviceManagementPage'));
 const PrivacySettingsPage = React.lazy(() => import('./pages/PrivacySettingsPage'));
+const NotificationPreferencesPage = React.lazy(() => import('./pages/NotificationPreferencesPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -282,6 +283,7 @@ const App: React.FC = () => {
                     <Route path="/account/security" element={<SecuritySettingsPage />} />
                               <Route path="/account/devices" element={<DeviceManagementPage />} />
                                         <Route path="/account/privacy" element={<PrivacySettingsPage />} />
+                                                  <Route path="/account/notifications" element={<NotificationPreferencesPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
