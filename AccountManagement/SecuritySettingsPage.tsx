@@ -1,12 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Smartphone, Key, History, AlertTriangle, ChevronLeft, Eye, EyeOff, Save, Check, X } from 'lucide-react';
+import { Shield, Lock, Smartphone, Key, History, AlertTriangle, ChevronLeft, Eye, EyeOff, Save, Check, X, Mail, Bell, Smartphone as PhoneIcon, MessageSquare } from 'lucide-react';
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 
 interface SecuritySettings {
   two_factor_enabled: boolean;
+  login_notify_every_login: boolean;
+  login_notify_new_device_only: boolean;
+  login_notify_via_email: boolean;
+  login_notify_via_sms: boolean;
+  login_notify_via_push: boolean;
+  password_change_notify: boolean;
+  email_change_notify: boolean;
+  phone_change_notify: boolean;
 }
 
 interface LoginHistoryItem {
@@ -26,10 +33,18 @@ const SecuritySettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'password' | '2fa' | 'history'>('password');
+  const [activeTab, setActiveTab] = useState<'password' | '2fa' | 'notifications' | 'history'>('password');
   
   const [settings, setSettings] = useState<SecuritySettings>({
-    two_factor_enabled: false
+    two_factor_enabled: false,
+    login_notify_every_login: true,
+    login_notify_new_device_only: false,
+    login_notify_via_email: true,
+    login_notify_via_sms: false,
+    login_notify_via_push: true,
+    password_change_notify: true,
+    email_change_notify: true,
+    phone_change_notify: true
   });
 
   const [loginHistory, setLoginHistory] = useState<LoginHistoryItem[]>([]);
@@ -72,7 +87,7 @@ const SecuritySettingsPage: React.FC = () => {
       // Fetch security settings
       const { data, error } = await supabase
         .from('users')
-        .select('two_factor_enabled')
+        .select('two_factor_enabled, login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
 
@@ -80,7 +95,15 @@ const SecuritySettingsPage: React.FC = () => {
 
       if (data) {
         setSettings({
-          two_factor_enabled: data.two_factor_enabled || false
+          two_factor_enabled: data.two_factor_enabled || false,
+          login_notify_every_login: data.login_notify_every_login !== undefined ? data.login_notify_every_login : true,
+          login_notify_new_device_only: data.login_notify_new_device_only !== undefined ? data.login_notify_new_device_only : false,
+          login_notify_via_email: data.login_notify_via_email !== undefined ? data.login_notify_via_email : true,
+          login_notify_via_sms: data.login_notify_via_sms !== undefined ? data.login_notify_via_sms : false,
+          login_notify_via_push: data.login_notify_via_push !== undefined ? data.login_notify_via_push : true,
+          password_change_notify: data.password_change_notify !== undefined ? data.password_change_notify : true,
+          email_change_notify: data.email_change_notify !== undefined ? data.email_change_notify : true,
+          phone_change_notify: data.phone_change_notify !== undefined ? data.phone_change_notify : true
         });
       }
 
@@ -178,6 +201,7 @@ const SecuritySettingsPage: React.FC = () => {
         .from('users')
         .update({
           password_hash: newHash,
+          last_password_change: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', userData.id);
@@ -235,6 +259,7 @@ const SecuritySettingsPage: React.FC = () => {
   const tabs = [
     { id: 'password', label: 'Password', icon: Lock },
     { id: '2fa', label: 'Two-Factor Auth', icon: Smartphone },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'history', label: 'Login History', icon: History }
   ];
 
@@ -455,6 +480,174 @@ const SecuritySettingsPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Login Notifications Settings */}
+              <div className="pt-6">
+                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-4">Login Notifications</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-[#1d1d1f]">Notify on every login</h4>
+                        <p className="text-sm text-[#86868b]">Send notification for every sign-in</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.login_notify_every_login}
+                        onChange={(e) => handleSettingChange('login_notify_every_login', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-[#1d1d1f]">Notify only for new devices</h4>
+                        <p className="text-sm text-[#86868b]">Only send notification for unrecognized devices</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.login_notify_new_device_only}
+                        onChange={(e) => handleSettingChange('login_notify_new_device_only', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-[#1d1d1f]">Email notifications</h4>
+                        <p className="text-sm text-[#86868b]">Send security alerts via email</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.login_notify_via_email}
+                        onChange={(e) => handleSettingChange('login_notify_via_email', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <PhoneIcon className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-[#1d1d1f]">SMS notifications</h4>
+                        <p className="text-sm text-[#86868b]">Send security alerts via SMS</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.login_notify_via_sms}
+                        onChange={(e) => handleSettingChange('login_notify_via_sms', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Bell className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-[#1d1d1f]">Push notifications</h4>
+                        <p className="text-sm text-[#86868b]">Send security alerts via push notification</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.login_notify_via_push}
+                        onChange={(e) => handleSettingChange('login_notify_via_push', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notifications' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-2">Account Notifications</h2>
+                <p className="text-[#86868b]">Manage notifications for account changes</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <h4 className="font-medium text-[#1d1d1f]">Password change notifications</h4>
+                      <p className="text-sm text-[#86868b]">Notify when your password is changed</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.password_change_notify}
+                      onChange={(e) => handleSettingChange('password_change_notify', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <h4 className="font-medium text-[#1d1d1f]">Email change notifications</h4>
+                      <p className="text-sm text-[#86868b]">Notify when your email is changed</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.email_change_notify}
+                      onChange={(e) => handleSettingChange('email_change_notify', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <PhoneIcon className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <h4 className="font-medium text-[#1d1d1f]">Phone change notifications</h4>
+                      <p className="text-sm text-[#86868b]">Notify when your phone number is changed</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.phone_change_notify}
+                      onChange={(e) => handleSettingChange('phone_change_notify', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0071e3]"></div>
+                  </label>
+                </div>
+              </div>
             </div>
           )}
 

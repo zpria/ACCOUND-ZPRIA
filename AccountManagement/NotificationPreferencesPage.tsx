@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Mail, MessageSquare, Smartphone, ChevronLeft, Check, X, Volume2, Megaphone, Shield, ShoppingBag, Heart, Star, Zap } from 'lucide-react';
@@ -44,6 +43,16 @@ interface NotificationSettings {
   
   // Frequency
   email_frequency: 'immediate' | 'daily' | 'weekly';
+  
+  // Login notification settings (stored in users table)
+  login_notify_every_login: boolean;
+  login_notify_new_device_only: boolean;
+  login_notify_via_email: boolean;
+  login_notify_via_sms: boolean;
+  login_notify_via_push: boolean;
+  password_change_notify: boolean;
+  email_change_notify: boolean;
+  phone_change_notify: boolean;
 }
 
 const NotificationPreferencesPage: React.FC = () => {
@@ -52,7 +61,7 @@ const NotificationPreferencesPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'email' | 'sms' | 'push' | 'inapp'>('email');
+  const [activeTab, setActiveTab] = useState<'email' | 'sms' | 'push' | 'inapp' | 'login'>('email');
   
   const [settings, setSettings] = useState<NotificationSettings>({
     email_marketing: false,
@@ -86,7 +95,17 @@ const NotificationPreferencesPage: React.FC = () => {
     quiet_hours_start: '22:00',
     quiet_hours_end: '08:00',
     
-    email_frequency: 'immediate'
+    email_frequency: 'immediate',
+    
+    // Login notification defaults
+    login_notify_every_login: true,
+    login_notify_new_device_only: false,
+    login_notify_via_email: true,
+    login_notify_via_sms: false,
+    login_notify_via_push: true,
+    password_change_notify: true,
+    email_change_notify: true,
+    phone_change_notify: true
   });
 
   useEffect(() => {
@@ -103,50 +122,67 @@ const NotificationPreferencesPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
-      const { data, error } = await supabase
+      // Load notification settings from user_notification_settings table
+      const { data: notificationData, error: notificationError } = await supabase
         .from('user_notification_settings')
         .select('*')
         .eq('user_id', userData.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      // Load login notification settings from users table
+      const { data: userSettingsData, error: userSettingsError } = await supabase
+        .from('users')
+        .select('login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
+        .eq('id', userData.id)
+        .single();
 
-      if (data) {
-        setSettings({
-          email_marketing: data.email_marketing === true,
-          email_product_updates: data.email_product_updates !== false,
-          email_newsletter: data.email_newsletter !== false,
-          email_security_alerts: data.email_security_alerts !== false,
-          email_account_activity: data.email_account_activity !== false,
-          email_promotions: data.email_promotions === true,
-          email_social: data.email_social !== false,
-          
-          sms_security_alerts: data.sms_security_alerts !== false,
-          sms_otp: data.sms_otp !== false,
-          sms_marketing: data.sms_marketing === true,
-          sms_appointments: data.sms_appointments !== false,
-          
-          push_all: data.push_all !== false,
-          push_messages: data.push_messages !== false,
-          push_mentions: data.push_mentions !== false,
-          push_likes: data.push_likes !== false,
-          push_comments: data.push_comments !== false,
-          push_follows: data.push_follows !== false,
-          push_order_updates: data.push_order_updates !== false,
-          push_promotions: data.push_promotions === true,
-          
-          inapp_all: data.inapp_all !== false,
-          inapp_tips: data.inapp_tips !== false,
-          inapp_achievements: data.inapp_achievements !== false,
-          inapp_recommendations: data.inapp_recommendations !== false,
-          
-          quiet_hours_enabled: data.quiet_hours_enabled === true,
-          quiet_hours_start: data.quiet_hours_start || '22:00',
-          quiet_hours_end: data.quiet_hours_end || '08:00',
-          
-          email_frequency: data.email_frequency || 'immediate'
-        });
-      }
+      // Combine both sets of settings
+      const combinedSettings: NotificationSettings = {
+        email_marketing: notificationData?.email_marketing ?? false,
+        email_product_updates: notificationData?.email_product_updates ?? true,
+        email_newsletter: notificationData?.email_newsletter ?? true,
+        email_security_alerts: notificationData?.email_security_alerts ?? true,
+        email_account_activity: notificationData?.email_account_activity ?? true,
+        email_promotions: notificationData?.email_promotions ?? false,
+        email_social: notificationData?.email_social ?? true,
+        
+        sms_security_alerts: notificationData?.sms_security_alerts ?? true,
+        sms_otp: notificationData?.sms_otp ?? true,
+        sms_marketing: notificationData?.sms_marketing ?? false,
+        sms_appointments: notificationData?.sms_appointments ?? true,
+        
+        push_all: notificationData?.push_all ?? true,
+        push_messages: notificationData?.push_messages ?? true,
+        push_mentions: notificationData?.push_mentions ?? true,
+        push_likes: notificationData?.push_likes ?? true,
+        push_comments: notificationData?.push_comments ?? true,
+        push_follows: notificationData?.push_follows ?? true,
+        push_order_updates: notificationData?.push_order_updates ?? true,
+        push_promotions: notificationData?.push_promotions ?? false,
+        
+        inapp_all: notificationData?.inapp_all ?? true,
+        inapp_tips: notificationData?.inapp_tips ?? true,
+        inapp_achievements: notificationData?.inapp_achievements ?? true,
+        inapp_recommendations: notificationData?.inapp_recommendations ?? true,
+        
+        quiet_hours_enabled: notificationData?.quiet_hours_enabled ?? false,
+        quiet_hours_start: notificationData?.quiet_hours_start ?? '22:00',
+        quiet_hours_end: notificationData?.quiet_hours_end ?? '08:00',
+        
+        email_frequency: notificationData?.email_frequency ?? 'immediate',
+        
+        // Login notification settings from users table
+        login_notify_every_login: userSettingsData?.login_notify_every_login ?? true,
+        login_notify_new_device_only: userSettingsData?.login_notify_new_device_only ?? false,
+        login_notify_via_email: userSettingsData?.login_notify_via_email ?? true,
+        login_notify_via_sms: userSettingsData?.login_notify_via_sms ?? false,
+        login_notify_via_push: userSettingsData?.login_notify_via_push ?? true,
+        password_change_notify: userSettingsData?.password_change_notify ?? true,
+        email_change_notify: userSettingsData?.email_change_notify ?? true,
+        phone_change_notify: userSettingsData?.phone_change_notify ?? true
+      };
+
+      setSettings(combinedSettings);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -164,18 +200,31 @@ const NotificationPreferencesPage: React.FC = () => {
       // Update local state immediately
       setSettings(prev => ({ ...prev, [setting]: value }));
 
-      // Upsert to database
-      const { error } = await supabase
-        .from('user_notification_settings')
-        .upsert({
-          user_id: userData.id,
-          [setting]: value,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+      // Determine which table to update based on the setting
+      if (['login_notify_every_login', 'login_notify_new_device_only', 'login_notify_via_email', 
+           'login_notify_via_sms', 'login_notify_via_push', 'password_change_notify', 
+           'email_change_notify', 'phone_change_notify'].includes(setting)) {
+        // Update users table for login notification settings
+        const { error } = await supabase
+          .from('users')
+          .update({ [setting]: value })
+          .eq('id', userData.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Update user_notification_settings table for other settings
+        const { error } = await supabase
+          .from('user_notification_settings')
+          .upsert({
+            user_id: userData.id,
+            [setting]: value,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (error) throw error;
+      }
 
       setSuccess('Notification preference updated');
       setTimeout(() => setSuccess(''), 3000);
@@ -213,6 +262,7 @@ const NotificationPreferencesPage: React.FC = () => {
 
       setSettings(prev => ({ ...prev, ...updates }));
 
+      // Update user_notification_settings table
       const { error } = await supabase
         .from('user_notification_settings')
         .upsert({
@@ -275,7 +325,8 @@ const NotificationPreferencesPage: React.FC = () => {
     { id: 'email', label: 'Email', icon: Mail },
     { id: 'sms', label: 'SMS', icon: Smartphone },
     { id: 'push', label: 'Push', icon: Bell },
-    { id: 'inapp', label: 'In-App', icon: Megaphone }
+    { id: 'inapp', label: 'In-App', icon: Megaphone },
+    { id: 'login', label: 'Login & Security', icon: Shield }
   ];
 
   return (
@@ -640,6 +691,76 @@ const NotificationPreferencesPage: React.FC = () => {
                   icon={Heart}
                   disabled={!settings.inapp_all}
                 />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'login' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-2">Login & Security Notifications</h2>
+                <p className="text-[#86868b]">Manage notifications for account security events</p>
+              </div>
+
+              <div className="space-y-3">
+                <ToggleItem
+                  label="Notify on every login"
+                  description="Send notification for every sign-in"
+                  checked={settings.login_notify_every_login}
+                  onChange={() => handleSettingChange('login_notify_every_login', !settings.login_notify_every_login)}
+                  icon={Zap}
+                />
+                <ToggleItem
+                  label="Notify only for new devices"
+                  description="Only send notification for unrecognized devices"
+                  checked={settings.login_notify_new_device_only}
+                  onChange={() => handleSettingChange('login_notify_new_device_only', !settings.login_notify_new_device_only)}
+                  icon={Smartphone}
+                />
+                <ToggleItem
+                  label="Email notifications"
+                  description="Send security alerts via email"
+                  checked={settings.login_notify_via_email}
+                  onChange={() => handleSettingChange('login_notify_via_email', !settings.login_notify_via_email)}
+                  icon={Mail}
+                />
+                <ToggleItem
+                  label="SMS notifications"
+                  description="Send security alerts via SMS"
+                  checked={settings.login_notify_via_sms}
+                  onChange={() => handleSettingChange('login_notify_via_sms', !settings.login_notify_via_sms)}
+                  icon={MessageSquare}
+                />
+                <ToggleItem
+                  label="Push notifications"
+                  description="Send security alerts via push notification"
+                  checked={settings.login_notify_via_push}
+                  onChange={() => handleSettingChange('login_notify_via_push', !settings.login_notify_via_push)}
+                  icon={Bell}
+                />
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <ToggleItem
+                    label="Password change notifications"
+                    description="Notify when your password is changed"
+                    checked={settings.password_change_notify}
+                    onChange={() => handleSettingChange('password_change_notify', !settings.password_change_notify)}
+                    icon={Shield}
+                  />
+                  <ToggleItem
+                    label="Email change notifications"
+                    description="Notify when your email is changed"
+                    checked={settings.email_change_notify}
+                    onChange={() => handleSettingChange('email_change_notify', !settings.email_change_notify)}
+                    icon={Mail}
+                  />
+                  <ToggleItem
+                    label="Phone change notifications"
+                    description="Notify when your phone number is changed"
+                    checked={settings.phone_change_notify}
+                    onChange={() => handleSettingChange('phone_change_notify', !settings.phone_change_notify)}
+                    icon={Smartphone}
+                  />
+                </div>
               </div>
             </div>
           )}
