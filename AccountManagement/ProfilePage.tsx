@@ -5,6 +5,7 @@ import { User, Mail, Phone, MapPin, Calendar, Briefcase, GraduationCap, Heart, C
 import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
+import { updateUserProfile } from '../services/userAccountService';
 
 interface UserProfile {
   id: string;
@@ -116,31 +117,31 @@ const ProfilePage: React.FC = () => {
     setSuccess('');
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          address: profile.address,
-          dob: profile.dob,
-          gender: profile.gender,
-          bio: profile.bio,
-          occupation: profile.occupation,
-          education: profile.education,
-          marital_status: profile.marital_status,
-          has_children: profile.has_children,
-          monthly_income_range: profile.monthly_income_range,
-          city: profile.city,
-          country: profile.country,
-          postal_code: profile.postal_code,
-          language: profile.language,
-          religion: profile.religion,
-          lifestyle: profile.lifestyle,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', profile.id);
+      // Use the user account service to update profile
+      const updateSuccess = await updateUserProfile(profile.id, {
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        address: profile.address,
+        dob: profile.dob,
+        gender: profile.gender,
+        bio: profile.bio,
+        occupation: profile.occupation,
+        education: profile.education,
+        maritalStatus: profile.marital_status,
+        hasChildren: profile.has_children,
+        monthlyIncomeRange: profile.monthly_income_range,
+        city: profile.city,
+        country: profile.country,
+        postalCode: profile.postal_code,
+        language: profile.language,
+        religion: profile.religion,
+        lifestyle: profile.lifestyle,
+        updatedAt: new Date().toISOString()
+      });
 
-      if (error) throw error;
+      if (!updateSuccess) {
+        throw new Error('Failed to update profile');
+      }
 
       setSuccess('Profile updated successfully');
       setTimeout(() => setSuccess(''), 3000);

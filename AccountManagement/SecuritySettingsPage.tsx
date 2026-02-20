@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, Smartphone, Key, History, AlertTriangle, ChevronLeft, Eye, EyeOff, Save, Check, X, Mail, Bell, Smartphone as PhoneIcon, MessageSquare } from 'lucide-react';
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { updateUserProfile } from '../services/userAccountService';
 
 interface SecuritySettings {
   two_factor_enabled: boolean;
+  two_factor_method?: string;
   login_notify_every_login: boolean;
   login_notify_new_device_only: boolean;
   login_notify_via_email: boolean;
@@ -37,6 +39,7 @@ const SecuritySettingsPage: React.FC = () => {
   
   const [settings, setSettings] = useState<SecuritySettings>({
     two_factor_enabled: false,
+    two_factor_method: '',
     login_notify_every_login: true,
     login_notify_new_device_only: false,
     login_notify_via_email: true,
@@ -84,10 +87,10 @@ const SecuritySettingsPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
-      // Fetch security settings
+      // Fetch security settings using the user account service
       const { data, error } = await supabase
         .from('users')
-        .select('two_factor_enabled, login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
+        .select('two_factor_enabled, two_factor_method, login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
 
@@ -96,6 +99,7 @@ const SecuritySettingsPage: React.FC = () => {
       if (data) {
         setSettings({
           two_factor_enabled: data.two_factor_enabled || false,
+          two_factor_method: data.two_factor_method || '',
           login_notify_every_login: data.login_notify_every_login !== undefined ? data.login_notify_every_login : true,
           login_notify_new_device_only: data.login_notify_new_device_only !== undefined ? data.login_notify_new_device_only : false,
           login_notify_via_email: data.login_notify_via_email !== undefined ? data.login_notify_via_email : true,
@@ -226,12 +230,48 @@ const SecuritySettingsPage: React.FC = () => {
       
       const userData = JSON.parse(savedUser);
 
-      const { error } = await supabase
-        .from('users')
-        .update({ [setting]: value })
-        .eq('id', userData.id);
+      // Map the setting to the appropriate field in the UserProfile interface
+      const updateFields: any = {};
+      switch (setting) {
+        case 'two_factor_enabled':
+          updateFields.twoFactorEnabled = value;
+          break;
+        case 'two_factor_method':
+          updateFields.twoFactorMethod = value;
+          break;
+        case 'login_notify_every_login':
+          updateFields.loginNotifyEveryLogin = value;
+          break;
+        case 'login_notify_new_device_only':
+          updateFields.loginNotifyNewDeviceOnly = value;
+          break;
+        case 'login_notify_via_email':
+          updateFields.loginNotifyViaEmail = value;
+          break;
+        case 'login_notify_via_sms':
+          updateFields.loginNotifyViaSms = value;
+          break;
+        case 'login_notify_via_push':
+          updateFields.loginNotifyViaPush = value;
+          break;
+        case 'password_change_notify':
+          updateFields.passwordChangeNotify = value;
+          break;
+        case 'email_change_notify':
+          updateFields.emailChangeNotify = value;
+          break;
+        case 'phone_change_notify':
+          updateFields.phoneChangeNotify = value;
+          break;
+        default:
+          updateFields[setting] = value;
+      }
 
-      if (error) throw error;
+      const updateSuccess = await updateUserProfile(userData.id, updateFields);
+
+      if (!updateSuccess) {
+        throw new Error('Failed to update security settings');
+      }
 
       setSettings(prev => ({ ...prev, [setting]: value }));
       setSuccess('Setting updated successfully');

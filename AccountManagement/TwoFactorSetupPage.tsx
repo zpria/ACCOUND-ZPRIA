@@ -4,6 +4,7 @@ import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Shield, Smartphone, Mail, Key, ChevronRight, Check, AlertCircle, Copy, RefreshCw } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
+import { updateUserProfile } from '../services/userAccountService';
 
 const TwoFactorSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,12 +34,13 @@ const TwoFactorSetupPage: React.FC = () => {
 
       const { data } = await supabase
         .from('users')
-        .select('two_factor_enabled')
+        .select('two_factor_enabled, two_factor_method')
         .eq('id', user.id)
         .single();
 
       if (data?.two_factor_enabled) {
         // Already enabled, show management options
+        setSelectedMethod(data.two_factor_method || '');
         setStep('complete');
       }
     } catch (err) {
@@ -50,11 +52,18 @@ const TwoFactorSetupPage: React.FC = () => {
 
   const methods = [
     {
+      id: 'authenticator',
+      title: 'Authenticator App',
+      description: 'Use Google Authenticator, Authy, or similar app',
+      icon: Key,
+      recommended: true,
+    },
+    {
       id: 'sms',
       title: 'Text Message (SMS)',
       description: 'Receive a code via SMS to your phone',
       icon: Smartphone,
-      recommended: true,
+      recommended: false,
     },
     {
       id: 'email',
@@ -63,18 +72,46 @@ const TwoFactorSetupPage: React.FC = () => {
       icon: Mail,
       recommended: false,
     },
-    {
-      id: 'authenticator',
-      title: 'Authenticator App',
-      description: 'Use Google Authenticator or similar app',
-      icon: Key,
-      recommended: true,
-    },
   ];
 
-  const handleMethodSelect = (methodId: string) => {
+  const handleMethodSelect = async (methodId: string) => {
     setSelectedMethod(methodId);
-    setStep(methodId === 'sms' ? 'sms-setup' : methodId === 'email' ? 'email-setup' : 'app-setup');
+    
+    if (methodId === 'sms') {
+      setStep('sms-setup');
+    } else if (methodId === 'email') {
+      // Load user's email from database
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('users')
+            .select('email')
+            .eq('id', user.id)
+            .single();
+          
+          if (data) {
+            setEmail(data.email);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading email:', err);
+      }
+      setStep('email-setup');
+    } else {
+      // For authenticator app, generate a secret key
+      setSecretKey(generateSecretKey());
+      setStep('app-setup');
+    }
+  };
+
+  const generateSecretKey = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let result = '';
+    for (let i = 0; i < 16; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   };
 
   const generateBackupCodes = () => {
@@ -102,14 +139,16 @@ const TwoFactorSetupPage: React.FC = () => {
       // Simulate verification
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Save 2FA settings
-      await supabase
-        .from('users')
-        .update({
-          two_factor_enabled: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+      // Save 2FA settings using the user account service
+      const updateSuccess = await updateUserProfile(user.id, {
+        twoFactorEnabled: true,
+        twoFactorMethod: selectedMethod === 'authenticator' ? 'totp' : selectedMethod,
+        updatedAt: new Date().toISOString()
+      });
+
+      if (!updateSuccess) {
+        throw new Error('Failed to update 2FA settings');
+      }
 
       setStep('complete');
     } catch (err: any) {
@@ -213,6 +252,96 @@ const TwoFactorSetupPage: React.FC = () => {
           onClick={generateBackupCodes}
           disabled={phoneNumber.length < 10}
           className="w-full py-4 bg-[#0071e3] text-white rounded-xl font-semibold text-[17px] hover:bg-[#0077ed] transition-colors disabled:opacity-50"
+        >
+          Send Verification Code
+        </button>
+      </div>
+    </>
+  );
+
+  const renderAppSetup = () => (
+    <>
+      <div className="text-center mb-10">
+        <h1 className="text-[32px] font-semibold text-[#1d1d1f] tracking-tight mb-4">
+          Set Up Authenticator App
+        </h1>
+        <p className="text-[17px] text-[#86868b]">
+          Scan the QR code with your authenticator app
+        </p>
+      </div>
+
+      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200">
+        <div className="text-center mb-6">
+          <div className="bg-gray-200 border-2 border-dashed rounded-xl w-48 h-48 mx-auto flex items-center justify-center">
+            <span className="text-gray-500">QR Code Placeholder</span>
+          </div>
+          <p className="mt-4 text-sm text-gray-600">
+            Can't scan? Enter this secret key manually:
+          </p>
+          <div className="mt-2 p-3 bg-gray-100 rounded-lg font-mono text-sm">
+            {secretKey || 'ABCDEF1234567890'}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
+            Enter 6-digit code from your app
+          </label>
+          <input
+            type="text"
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value)}
+            placeholder="123456"
+            maxLength={6}
+            className="w-full px-4 py-4 bg-[#f5f5f7] rounded-xl text-[17px] border-0 focus:ring-2 focus:ring-[#0071e3] text-center text-xl tracking-widest"
+          />
+        </div>
+
+        <button
+          onClick={generateBackupCodes}
+          disabled={otpCode.length !== 6}
+          className="w-full py-4 bg-[#0071e3] text-white rounded-xl font-semibold text-[17px] hover:bg-[#0077ed] transition-colors disabled:opacity-50"
+        >
+          Verify and Continue
+        </button>
+      </div>
+
+      <div className="mt-6 text-sm text-gray-600">
+        <h4 className="font-semibold mb-2">Supported Apps:</h4>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Google Authenticator (iOS/Android)</li>
+          <li>Microsoft Authenticator (iOS/Android)</li>
+          <li>Authy (iOS/Android)</li>
+          <li>LastPass Authenticator (iOS/Android)</li>
+        </ul>
+      </div>
+    </>
+  );
+
+  const renderEmailSetup = () => (
+    <>
+      <div className="text-center mb-10">
+        <h1 className="text-[32px] font-semibold text-[#1d1d1f] tracking-tight mb-4">
+          Confirm Your Email
+        </h1>
+        <p className="text-[17px] text-[#86868b]">
+          A verification code will be sent to your email address
+        </p>
+      </div>
+
+      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200">
+        <div className="mb-6">
+          <label className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
+            Your Email Address
+          </label>
+          <div className="px-4 py-4 bg-[#f5f5f7] rounded-xl text-[17px] border-0">
+            {email || 'Loading...'}
+          </div>
+        </div>
+
+        <button
+          onClick={generateBackupCodes}
+          className="w-full py-4 bg-[#0071e3] text-white rounded-xl font-semibold text-[17px] hover:bg-[#0077ed] transition-colors"
         >
           Send Verification Code
         </button>
@@ -332,6 +461,8 @@ const TwoFactorSetupPage: React.FC = () => {
 
           {step === 'methods' && renderMethodsStep()}
           {step === 'sms-setup' && renderSMSSetup()}
+          {step === 'email-setup' && renderEmailSetup()}
+          {step === 'app-setup' && renderAppSetup()}
           {step === 'backup-codes' && renderBackupCodes()}
           {step === 'complete' && renderComplete()}
         </div>
