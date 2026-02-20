@@ -20,6 +20,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastMessageTime, setLastMessageTime] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load chat history
@@ -100,6 +102,16 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
+    // Rate limiting: 1 second between messages
+    const now = Date.now();
+    if (now - lastMessageTime < 1000) {
+      setError('Please wait a moment before sending another message');
+      return;
+    }
+
+    setError(null);
+    setLastMessageTime(now);
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -113,12 +125,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
 
     try {
       // Save user message
-      await supabase.from('ai_chat_history').insert([{
+      const { error: saveError } = await supabase.from('ai_chat_history').insert([{
         user_id: userId,
         role: 'user',
         content: userMessage.content,
         created_at: userMessage.timestamp.toISOString()
       }]);
+
+      if (saveError) throw saveError;
 
       // Generate AI response
       const aiContent = await generateAIResponse(userMessage.content);
@@ -133,14 +147,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
       setMessages(prev => [...prev, aiMessage]);
 
       // Save AI message
-      await supabase.from('ai_chat_history').insert([{
+      const { error: aiSaveError } = await supabase.from('ai_chat_history').insert([{
         user_id: userId,
         role: 'assistant',
         content: aiContent,
         created_at: aiMessage.timestamp.toISOString()
       }]);
-    } catch (err) {
+
+      if (aiSaveError) throw aiSaveError;
+    } catch (err: any) {
       console.error('Failed to send message:', err);
+      setError(err.message || 'Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -250,13 +267,20 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="px-4 py-2 bg-red-50 border-t border-red-100">
+              <p className="text-xs text-red-600 text-center">{error}</p>
+            </div>
+          )}
+
           {/* Input */}
           <div className="p-4 border-t border-gray-100">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); setError(null); }}
                 onKeyPress={handleKeyPress}
                 placeholder="আপনার প্রশ্ন লিখুন..."
                 className="flex-1 px-4 py-3 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"

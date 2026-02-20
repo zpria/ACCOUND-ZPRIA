@@ -325,7 +325,7 @@ const NotificationPreferencesPage: React.FC = () => {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium whitespace-nowrap transition-all ${
                   activeTab === tab.id
                     ? 'bg-[#0071e3] text-white'

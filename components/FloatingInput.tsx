@@ -53,7 +53,7 @@ const FloatingInput: React.FC<Props> = ({
       <div className={containerClasses}>
         {isSelect ? (
           <select
-            {...(props as any)}
+            {...props}
             onFocus={(e) => { setIsFocused(true); props.onFocus?.(e); }}
             onBlur={(e) => { setIsFocused(false); props.onBlur?.(e); }}
             className={inputClasses}
@@ -62,7 +62,7 @@ const FloatingInput: React.FC<Props> = ({
           </select>
         ) : (
           <input
-            {...(props as any)}
+            {...props}
             onFocus={(e) => { setIsFocused(true); props.onFocus?.(e); }}
             onBlur={(e) => { setIsFocused(false); props.onBlur?.(e); }}
             className={inputClasses}

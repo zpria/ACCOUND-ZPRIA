@@ -276,7 +276,7 @@ const ConnectedAppsPage: React.FC = () => {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-3 rounded-full font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-[#0071e3] text-white'

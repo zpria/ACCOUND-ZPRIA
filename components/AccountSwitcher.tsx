@@ -26,6 +26,8 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
   const [isOpen, setIsOpen] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,6 +86,9 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
       return;
     }
 
+    setIsSwitching(true);
+    setSwitchError(null);
+
     try {
       // Log logout for current account
       if (currentUser) {
@@ -139,8 +144,11 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
         setIsOpen(false);
         window.location.reload();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to switch account:', err);
+      setSwitchError(err.message || 'Failed to switch account. Please try again.');
+    } finally {
+      setIsSwitching(false);
     }
   };
 
@@ -200,15 +208,33 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
               <p className="font-semibold text-[#1d1d1f]">{currentUser.email}</p>
             </div>
 
+            {/* Error Message */}
+            {switchError && (
+              <div className="px-4 py-2 bg-red-50 border-b border-red-100">
+                <p className="text-xs text-red-600 text-center">{switchError}</p>
+              </div>
+            )}
+
+            {/* Loading Overlay */}
+            {isSwitching && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-gray-600">Switching...</p>
+                </div>
+              </div>
+            )}
+
             {/* Accounts List */}
             <div className="max-h-80 overflow-y-auto">
               {accounts.map((account) => (
                 <button
                   key={account.id}
                   onClick={() => handleSwitchAccount(account)}
+                  disabled={isSwitching}
                   className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors ${
                     account.is_active ? 'bg-blue-50' : ''
-                  }`}
+                  } ${isSwitching ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"

@@ -137,7 +137,7 @@ const AccountDashboardPage: React.FC = () => {
         cartCount: cartCount || 0,
         activeSubscriptions: activeSubs || 0,
         unreadNotifications: unreadNotifs || 0,
-        loyaltyPoints: wallet?.balance || 0,
+        loyaltyPoints: 0, // TODO: Fetch from user_loyalty_points table
         currentStreak: streak?.current_streak || 0
       });
     } catch (err) {
@@ -332,16 +332,10 @@ const AccountDashboardPage: React.FC = () => {
                       {stats.currentStreak} Day Streak
                     </span>
                   )}
-                  {user?.isSubscriber && (
+                  {stats.activeSubscriptions > 0 && (
                     <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium flex items-center gap-1">
                       <Crown className="w-3 h-3" />
                       Premium
-                    </span>
-                  )}
-                  {user?.isInfluencer && (
-                    <span className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      Influencer
                     </span>
                   )}
                 </div>
