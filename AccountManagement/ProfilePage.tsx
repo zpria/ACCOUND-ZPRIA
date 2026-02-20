@@ -45,8 +45,8 @@ const ProfilePage: React.FC = () => {
     id: '',
     username: '',
     login_id: '',
-    first_name: '',
-    last_name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     mobile: '',
     address: '',
@@ -55,12 +55,12 @@ const ProfilePage: React.FC = () => {
     bio: '',
     occupation: '',
     education: '',
-    marital_status: '',
-    has_children: false,
-    monthly_income_range: '',
+    maritalStatus: '',
+    hasChildren: false,
+    monthlyIncomeRange: '',
     city: '',
     country: '',
-    postal_code: '',
+    postalCode: '',
     language: 'bn',
     religion: '',
     lifestyle: ''
@@ -92,16 +92,30 @@ const ProfilePage: React.FC = () => {
       if (data) {
         setProfile({
           ...profile,
-          ...data,
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
+          id: data.id || '',
+          username: data.username || '',
+          login_id: data.login_id || '',
+          firstName: data.firstName || data.first_name || '',
+          lastName: data.lastName || data.last_name || '',
           email: data.email || '',
           mobile: data.mobile || '',
           address: data.address || '',
           dob: data.dob || '',
           gender: data.gender || '',
-          username: data.username || '',
-          login_id: data.login_id || ''
+          bio: data.bio || '',
+          occupation: data.occupation || '',
+          education: data.education || '',
+          maritalStatus: data.maritalStatus || data.marital_status || '',
+          hasChildren: data.hasChildren || data.has_children || false,
+          monthlyIncomeRange: data.monthlyIncomeRange || data.monthly_income_range || '',
+          city: data.city || '',
+          country: data.country || '',
+          postalCode: data.postalCode || data.postal_code || '',
+          language: data.language || 'bn',
+          religion: data.religion || '',
+          lifestyle: data.lifestyle || '',
+          avatarUrl: data.avatarUrl || '',
+          coverPhotoUrl: data.coverPhotoUrl || '',
         });
       }
     } catch (err: any) {
@@ -119,20 +133,20 @@ const ProfilePage: React.FC = () => {
     try {
       // Use the user account service to update profile
       const updateSuccess = await updateUserProfile(profile.id, {
-        firstName: profile.first_name,
-        lastName: profile.last_name,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
         address: profile.address,
         dob: profile.dob,
         gender: profile.gender,
         bio: profile.bio,
         occupation: profile.occupation,
         education: profile.education,
-        maritalStatus: profile.marital_status,
-        hasChildren: profile.has_children,
-        monthlyIncomeRange: profile.monthly_income_range,
+        maritalStatus: profile.maritalStatus,
+        hasChildren: profile.hasChildren,
+        monthlyIncomeRange: profile.monthlyIncomeRange,
         city: profile.city,
         country: profile.country,
-        postalCode: profile.postal_code,
+        postalCode: profile.postalCode,
         language: profile.language,
         religion: profile.religion,
         lifestyle: profile.lifestyle,
@@ -152,7 +166,42 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleChange = (field: keyof UserProfile, value: any) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsSaving(true);
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        
+        // Update profile with new avatar
+        const updateSuccess = await updateUserProfile(profile.id, {
+          avatarUrl: base64,
+          updatedAt: new Date().toISOString()
+        });
+
+        if (!updateSuccess) {
+          throw new Error('Failed to update profile picture');
+        }
+
+        // Reload profile to reflect changes
+        await loadProfile();
+        
+        setSuccess('Profile picture updated successfully');
+        setTimeout(() => setSuccess(''), 3000);
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChange = (field: string, value: any) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
@@ -183,12 +232,26 @@ const ProfilePage: React.FC = () => {
           <div className="bg-white rounded-3xl p-8 shadow-sm">
             <div className="flex items-center gap-6">
               <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-[#0071e3] to-[#00c6ff] rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                  {profile.first_name?.[0]}{profile.last_name?.[0]}
+                <div className="w-24 h-24 bg-gradient-to-br from-[#0071e3] to-[#00c6ff] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+                  {profile.avatarUrl ? (
+                    <img 
+                      src={profile.avatarUrl} 
+                      alt={`${profile.firstName} ${profile.lastName}`}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`
+                  )}
                 </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#0071e3] rounded-full flex items-center justify-center text-white hover:bg-[#0051a3] transition-colors">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#0071e3] rounded-full flex items-center justify-center text-white hover:bg-[#0051a3] transition-colors cursor-pointer">
                   <Camera className="w-4 h-4" />
-                </button>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleAvatarUpload}
+                  />
+                </label>
               </div>
               <div>
                 <h1 className="text-[32px] font-semibold text-[#1d1d1f]">
@@ -247,8 +310,8 @@ const ProfilePage: React.FC = () => {
                   <label className="block text-sm font-medium text-[#86868b] mb-2">First Name</label>
                   <input
                     type="text"
-                    value={profile.first_name}
-                    onChange={(e) => handleChange('first_name', e.target.value)}
+                    value={profile.firstName}
+                    onChange={(e) => handleChange('firstName', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all"
                   />
                 </div>
@@ -256,8 +319,8 @@ const ProfilePage: React.FC = () => {
                   <label className="block text-sm font-medium text-[#86868b] mb-2">Last Name</label>
                   <input
                     type="text"
-                    value={profile.last_name}
-                    onChange={(e) => handleChange('last_name', e.target.value)}
+                    value={profile.lastName}
+                    onChange={(e) => handleChange('lastName', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all"
                   />
                 </div>
@@ -315,8 +378,8 @@ const ProfilePage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-[#86868b] mb-2">Marital Status</label>
                   <select
-                    value={profile.marital_status || ''}
-                    onChange={(e) => handleChange('marital_status', e.target.value)}
+                    value={profile.maritalStatus || ''}
+                    onChange={(e) => handleChange('maritalStatus', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
                   >
                     <option value="">Select Status</option>
