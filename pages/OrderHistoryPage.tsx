@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search, Filter, Download, Eye, MapPin, CreditCard } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search, Filter, Download, Eye, MapPin, CreditCard, DollarSign, RotateCcw, Gift, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 
@@ -307,27 +307,88 @@ const OrderHistoryPage: React.FC = () => {
   };
 
   const handleDownloadInvoice = (order: Order) => {
-    // Generate simple invoice text
+    // Generate comprehensive invoice with all SQL fields
     const invoiceText = `
-ZPRIA ORDER INVOICE
-====================
+═══════════════════════════════════════════════════════════════
+                        ZPRIA ORDER INVOICE
+═══════════════════════════════════════════════════════════════
 
-Order Number: ${order.order_number}
-Date: ${formatDate(order.created_at)}
-Status: ${order.status.toUpperCase()}
+ORDER INFORMATION
+─────────────────
+Order Number:     ${order.order_number}
+Order Date:       ${formatDate(order.created_at)}
+Order Status:     ${order.status.toUpperCase()}
+Payment Status:   ${order.payment_status.toUpperCase()}
+Currency:         ${order.currency}
 
-ITEMS:
-${order.items.map(item => `- ${item.product_name} x${item.quantity} = ${formatCurrency(item.total_price)}`).join('\n')}
+CUSTOMER INFORMATION
+────────────────────
+Email:            ${order.customer_email}
+${order.customer_phone ? `Phone:            ${order.customer_phone}` : ''}
 
-SUBTOTAL: ${formatCurrency(order.subtotal)}
-TAX: ${formatCurrency(order.tax)}
-SHIPPING: ${formatCurrency(order.shipping)}
-${order.discount > 0 ? `DISCOUNT: -${formatCurrency(order.discount)}` : ''}
-TOTAL: ${formatCurrency(order.total)}
+BILLING ADDRESS
+───────────────
+${order.billing_address}
 
-PAYMENT METHOD: ${order.payment_method}
-SHIPPING ADDRESS: ${order.shipping_address}
-${order.tracking_number ? `TRACKING: ${order.tracking_number}` : ''}
+SHIPPING INFORMATION
+────────────────────
+Address:          ${order.shipping_address}
+Method:           ${order.shipping_method}
+${order.estimated_delivery ? `Est. Delivery:    ${formatDate(order.estimated_delivery)}` : ''}
+${order.shipped_at ? `Shipped Date:     ${formatDate(order.shipped_at)}` : ''}
+${order.delivered_at ? `Delivered Date:   ${formatDate(order.delivered_at)}` : ''}
+${order.tracking_number ? `Tracking #:       ${order.tracking_number}` : ''}
+${order.shipping_carrier ? `Carrier:          ${order.shipping_carrier}` : ''}
+
+ORDER ITEMS
+───────────
+${order.items.map((item, i) => `
+${i + 1}. ${item.product_name}
+   ${item.variant_name ? `   Variant: ${item.variant_name}` : ''}
+   ${item.product_sku ? `   SKU: ${item.product_sku}` : ''}
+   Quantity: ${item.quantity} x ${formatCurrency(item.sale_price || item.unit_price)}
+   Subtotal: ${formatCurrency(item.total_price)}
+`).join('')}
+
+PAYMENT DETAILS
+───────────────
+Payment Method:   ${order.payment_method}
+${order.payment_id ? `Payment ID:       ${order.payment_id}` : ''}
+Subtotal:         ${formatCurrency(order.subtotal)}
+Tax (${order.tax_rate}%):      ${formatCurrency(order.tax)}
+Shipping:         ${formatCurrency(order.shipping)}
+${order.discount > 0 ? `Discount:         -${formatCurrency(order.discount)}` : ''}
+${order.coupon_code ? `Coupon (${order.coupon_code}): Applied` : ''}
+${order.loyalty_points_used > 0 ? `Points Used:      -${order.loyalty_points_used} pts` : ''}
+────────────────────────────────────
+TOTAL:            ${formatCurrency(order.total)}
+${order.loyalty_points_earned > 0 ? `Points Earned:    +${order.loyalty_points_earned} pts` : ''}
+
+${order.is_gift ? `
+GIFT INFORMATION
+────────────────
+This order is a gift.
+${order.gift_wrap ? 'Gift wrap included.' : ''}
+${order.gift_message ? `Gift Message: "${order.gift_message}"` : ''}
+` : ''}
+
+${order.notes ? `
+ORDER NOTES
+───────────
+${order.notes}
+` : ''}
+
+${order.cancel_reason ? `
+CANCELLATION
+────────────
+Cancelled on: ${order.cancelled_at ? formatDate(order.cancelled_at) : 'N/A'}
+Reason: ${order.cancel_reason}
+` : ''}
+
+═══════════════════════════════════════════════════════════════
+Thank you for shopping with ZPRIA!
+For support, contact: help.zpria@gmail.com
+═══════════════════════════════════════════════════════════════
     `.trim();
 
     const blob = new Blob([invoiceText], { type: 'text/plain' });
@@ -349,10 +410,12 @@ ${order.tracking_number ? `TRACKING: ${order.tracking_number}` : ''}
     { value: 'all', label: 'All Orders' },
     { value: 'pending', label: 'Pending' },
     { value: 'processing', label: 'Processing' },
+    { value: 'on_hold', label: 'On Hold' },
     { value: 'shipped', label: 'Shipped' },
     { value: 'delivered', label: 'Delivered' },
     { value: 'cancelled', label: 'Cancelled' },
-    { value: 'refunded', label: 'Refunded' }
+    { value: 'refunded', label: 'Refunded' },
+    { value: 'returned', label: 'Returned' }
   ];
 
   return (
@@ -562,41 +625,175 @@ ${order.tracking_number ? `TRACKING: ${order.tracking_number}` : ''}
                 ))}
               </div>
 
-              {/* Order Info */}
+              {/* Order Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* Shipping Address */}
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-[#86868b]" />
                     <p className="font-medium text-[#1d1d1f]">Shipping Address</p>
                   </div>
                   <p className="text-sm text-[#86868b]">{selectedOrder.shipping_address}</p>
+                  <p className="text-xs text-[#86868b] mt-1 capitalize">Method: {selectedOrder.shipping_method}</p>
                 </div>
+                
+                {/* Billing Address */}
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="w-4 h-4 text-[#86868b]" />
+                    <p className="font-medium text-[#1d1d1f]">Billing Address</p>
+                  </div>
+                  <p className="text-sm text-[#86868b]">{selectedOrder.billing_address}</p>
+                </div>
+                
+                {/* Payment Info */}
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <CreditCard className="w-4 h-4 text-[#86868b]" />
-                    <p className="font-medium text-[#1d1d1f]">Payment Method</p>
+                    <p className="font-medium text-[#1d1d1f]">Payment</p>
                   </div>
                   <p className="text-sm text-[#86868b]">{selectedOrder.payment_method}</p>
+                  <p className={`text-xs mt-1 capitalize font-medium ${getPaymentStatusColor(selectedOrder.payment_status)}`}>
+                    Status: {selectedOrder.payment_status}
+                  </p>
+                  {selectedOrder.payment_id && (
+                    <p className="text-xs text-[#86868b] mt-1">ID: {selectedOrder.payment_id}</p>
+                  )}
+                </div>
+                
+                {/* Contact Info */}
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Package className="w-4 h-4 text-[#86868b]" />
+                    <p className="font-medium text-[#1d1d1f]">Contact</p>
+                  </div>
+                  <p className="text-sm text-[#86868b]">{selectedOrder.customer_email}</p>
+                  {selectedOrder.customer_phone && (
+                    <p className="text-sm text-[#86868b]">{selectedOrder.customer_phone}</p>
+                  )}
                 </div>
               </div>
 
+              {/* Gift Info */}
+              {selectedOrder.is_gift && (
+                <div className="p-4 bg-pink-50 rounded-xl mb-6 border border-pink-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gift className="w-4 h-4 text-pink-600" />
+                    <p className="font-medium text-pink-700">This is a Gift</p>
+                  </div>
+                  {selectedOrder.gift_message && (
+                    <p className="text-sm text-pink-600 italic">"{selectedOrder.gift_message}"</p>
+                  )}
+                  {selectedOrder.gift_wrap && (
+                    <p className="text-xs text-pink-600 mt-1">Gift wrap included</p>
+                  )}
+                </div>
+              )}
+
+              {/* Tracking Info */}
               {selectedOrder.tracking_number && (
                 <div className="p-4 bg-blue-50 rounded-xl mb-6">
-                  <p className="font-medium text-blue-700 mb-1">Tracking Number</p>
-                  <p className="text-blue-600">{selectedOrder.tracking_number}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-blue-700">Tracking Number</p>
+                      <p className="text-blue-600">{selectedOrder.tracking_number}</p>
+                      {selectedOrder.shipping_carrier && (
+                        <p className="text-sm text-blue-600">Carrier: {selectedOrder.shipping_carrier}</p>
+                      )}
+                    </div>
+                    {selectedOrder.tracking_url && (
+                      <a 
+                        href={selectedOrder.tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                      >
+                        Track <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {(selectedOrder.invoice_url || selectedOrder.receipt_url) && (
+                <div className="flex gap-3 mb-6">
+                  {selectedOrder.invoice_url && (
+                    <a
+                      href={selectedOrder.invoice_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#1d1d1f] rounded-xl text-sm hover:bg-gray-200 transition-colors"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Invoice
+                    </a>
+                  )}
+                  {selectedOrder.receipt_url && (
+                    <a
+                      href={selectedOrder.receipt_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#1d1d1f] rounded-xl text-sm hover:bg-gray-200 transition-colors"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      View Receipt
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Loyalty Points */}
+              {(selectedOrder.loyalty_points_used > 0 || selectedOrder.loyalty_points_earned > 0) && (
+                <div className="p-4 bg-purple-50 rounded-xl mb-6">
+                  <p className="font-medium text-purple-700 mb-2">Loyalty Points</p>
+                  <div className="flex gap-4">
+                    {selectedOrder.loyalty_points_used > 0 && (
+                      <p className="text-sm text-purple-600">Used: {selectedOrder.loyalty_points_used} pts</p>
+                    )}
+                    {selectedOrder.loyalty_points_earned > 0 && (
+                      <p className="text-sm text-purple-600">Earned: +{selectedOrder.loyalty_points_earned} pts</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Coupon */}
+              {selectedOrder.coupon_code && (
+                <div className="p-4 bg-green-50 rounded-xl mb-6">
+                  <p className="font-medium text-green-700">Coupon Applied</p>
+                  <p className="text-green-600">{selectedOrder.coupon_code}</p>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div className="p-4 bg-yellow-50 rounded-xl mb-6">
+                  <p className="font-medium text-yellow-700 mb-1">Order Notes</p>
+                  <p className="text-sm text-yellow-600">{selectedOrder.notes}</p>
+                </div>
+              )}
+
+              {/* Cancellation Reason */}
+              {selectedOrder.cancel_reason && (
+                <div className="p-4 bg-red-50 rounded-xl mb-6">
+                  <p className="font-medium text-red-700 mb-1">Cancellation Reason</p>
+                  <p className="text-sm text-red-600">{selectedOrder.cancel_reason}</p>
                 </div>
               )}
 
               {/* Totals */}
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#86868b]">Subtotal</span>
+                  <span className="text-[#86868b]">Subtotal ({selectedOrder.item_count} items)</span>
                   <span className="text-[#1d1d1f]">{formatCurrency(selectedOrder.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#86868b]">Tax</span>
-                  <span className="text-[#1d1d1f]">{formatCurrency(selectedOrder.tax)}</span>
-                </div>
+                {selectedOrder.tax > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#86868b]">Tax ({selectedOrder.tax_rate}%)</span>
+                    <span className="text-[#1d1d1f]">{formatCurrency(selectedOrder.tax)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-[#86868b]">Shipping</span>
                   <span className="text-[#1d1d1f]">{formatCurrency(selectedOrder.shipping)}</span>
@@ -607,9 +804,55 @@ ${order.tracking_number ? `TRACKING: ${order.tracking_number}` : ''}
                     <span className="text-green-600">-{formatCurrency(selectedOrder.discount)}</span>
                   </div>
                 )}
+                {selectedOrder.loyalty_points_used > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#86868b]">Points Redeemed</span>
+                    <span className="text-purple-600">-{formatCurrency(selectedOrder.loyalty_points_used)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="font-semibold text-[#1d1d1f]">Total</span>
+                  <span className="font-semibold text-[#1d1d1f]">Total ({selectedOrder.currency})</span>
                   <span className="font-semibold text-[#1d1d1f]">{formatCurrency(selectedOrder.total)}</span>
+                </div>
+              </div>
+
+              {/* Order Timeline */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="font-semibold text-[#1d1d1f] mb-4">Order Timeline</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    <span className="text-[#86868b]">Order placed</span>
+                    <span className="ml-auto text-[#86868b]">{formatDate(selectedOrder.created_at)}</span>
+                  </div>
+                  {selectedOrder.paid_at && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      <span className="text-[#86868b]">Payment confirmed</span>
+                      <span className="ml-auto text-[#86868b]">{formatDate(selectedOrder.paid_at)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.shipped_at && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                      <span className="text-[#86868b]">Shipped</span>
+                      <span className="ml-auto text-[#86868b]">{formatDate(selectedOrder.shipped_at)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.delivered_at && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-2 h-2 bg-green-600 rounded-full" />
+                      <span className="text-[#86868b]">Delivered</span>
+                      <span className="ml-auto text-[#86868b]">{formatDate(selectedOrder.delivered_at)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.cancelled_at && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-2 h-2 bg-red-500 rounded-full" />
+                      <span className="text-[#86868b]">Cancelled</span>
+                      <span className="ml-auto text-[#86868b]">{formatDate(selectedOrder.cancelled_at)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
