@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Calendar, Briefcase, GraduationCap, Heart, Camera, ChevronLeft, Save, X } from 'lucide-react';
-import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../constants';
+import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 

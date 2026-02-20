@@ -11,7 +11,7 @@ import {
   LogOut, RefreshCw, Eye, EyeOff, Copy, Check
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
-import { UserProfile } from '../types';
+import { UserProfile } from '../pages/types';
 import LoadingOverlay from '../components/LoadingOverlay';
 
 interface DashboardStats {

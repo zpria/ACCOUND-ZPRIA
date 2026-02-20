@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { sendOTP, sendWelcomeAlert } from '../services/emailService';
 import { autoGenerateProfileImage } from '../services/aiImageService';
 import { logActivity } from '../services/deviceDetection';
-import { UserProfile } from '../types';
+import { UserProfile } from '../pages/types';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Smartphone, Monitor, Globe, LogOut, Shield, AlertCircle, Check } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
