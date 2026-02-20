@@ -358,9 +358,26 @@ const VerifyEmailPage: React.FC = () => {
             pending.last_name,
             pending.gender,
             pending.dob
-          ).then(avatarUrl => {
+          ).then(async avatarUrl => {
             if (avatarUrl) {
               console.log('AI Profile image generated:', avatarUrl);
+              
+              // Update the user record with the generated avatar
+              const { error: avatarUpdateError } = await supabase
+                .from('users')
+                .update({ avatar_url: avatarUrl })
+                .eq('id', createdUser.id);
+              
+              if (avatarUpdateError) {
+                console.error('Failed to update avatar in database:', avatarUpdateError);
+              } else {
+                console.log('Avatar updated in database successfully');
+                
+                // Update the local storage user object with the new avatar
+                const localUser = JSON.parse(localStorage.getItem('zpria_user') || '{}');
+                localUser.avatarUrl = avatarUrl;
+                localStorage.setItem('zpria_user', JSON.stringify(localUser));
+              }
             }
           }).catch(err => {
             console.error('AI image generation failed:', err);

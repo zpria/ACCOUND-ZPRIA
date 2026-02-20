@@ -245,21 +245,37 @@ const PrivacySettingsPage: React.FC = () => {
       
       const userData = JSON.parse(savedUser);
 
-      // Mark account for deletion (soft delete)
+      // Soft delete the account - mark for deletion but keep data for recovery
+      const deletionScheduledAt = new Date();
+      const deletionScheduledFor = new Date(deletionScheduledAt.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
+      
       const { error } = await supabase
         .from('users')
         .update({
-          account_status: 'pending_deletion',
-          deletion_requested_at: new Date().toISOString()
+          account_status: 'deactivated',  // Changed from 'pending_deletion' to 'deactivated'
+          deactivated_at: deletionScheduledAt.toISOString(),
+          scheduled_for_permanent_deletion: deletionScheduledFor.toISOString(),  // Schedule permanent deletion for 1 year
+          updated_at: new Date().toISOString()
         })
         .eq('id', userData.id);
 
       if (error) throw error;
 
+      // Also update privacy settings to mark as deactivated
+      await supabase
+        .from('user_privacy_settings')
+        .update({
+          last_updated: new Date().toISOString()
+        })
+        .eq('user_id', userData.id);
+
       // Clear local storage and redirect
       localStorage.removeItem('zpria_user');
       localStorage.removeItem('zpria_theme_id');
-      navigate('/');
+      setSuccess('Account deactivated. You can reactivate it within one year by logging in again.');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000); // Wait 2 seconds before redirect to show success message
     } catch (err: any) {
       setError(err.message);
       setIsSaving(false);

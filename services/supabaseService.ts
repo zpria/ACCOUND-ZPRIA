@@ -31,7 +31,7 @@ export const checkAvailability = async (field: 'username' | 'email' | 'mobile', 
 
 export const handleLoginAttempt = async (identifier: string, passwordHash: string) => {
   const normalizedId = identifier.trim().toLowerCase();
-  
+
   // Find user by username, login_id, mobile, OR email
   const { data: user, error } = await supabase
     .from('users')
@@ -41,10 +41,39 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
 
   if (!user) throw new Error('ZPRIA Account not found. Please check your credentials.');
 
+  // Check if account is deactivated but within recovery window
+  if (user.account_status === 'deactivated' && user.scheduled_for_permanent_deletion) {
+    const scheduledDeletionDate = new Date(user.scheduled_for_permanent_deletion);
+    if (scheduledDeletionDate > new Date()) {
+      // Reactivate the account since user is logging in within the recovery window
+      await supabase.from('users').update({ 
+        account_status: 'active',
+        deactivated_at: null,
+        scheduled_for_permanent_deletion: null,
+        failed_login_attempts: 0, 
+        locked_until: null, 
+        last_login: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq('id', user.id);
+      
+      // Update the user object to reflect the reactivated status
+      user.account_status = 'active';
+      user.deactivated_at = null;
+      user.scheduled_for_permanent_deletion = null;
+      user.last_login = new Date().toISOString();
+      user.updated_at = new Date().toISOString();
+    }
+  }
+
   // Check lockout status
   if (user.locked_until && new Date(user.locked_until) > new Date()) {
     const diff = Math.ceil((new Date(user.locked_until).getTime() - Date.now()) / 60000);
     throw new Error(`Account locked for ${diff} minutes due to multiple failures.`);
+  }
+
+  // Check if account is still not active after potential reactivation
+  if (user.account_status !== 'active') {
+    throw new Error('Account is deactivated and may have passed the recovery window. Please contact support.');
   }
 
   if (user.password_hash === passwordHash) {
