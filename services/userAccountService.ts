@@ -2061,16 +2061,7 @@ export default {
   getUser2FA,
   getUserPasskeys,
   getUserOnboarding,
-  updateOnboardingStep,
-  // Enhanced Account Management Functions
-  getUserAuditLogs,
-  getUserBackupCodes,
-  getUserAccountRecoveryOptions,
-  getUserSecurityQuestions,
-  getUserTrustedDevices,
-  getUserSessionPreferences,
-  getUserAccountHistory,
-  getUserLoginHistory
+  updateOnboardingStep
 };
 
 // ==================== ENHANCED ACCOUNT MANAGEMENT ====================
