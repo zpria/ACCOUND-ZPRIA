@@ -5,32 +5,82 @@ import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'returned' | 'on_hold';
+type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
+type ShippingMethod = 'standard' | 'express' | 'overnight' | 'pickup';
 
 interface OrderItem {
   id: string;
+  product_id: string;
   product_name: string;
   product_image?: string;
+  product_sku?: string;
   quantity: number;
   unit_price: number;
+  sale_price?: number;
   total_price: number;
+  variant_name?: string;
+  is_digital: boolean;
+  download_url?: string;
+  download_count?: number;
+  max_downloads?: number;
 }
 
 interface Order {
+  // Core order info
   id: string;
   order_number: string;
   status: OrderStatus;
   items: OrderItem[];
+  item_count: number;
+  
+  // Pricing
   subtotal: number;
   tax: number;
+  tax_rate: number;
   shipping: number;
+  shipping_cost: number;
   discount: number;
+  coupon_code?: string;
+  loyalty_points_used: number;
+  loyalty_points_earned: number;
   total: number;
+  currency: string;
+  
+  // Payment
   payment_method: string;
+  payment_status: PaymentStatus;
+  payment_id?: string;
+  invoice_url?: string;
+  receipt_url?: string;
+  
+  // Shipping
   shipping_address: string;
-  created_at: string;
+  shipping_method: ShippingMethod;
+  estimated_delivery?: string;
   delivered_at?: string;
   tracking_number?: string;
+  tracking_url?: string;
+  shipping_carrier?: string;
+  
+  // Metadata
+  notes?: string;
+  gift_message?: string;
+  is_gift: boolean;
+  gift_wrap: boolean;
+  
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+  paid_at?: string;
+  shipped_at?: string;
+  cancelled_at?: string;
+  cancel_reason?: string;
+  
+  // User info at time of order
+  customer_email: string;
+  customer_phone?: string;
+  billing_address: string;
 }
 
 const OrderHistoryPage: React.FC = () => {
@@ -62,11 +112,12 @@ const OrderHistoryPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
+      // Fetch from user_orders table with all SQL fields
       const { data, error } = await supabase
-        .from('orders')
+        .from('user_orders')
         .select(`
           *,
-          order_items (*)
+          items:user_order_items(*)
         `)
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false });
@@ -75,27 +126,75 @@ const OrderHistoryPage: React.FC = () => {
 
       if (data) {
         const formattedOrders: Order[] = data.map((order: any) => ({
+          // Core
           id: order.id,
           order_number: order.order_number || `ZPR-${order.id.slice(0, 8).toUpperCase()}`,
           status: order.status || 'pending',
-          items: (order.order_items || []).map((item: any) => ({
+          items: (order.items || []).map((item: any) => ({
             id: item.id,
+            product_id: item.product_id,
             product_name: item.product_name || 'Unknown Product',
             product_image: item.product_image,
+            product_sku: item.product_sku,
             quantity: item.quantity || 1,
             unit_price: item.unit_price || 0,
-            total_price: item.total_price || 0
+            sale_price: item.sale_price,
+            total_price: item.total_price || 0,
+            variant_name: item.variant_name,
+            is_digital: item.is_digital || false,
+            download_url: item.download_url,
+            download_count: item.download_count,
+            max_downloads: item.max_downloads
           })),
+          item_count: order.item_count || (order.items || []).length,
+          
+          // Pricing
           subtotal: order.subtotal || 0,
           tax: order.tax || 0,
+          tax_rate: order.tax_rate || 0,
           shipping: order.shipping || 0,
+          shipping_cost: order.shipping_cost || 0,
           discount: order.discount || 0,
+          coupon_code: order.coupon_code,
+          loyalty_points_used: order.loyalty_points_used || 0,
+          loyalty_points_earned: order.loyalty_points_earned || 0,
           total: order.total || 0,
+          currency: order.currency || 'BDT',
+          
+          // Payment
           payment_method: order.payment_method || 'Unknown',
+          payment_status: order.payment_status || 'pending',
+          payment_id: order.payment_id,
+          invoice_url: order.invoice_url,
+          receipt_url: order.receipt_url,
+          
+          // Shipping
           shipping_address: order.shipping_address || 'No address provided',
-          created_at: order.created_at,
+          shipping_method: order.shipping_method || 'standard',
+          estimated_delivery: order.estimated_delivery,
           delivered_at: order.delivered_at,
-          tracking_number: order.tracking_number
+          tracking_number: order.tracking_number,
+          tracking_url: order.tracking_url,
+          shipping_carrier: order.shipping_carrier,
+          
+          // Metadata
+          notes: order.notes,
+          gift_message: order.gift_message,
+          is_gift: order.is_gift || false,
+          gift_wrap: order.gift_wrap || false,
+          
+          // Timestamps
+          created_at: order.created_at,
+          updated_at: order.updated_at,
+          paid_at: order.paid_at,
+          shipped_at: order.shipped_at,
+          cancelled_at: order.cancelled_at,
+          cancel_reason: order.cancel_reason,
+          
+          // User info
+          customer_email: order.customer_email || userData.email,
+          customer_phone: order.customer_phone,
+          billing_address: order.billing_address || order.shipping_address || 'No address provided'
         }));
         setOrders(formattedOrders);
       }
@@ -134,9 +233,14 @@ const OrderHistoryPage: React.FC = () => {
         return <Package className="w-5 h-5" />;
       case 'pending':
         return <Clock className="w-5 h-5" />;
+      case 'on_hold':
+        return <Clock className="w-5 h-5" />;
       case 'cancelled':
-      case 'refunded':
         return <X className="w-5 h-5" />;
+      case 'refunded':
+        return <DollarSign className="w-5 h-5" />;
+      case 'returned':
+        return <RotateCcw className="w-5 h-5" />;
       default:
         return <Package className="w-5 h-5" />;
     }
@@ -152,11 +256,32 @@ const OrderHistoryPage: React.FC = () => {
         return 'bg-yellow-100 text-yellow-700';
       case 'pending':
         return 'bg-gray-100 text-gray-700';
+      case 'on_hold':
+        return 'bg-orange-100 text-orange-700';
       case 'cancelled':
-      case 'refunded':
         return 'bg-red-100 text-red-700';
+      case 'refunded':
+        return 'bg-purple-100 text-purple-700';
+      case 'returned':
+        return 'bg-pink-100 text-pink-700';
       default:
         return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getPaymentStatusColor = (status: PaymentStatus) => {
+    switch (status) {
+      case 'paid':
+        return 'text-green-600';
+      case 'pending':
+        return 'text-yellow-600';
+      case 'failed':
+        return 'text-red-600';
+      case 'refunded':
+      case 'partially_refunded':
+        return 'text-purple-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
