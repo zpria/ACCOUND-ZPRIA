@@ -5,6 +5,8 @@ import { ZPRIA_MAIN_LOGO } from '../constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { sendOTP, sendWelcomeAlert } from '../services/emailService';
+import { autoGenerateProfileImage } from '../services/aiImageService';
+import { logActivity } from '../services/deviceDetection';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -199,6 +201,36 @@ const VerifyEmailPage: React.FC = () => {
           login_id: pending.login_id,
           isNewRegistration: true
         });
+
+        // Get the created user ID for AI image generation
+        const { data: createdUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('username', pending.username)
+          .single();
+
+        if (createdUser) {
+          // Auto-generate AI profile image
+          autoGenerateProfileImage(
+            createdUser.id,
+            pending.first_name,
+            pending.last_name,
+            pending.gender,
+            pending.dob
+          ).then(avatarUrl => {
+            if (avatarUrl) {
+              console.log('AI Profile image generated:', avatarUrl);
+            }
+          }).catch(err => {
+            console.error('AI image generation failed:', err);
+          });
+
+          // Log registration activity
+          logActivity(createdUser.id, 'login', {
+            method: 'registration',
+            is_new_user: true
+          });
+        }
 
         await supabase.from('pending_registrations').delete().eq('email', email);
         navigate('/verify-phone');
