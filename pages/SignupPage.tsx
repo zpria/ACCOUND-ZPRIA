@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../constants';
+import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from './constants';
 import Captcha from '../components/Captcha';
 import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';

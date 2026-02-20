@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO } from './constants';
 
 const LegalPage: React.FC = () => {
   const navigate = useNavigate();

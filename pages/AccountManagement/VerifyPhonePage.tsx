@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../../constants';
+import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { UserProfile } from '../types';

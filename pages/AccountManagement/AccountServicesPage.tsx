@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Smartphone, User, Lock, ChevronRight, Bell, CreditCard, ShoppingBag, Link2, Activity } from 'lucide-react';
-import { ZPRIA_MAIN_LOGO } from '../../constants';
+import { ZPRIA_MAIN_LOGO } from '../constants';
 
 const AccountServicesPage: React.FC = () => {
   const services = [

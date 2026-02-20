@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ZipraProduct } from '../types';
 import { supabase } from '../services/supabaseService';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO } from './constants';
 
 const Badge = ({ children, color = 'blue' }: { children?: React.ReactNode, color?: 'blue' | 'gray' | 'green' | 'indigo' }) => {
   const colors = {

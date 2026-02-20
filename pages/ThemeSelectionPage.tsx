@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LOGO_VARIANTS } from '../constants';
+import { LOGO_VARIANTS } from './constants';
 import { LogoVariant } from '../types';
 
 interface Props {

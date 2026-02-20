@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../constants';
+import { ZPRIA_MAIN_LOGO } from './constants';
 import { Search, Lock, User, Mail, Phone, Shield, HelpCircle, MessageCircle, ChevronRight } from 'lucide-react';
 
 const SupportCard = ({ 
