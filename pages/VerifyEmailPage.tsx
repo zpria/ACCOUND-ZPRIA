@@ -171,7 +171,13 @@ const VerifyEmailPage: React.FC = () => {
           account_status: 'active'
         });
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          // Check if it's a duplicate mobile number error
+          if (insertError.message?.includes('users_mobile_key')) {
+            throw new Error('This phone number is already registered. Please use a different number.');
+          }
+          throw insertError;
+        }
 
         // Create user session (auto login)
         const user = {

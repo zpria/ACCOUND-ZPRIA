@@ -63,13 +63,13 @@ const VerifyPhonePage: React.FC<Props> = ({ onLogin }) => {
     setIsLoading(true);
     try {
       // User is already logged in from email verification
-      // Just clean up and go to product hub
+      // Just clean up and go to home (which shows ProductHub for logged in users)
       localStorage.removeItem('zpria_signup_draft');
       localStorage.removeItem('zpria_verification_email');
-      navigate('/product-hub');
+      navigate('/');
     } catch (err) {
       console.error("Finalization failed", err);
-      navigate('/product-hub');
+      navigate('/');
     } finally {
       setIsLoading(false);
     }
