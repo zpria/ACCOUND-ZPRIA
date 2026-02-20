@@ -95,7 +95,7 @@ const CURRENCIES = [
   { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal' }
 ];
 
-const DATE_FORMATS = [
+const DATE_FORMATS: { value: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD' | 'DD-MM-YYYY'; label: string; example: string }[] = [
   { value: 'MM/DD/YYYY', label: '12/31/2024', example: 'US Format' },
   { value: 'DD/MM/YYYY', label: '31/12/2024', example: 'European Format' },
   { value: 'YYYY-MM-DD', label: '2024-12-31', example: 'ISO Format' },
@@ -469,7 +469,7 @@ const PreferencesPage: React.FC = () => {
                         {DATE_FORMATS.map((format) => (
                           <button
                             key={format.value}
-                            onClick={() => updatePreference('date_format', format.value as any)}
+                            onClick={() => updatePreference('date_format', format.value)}
                             className={`p-4 rounded-xl border-2 text-left transition-all ${
                               preferences.date_format === format.value
                                 ? 'border-[#6366f1] bg-[#6366f1]/5'
