@@ -2410,6 +2410,23 @@ CREATE TABLE public.user_ab_tests (
   CONSTRAINT user_ab_tests_pkey PRIMARY KEY (id),
   CONSTRAINT user_ab_tests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_account_deletion_schedule (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  requested_at timestamp with time zone NOT NULL DEFAULT now(),
+  scheduled_deletion_at timestamp with time zone NOT NULL,
+  reason text,
+  confirmation_code text NOT NULL,
+  is_confirmed boolean DEFAULT false,
+  confirmed_at timestamp with time zone,
+  grace_period_ends_at timestamp with time zone,
+  final_deletion_at timestamp with time zone,
+  status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'grace_period'::text, 'processing'::text, 'completed'::text, 'cancelled'::text])),
+  cancelled_at timestamp with time zone,
+  cancelled_reason text,
+  CONSTRAINT user_account_deletion_schedule_pkey PRIMARY KEY (id),
+  CONSTRAINT user_account_deletion_schedule_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_account_recovery_options (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2456,6 +2473,18 @@ CREATE TABLE public.user_ad_interactions (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT user_ad_interactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_ad_interactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_ad_personalization (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  ad_personalization_enabled boolean DEFAULT true,
+  interest_topics jsonb DEFAULT '[]'::jsonb,
+  excluded_advertisers jsonb DEFAULT '[]'::jsonb,
+  sensitive_topics jsonb DEFAULT '[]'::jsonb,
+  reminder_ads_enabled boolean DEFAULT true,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_ad_personalization_pkey PRIMARY KEY (id),
+  CONSTRAINT user_ad_personalization_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_addresses (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2549,6 +2578,20 @@ CREATE TABLE public.user_app_settings (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_app_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_app_usage_timeline (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  app_name text NOT NULL,
+  activity_type text NOT NULL CHECK (activity_type = ANY (ARRAY['visit'::text, 'search'::text, 'view'::text, 'click'::text, 'save'::text, 'share'::text, 'create'::text, 'edit'::text, 'delete'::text, 'purchase'::text])),
+  item_title text,
+  item_url text,
+  item_description text,
+  occurred_at timestamp with time zone NOT NULL DEFAULT now(),
+  deleted_at timestamp with time zone,
+  is_deleted boolean DEFAULT false,
+  CONSTRAINT user_app_usage_timeline_pkey PRIMARY KEY (id),
+  CONSTRAINT user_app_usage_timeline_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_automations (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2832,6 +2875,21 @@ CREATE TABLE public.user_daily_activity (
   CONSTRAINT user_daily_activity_pkey PRIMARY KEY (id),
   CONSTRAINT user_daily_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_data_export_archives (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  export_request_id uuid NOT NULL,
+  archive_url text NOT NULL,
+  archive_size_bytes bigint NOT NULL,
+  file_count integer NOT NULL,
+  expires_at timestamp with time zone NOT NULL,
+  downloaded_at timestamp with time zone,
+  download_count integer DEFAULT 0,
+  checksum text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_data_export_archives_pkey PRIMARY KEY (id),
+  CONSTRAINT user_data_export_archives_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_data_portability (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -2848,6 +2906,16 @@ CREATE TABLE public.user_data_portability (
   requested_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_data_portability_pkey PRIMARY KEY (id),
   CONSTRAINT user_data_portability_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_data_promises (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  promise_type text NOT NULL CHECK (promise_type = ANY (ARRAY['no_sell_data'::text, 'no_targeted_ads'::text, 'data_minimization'::text, 'transparency'::text, 'user_control'::text])),
+  promised_at timestamp with time zone DEFAULT now(),
+  last_verified_at timestamp with time zone,
+  is_active boolean DEFAULT true,
+  CONSTRAINT user_data_promises_pkey PRIMARY KEY (id),
+  CONSTRAINT user_data_promises_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_data_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -2940,6 +3008,25 @@ CREATE TABLE public.user_events (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT user_events_pkey PRIMARY KEY (id),
   CONSTRAINT user_events_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_export_jobs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  job_id text NOT NULL UNIQUE,
+  data_categories jsonb NOT NULL,
+  file_format text DEFAULT 'zip'::text CHECK (file_format = ANY (ARRAY['zip'::text, 'tgz'::text, 'tbz'::text])),
+  archive_size_bytes bigint,
+  file_count integer,
+  status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'collecting'::text, 'processing'::text, 'complete'::text, 'failed'::text])),
+  progress_percent integer DEFAULT 0,
+  started_at timestamp with time zone,
+  completed_at timestamp with time zone,
+  expires_at timestamp with time zone,
+  download_url text,
+  download_count integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_export_jobs_pkey PRIMARY KEY (id),
+  CONSTRAINT user_export_jobs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_family_sharing (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -3095,6 +3182,21 @@ CREATE TABLE public.user_identity_verification (
   submitted_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_identity_verification_pkey PRIMARY KEY (id),
   CONSTRAINT user_identity_verification_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.user_inactive_account_manager (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  is_enabled boolean DEFAULT false,
+  timeout_months integer DEFAULT 3 CHECK (timeout_months = ANY (ARRAY[3, 6, 12, 18])),
+  notify_contacts_before boolean DEFAULT true,
+  auto_reply_enabled boolean DEFAULT false,
+  auto_reply_message text,
+  data_deletion_enabled boolean DEFAULT true,
+  trusted_contacts jsonb DEFAULT '[]'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_inactive_account_manager_pkey PRIMARY KEY (id),
+  CONSTRAINT user_inactive_account_manager_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_interest_scores (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -3733,6 +3835,21 @@ CREATE TABLE public.user_search_history (
   CONSTRAINT user_search_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_search_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_security_activity (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  event_type text NOT NULL CHECK (event_type = ANY (ARRAY['login'::text, 'password_change'::text, '2fa_enabled'::text, '2fa_disabled'::text, 'recovery_email_added'::text, 'recovery_phone_added'::text, 'device_added'::text, 'device_removed'::text, 'app_connected'::text, 'app_disconnected'::text, 'suspicious_activity'::text, 'location_blocked'::text])),
+  event_title text NOT NULL,
+  event_description text,
+  ip_address inet,
+  location text,
+  device_info text,
+  was_you boolean,
+  reported_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_security_activity_pkey PRIMARY KEY (id),
+  CONSTRAINT user_security_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_security_checkup (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
@@ -3860,6 +3977,22 @@ CREATE TABLE public.user_social_graph (
   CONSTRAINT user_social_graph_pkey PRIMARY KEY (id),
   CONSTRAINT user_social_graph_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.user_storage_usage (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  total_storage_bytes bigint DEFAULT 0,
+  used_storage_bytes bigint DEFAULT 0,
+  free_storage_bytes bigint DEFAULT 0,
+  drive_usage_bytes bigint DEFAULT 0,
+  photos_usage_bytes bigint DEFAULT 0,
+  gmail_usage_bytes bigint DEFAULT 0,
+  other_usage_bytes bigint DEFAULT 0,
+  storage_plan text DEFAULT 'free'::text CHECK (storage_plan = ANY (ARRAY['free'::text, 'basic'::text, 'standard'::text, 'premium'::text])),
+  plan_expires_at timestamp with time zone,
+  last_calculated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_storage_usage_pkey PRIMARY KEY (id),
+  CONSTRAINT user_storage_usage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_stories (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -3971,6 +4104,18 @@ CREATE TABLE public.user_support_tickets (
   CONSTRAINT user_support_tickets_pkey PRIMARY KEY (id),
   CONSTRAINT user_support_tickets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_support_tickets_assigned_agent_id_fkey FOREIGN KEY (assigned_agent_id) REFERENCES public.support_agents(id)
+);
+CREATE TABLE public.user_third_party_permissions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  app_id uuid NOT NULL,
+  permission_type text NOT NULL CHECK (permission_type = ANY (ARRAY['profile'::text, 'email'::text, 'contacts'::text, 'calendar'::text, 'photos'::text, 'location'::text, 'drive'::text, 'sensitive'::text])),
+  granted_at timestamp with time zone DEFAULT now(),
+  last_used_at timestamp with time zone,
+  is_active boolean DEFAULT true,
+  revoked_at timestamp with time zone,
+  CONSTRAINT user_third_party_permissions_pkey PRIMARY KEY (id),
+  CONSTRAINT user_third_party_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_trusted_contacts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
