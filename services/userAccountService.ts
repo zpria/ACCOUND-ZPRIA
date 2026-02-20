@@ -2063,3 +2063,317 @@ export default {
   getUserOnboarding,
   updateOnboardingStep
 };
+
+// ==================== ENHANCED ACCOUNT MANAGEMENT ====================
+
+export const getUserAuditLogs = async (userId: string, limit: number = 100): Promise<UserAuditLog[]> => {
+  const { data, error } = await supabase
+    .from('user_audit_logs')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserAuditLog);
+};
+
+export const getUserBackupCodes = async (userId: string): Promise<UserBackupCode[]> => {
+  const { data, error } = await supabase
+    .from('user_backup_codes')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserBackupCode);
+};
+
+export const getUserAccountRecoveryOptions = async (userId: string): Promise<UserAccountRecovery[]> => {
+  const { data, error } = await supabase
+    .from('user_account_recovery')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserAccountRecovery);
+};
+
+export const getUserSecurityQuestions = async (userId: string): Promise<UserSecurityQuestion[]> => {
+  const { data, error } = await supabase
+    .from('user_security_questions')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserSecurityQuestion);
+};
+
+export const getUserTrustedDevices = async (userId: string): Promise<UserTrustedDevice[]> => {
+  const { data, error } = await supabase
+    .from('user_trusted_devices')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserTrustedDevice);
+};
+
+export const getUserSessionPreferences = async (userId: string): Promise<UserSessionPreference[]> => {
+  const { data, error } = await supabase
+    .from('user_session_preferences')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserSessionPreference);
+};
+
+export const getUserAccountHistory = async (userId: string, limit: number = 50): Promise<UserAccountHistory[]> => {
+  const { data, error } = await supabase
+    .from('user_account_history')
+    .select('*')
+    .eq('user_id', userId)
+    .order('changed_at', { ascending: false })
+    .limit(limit);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToUserAccountHistory);
+};
+
+export const getUserLoginHistory = async (userId: string, limit: number = 100): Promise<LoginHistory[]> => {
+  const { data, error } = await supabase
+    .from('login_history')
+    .select('*')
+    .eq('user_id', userId)
+    .order('login_time', { ascending: false })
+    .limit(limit);
+  
+  if (error || !data) return [];
+  return data.map(mapDatabaseToLoginHistory);
+};
+
+
+// ==================== DATA MAPPERS FOR ENHANCED ACCOUNT MANAGEMENT ====================
+
+function mapDatabaseToUserAuditLog(data: any): UserAuditLog {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    action: data.action,
+    tableName: data.table_name,
+    recordId: data.record_id,
+    oldValues: data.old_values,
+    newValues: data.new_values,
+    ipAddress: data.ip_address,
+    userAgent: data.user_agent,
+    createdAt: data.created_at
+  };
+}
+
+function mapUserAuditLogToDatabase(auditLog: Partial<UserAuditLog>): any {
+  return {
+    user_id: auditLog.userId,
+    action: auditLog.action,
+    table_name: auditLog.tableName,
+    record_id: auditLog.recordId,
+    old_values: auditLog.oldValues,
+    new_values: auditLog.newValues,
+    ip_address: auditLog.ipAddress,
+    user_agent: auditLog.userAgent
+  };
+}
+
+function mapDatabaseToUserBackupCode(data: any): UserBackupCode {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    backupCodeHash: data.backup_code_hash,
+    isUsed: data.is_used,
+    usedAt: data.used_at,
+    createdAt: data.created_at
+  };
+}
+
+function mapUserBackupCodeToDatabase(backupCode: Partial<UserBackupCode>): any {
+  return {
+    user_id: backupCode.userId,
+    backup_code_hash: backupCode.backupCodeHash,
+    is_used: backupCode.isUsed,
+    used_at: backupCode.usedAt
+  };
+}
+
+function mapDatabaseToUserAccountRecovery(data: any): UserAccountRecovery {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    recoveryType: data.recovery_type,
+    recoveryValue: data.recovery_value,
+    isVerified: data.is_verified,
+    verifiedAt: data.verified_at,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+  };
+}
+
+function mapUserAccountRecoveryToDatabase(recovery: Partial<UserAccountRecovery>): any {
+  return {
+    user_id: recovery.userId,
+    recovery_type: recovery.recoveryType,
+    recovery_value: recovery.recoveryValue,
+    is_verified: recovery.isVerified,
+    verified_at: recovery.verifiedAt,
+    updated_at: recovery.updatedAt
+  };
+}
+
+function mapDatabaseToUserSecurityQuestion(data: any): UserSecurityQuestion {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    question: data.question,
+    answerHash: data.answer_hash,
+    createdAt: data.created_at
+  };
+}
+
+function mapUserSecurityQuestionToDatabase(question: Partial<UserSecurityQuestion>): any {
+  return {
+    user_id: question.userId,
+    question: question.question,
+    answer_hash: question.answerHash
+  };
+}
+
+function mapDatabaseToUserTrustedDevice(data: any): UserTrustedDevice {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    deviceId: data.device_id,
+    deviceName: data.device_name,
+    deviceType: data.device_type,
+    os: data.os,
+    browser: data.browser,
+    fingerprint: data.fingerprint,
+    ipAddress: data.ip_address,
+    isTrusted: data.is_trusted,
+    trustedUntil: data.trusted_until,
+    createdAt: data.created_at,
+    lastUsedAt: data.last_used_at
+  };
+}
+
+function mapUserTrustedDeviceToDatabase(device: Partial<UserTrustedDevice>): any {
+  return {
+    user_id: device.userId,
+    device_id: device.deviceId,
+    device_name: device.deviceName,
+    device_type: device.deviceType,
+    os: device.os,
+    browser: device.browser,
+    fingerprint: device.fingerprint,
+    ip_address: device.ipAddress,
+    is_trusted: device.isTrusted,
+    trusted_until: device.trustedUntil,
+    last_used_at: device.lastUsedAt
+  };
+}
+
+function mapDatabaseToUserSessionPreference(data: any): UserSessionPreference {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    sessionId: data.session_id,
+    preferences: data.preferences,
+    createdAt: data.created_at,
+    expiresAt: data.expires_at
+  };
+}
+
+function mapUserSessionPreferenceToDatabase(preference: Partial<UserSessionPreference>): any {
+  return {
+    user_id: preference.userId,
+    session_id: preference.sessionId,
+    preferences: preference.preferences,
+    expires_at: preference.expiresAt
+  };
+}
+
+function mapDatabaseToUserAccountHistory(data: any): UserAccountHistory {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    changeType: data.change_type,
+    description: data.description,
+    oldValue: data.old_value,
+    newValue: data.new_value,
+    ipAddress: data.ip_address,
+    userAgent: data.user_agent,
+    changedAt: data.changed_at
+  };
+}
+
+function mapUserAccountHistoryToDatabase(history: Partial<UserAccountHistory>): any {
+  return {
+    user_id: history.userId,
+    change_type: history.changeType,
+    description: history.description,
+    old_value: history.oldValue,
+    new_value: history.newValue,
+    ip_address: history.ipAddress,
+    user_agent: history.userAgent
+  };
+}
+
+function mapDatabaseToLoginHistory(data: any): LoginHistory {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    deviceName: data.device_name,
+    deviceType: data.device_type,
+    browser: data.browser,
+    location: data.location,
+    ipAddress: data.ip_address,
+    loginTime: data.login_time,
+    isCurrent: data.is_current,
+    sessionId: data.session_id,
+    success: data.success,
+    failureReason: data.failure_reason
+  };
+}
+
+function mapLoginHistoryToDatabase(loginHistory: Partial<LoginHistory>): any {
+  return {
+    user_id: loginHistory.userId,
+    device_name: loginHistory.deviceName,
+    device_type: loginHistory.deviceType,
+    browser: loginHistory.browser,
+    location: loginHistory.location,
+    ip_address: loginHistory.ipAddress,
+    login_time: loginHistory.loginTime,
+    is_current: loginHistory.isCurrent,
+    session_id: loginHistory.sessionId,
+    success: loginHistory.success,
+    failure_reason: loginHistory.failureReason
+  };
+}
+
+// Export enhanced account management mapper functions
+export const enhancedMappers = {
+  mapDatabaseToUserAuditLog,
+  mapUserAuditLogToDatabase,
+  mapDatabaseToUserBackupCode,
+  mapUserBackupCodeToDatabase,
+  mapDatabaseToUserAccountRecovery,
+  mapUserAccountRecoveryToDatabase,
+  mapDatabaseToUserSecurityQuestion,
+  mapUserSecurityQuestionToDatabase,
+  mapDatabaseToUserTrustedDevice,
+  mapUserTrustedDeviceToDatabase,
+  mapDatabaseToUserSessionPreference,
+  mapUserSessionPreferenceToDatabase,
+  mapDatabaseToUserAccountHistory,
+  mapUserAccountHistoryToDatabase,
+  mapDatabaseToLoginHistory,
+  mapLoginHistoryToDatabase
+};
