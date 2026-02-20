@@ -23,6 +23,7 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const LegalPage = React.lazy(() => import('./pages/LegalPage'));
 const SupportPage = React.lazy(() => import('./pages/SupportPage'));
 const AccountServicesPage = React.lazy(() => import('./AccountManagement/AccountServicesPage'));
+const AccountManagementPage = React.lazy(() => import('./AccountManagement/AccountManagementPage'));
 const DiagnosticsPage = React.lazy(() => import('./pages/DiagnosticsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 const TeamsPage = React.lazy(() => import('./pages/TeamsPage'));
@@ -290,7 +291,7 @@ const App: React.FC = () => {
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/security/2fa-setup" element={<TwoFactorSetupPage />} />
           <Route path="/security/devices" element={<DevicesPage />} />
-          <Route path="/account" element={<AccountDashboardPage />} />
+          <Route path="/account" element={<AccountManagementPage />} />
           <Route path="/account/profile" element={<ProfilePage />} />
           <Route path="/account/security" element={<SecuritySettingsPage />} />
           <Route path="/account/devices" element={<DeviceManagementPage />} />
