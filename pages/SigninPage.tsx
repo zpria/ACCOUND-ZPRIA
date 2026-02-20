@@ -7,6 +7,7 @@ import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { hashPassword, handleLoginAttempt, supabase } from '../services/supabaseService';
 import { sendWelcomeAlert } from '../services/emailService';
+import { getFullDeviceInfo, saveDeviceToDatabase, logActivity } from '../services/deviceDetection';
 
 interface Props {
   onLogin: (user: UserProfile) => void;
@@ -20,6 +21,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [foundUser, setFoundUser] = useState<any>(null);
+  const isAddingAccount = new URLSearchParams(window.location.search).get('add_account') === 'true';
 
   const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +63,16 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
       const hPassword = await hashPassword(password);
       const user = await handleLoginAttempt(identifier.trim().toLowerCase(), hPassword);
       
+      // Get device info and save
+      const deviceInfo = await getFullDeviceInfo();
+      await saveDeviceToDatabase(user.id, deviceInfo);
+      
+      // Log activity
+      await logActivity(user.id, 'login', {
+        method: isAddingAccount ? 'account_switch' : 'password',
+        device_type: deviceInfo.device_type
+      });
+      
       const userProfile: UserProfile = {
         id: user.id,
         username: user.username,
@@ -74,8 +86,37 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
         gender: user.gender,
         isEmailVerified: user.is_email_verified,
         themePreference: user.theme_preference,
-        accountStatus: user.account_status
+        accountStatus: user.account_status,
+        theme_color: user.theme_color || '#0071e3'
       };
+
+      // Handle multi-account
+      const savedAccounts = localStorage.getItem('zpria_accounts');
+      let accounts = savedAccounts ? JSON.parse(savedAccounts) : [];
+      
+      // Check if account already exists
+      const existingIndex = accounts.findIndex((acc: any) => acc.id === user.id);
+      const accountData = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        avatar_url: user.avatar_url,
+        theme_color: user.theme_color || '#0071e3',
+        is_active: true
+      };
+      
+      if (existingIndex >= 0) {
+        accounts[existingIndex] = accountData;
+      } else {
+        // Mark all other accounts as inactive
+        accounts = accounts.map((acc: any) => ({ ...acc, is_active: false }));
+        accounts.push(accountData);
+      }
+      
+      localStorage.setItem('zpria_accounts', JSON.stringify(accounts));
+      localStorage.setItem('zpria_user', JSON.stringify(userProfile));
 
       onLogin(userProfile);
 

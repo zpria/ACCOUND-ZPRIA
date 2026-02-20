@@ -6,6 +6,7 @@ import { DEFAULT_THEME, LOGO_VARIANTS, ZPRIA_CORNER_LOGO } from './constants';
 import LoadingPage from './pages/LoadingPage';
 import DashboardPage from './pages/DashboardPage';
 import SignupPage from './pages/SignupPage';
+import AccountSwitcher from './components/AccountSwitcher';
 
 // Lazy load secondary pages
 const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
@@ -36,6 +37,7 @@ const NotificationPreferencesPage = React.lazy(() => import('./pages/Notificatio
 const PaymentMethodsPage = React.lazy(() => import('./pages/PaymentMethodsPage'));
 const OrderHistoryPage = React.lazy(() => import('./pages/OrderHistoryPage'));
 const ConnectedAppsPage = React.lazy(() => import('./pages/ConnectedAppsPage'));
+const ActivityLogsPage = React.lazy(() => import('./pages/ActivityLogsPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -166,22 +168,13 @@ const SubHeader = ({ user, onLogout }: { user: UserProfile | null, onLogout: () 
           ) : (
             <>
               <Link to="/help" className={navItemClass('/help')}>Help</Link>
-              <div className="relative">
-                <button 
-                  onClick={() => setShowPopover(!showPopover)}
-                  className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white font-black transition-transform active:scale-90 shadow-md ring-2 ring-white ring-offset-2 hover:ring-gray-200 overflow-hidden"
-                  style={{ backgroundColor: '#004d40' }}
-                >
-                  {user.firstName[0].toUpperCase()}
-                </button>
-                {showPopover && (
-                  <AccountPopover 
-                    user={user} 
-                    onLogout={() => { onLogout(); setShowPopover(false); }} 
-                    onClose={() => setShowPopover(false)} 
-                  />
-                )}
-              </div>
+              <AccountSwitcher 
+                currentUser={user}
+                onSwitchAccount={(newAccount) => {
+                  // Reload page to refresh with new account
+                  window.location.reload();
+                }}
+              />
             </>
           )}
         </nav>
@@ -290,6 +283,7 @@ const App: React.FC = () => {
                                                             <Route path="/account/payments" element={<PaymentMethodsPage />} />
                                                                       <Route path="/account/orders" element={<OrderHistoryPage />} />
                                                                                 <Route path="/account/apps" element={<ConnectedAppsPage />} />
+                                                                                          <Route path="/account/activity" element={<ActivityLogsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

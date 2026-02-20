@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Smartphone, User, Lock, ChevronRight, Bell, CreditCard, ShoppingBag, Link2 } from 'lucide-react';
+import { Shield, Smartphone, User, Lock, ChevronRight, Bell, CreditCard, ShoppingBag, Link2, Activity } from 'lucide-react';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 
 const AccountServicesPage: React.FC = () => {
@@ -69,6 +69,14 @@ const AccountServicesPage: React.FC = () => {
       icon: Link2,
       path: '/account/apps',
       color: 'bg-indigo-500',
+    },
+    {
+      id: 'activity',
+      title: 'Activity Log',
+      description: 'Track everything that happens in your account',
+      icon: Activity,
+      path: '/account/activity',
+      color: 'bg-violet-500',
     },
   ];
 

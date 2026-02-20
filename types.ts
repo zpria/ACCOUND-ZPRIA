@@ -22,6 +22,8 @@ export interface UserProfile {
   isEmailVerified: boolean;
   themePreference: string;
   accountStatus: 'active' | 'suspended' | 'banned';
+  theme_color?: string;
+  avatar_url?: string;
 }
 
 export interface AuthState {
