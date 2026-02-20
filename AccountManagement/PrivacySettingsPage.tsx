@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Eye, EyeOff, ChevronLeft, Shield, Database, Share2, Trash2, Download, Check, X, AlertTriangle } from 'lucide-react';
+import { Lock, Eye, EyeOff, ChevronLeft, Shield, Database, Share2, Trash2, Download, Check, X, AlertTriangle, Bell, Smartphone, Mail } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 
@@ -17,6 +16,16 @@ interface PrivacySettings {
   show_phone: boolean;
   allow_search_by_email: boolean;
   allow_search_by_phone: boolean;
+  
+  // Login notification settings (stored in users table)
+  login_notify_every_login: boolean;
+  login_notify_new_device_only: boolean;
+  login_notify_via_email: boolean;
+  login_notify_via_sms: boolean;
+  login_notify_via_push: boolean;
+  password_change_notify: boolean;
+  email_change_notify: boolean;
+  phone_change_notify: boolean;
 }
 
 const PrivacySettingsPage: React.FC = () => {
@@ -25,10 +34,10 @@ const PrivacySettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'data' | 'sharing' | 'account'>('data');
+  const [activeTab, setActiveTab] = useState<'data' | 'sharing' | 'account' | 'notifications'>('data');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
-  
+
   const [settings, setSettings] = useState<PrivacySettings>({
     analytics_consent: true,
     marketing_consent: false,
@@ -40,7 +49,17 @@ const PrivacySettingsPage: React.FC = () => {
     show_email: false,
     show_phone: false,
     allow_search_by_email: false,
-    allow_search_by_phone: false
+    allow_search_by_phone: false,
+    
+    // Login notification defaults
+    login_notify_every_login: true,
+    login_notify_new_device_only: false,
+    login_notify_via_email: true,
+    login_notify_via_sms: false,
+    login_notify_via_push: true,
+    password_change_notify: true,
+    email_change_notify: true,
+    phone_change_notify: true
   });
 
   const [dataStats, setDataStats] = useState({
@@ -64,29 +83,45 @@ const PrivacySettingsPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       // Fetch privacy settings from user_privacy_settings table
-      const { data, error } = await supabase
+      const { data: privacyData, error: privacyError } = await supabase
         .from('user_privacy_settings')
         .select('*')
         .eq('user_id', userData.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      // Fetch login notification settings from users table
+      const { data: userSettingsData, error: userSettingsError } = await supabase
+        .from('users')
+        .select('login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
+        .eq('id', userData.id)
+        .single();
 
-      if (data) {
-        setSettings({
-          analytics_consent: data.analytics_consent !== false,
-          marketing_consent: data.marketing_consent === true,
-          personalization_consent: data.personalization_consent !== false,
-          third_party_sharing: data.third_party_sharing === true,
-          cookie_consent: data.cookie_consent !== false,
-          data_retention_years: data.data_retention_years || 5,
-          profile_visibility: data.profile_visibility || 'public',
-          show_email: data.show_email === true,
-          show_phone: data.show_phone === true,
-          allow_search_by_email: data.allow_search_by_email === true,
-          allow_search_by_phone: data.allow_search_by_phone === true
-        });
-      }
+      // Combine both sets of settings
+      const combinedSettings: PrivacySettings = {
+        analytics_consent: privacyData?.analytics_consent !== false,
+        marketing_consent: privacyData?.marketing_consent === true,
+        personalization_consent: privacyData?.personalization_consent !== false,
+        third_party_sharing: privacyData?.third_party_sharing === true,
+        cookie_consent: privacyData?.cookie_consent !== false,
+        data_retention_years: privacyData?.data_retention_years || 5,
+        profile_visibility: privacyData?.profile_visibility || 'public',
+        show_email: privacyData?.show_email === true,
+        show_phone: privacyData?.show_phone === true,
+        allow_search_by_email: privacyData?.allow_search_by_email === true,
+        allow_search_by_phone: privacyData?.allow_search_by_phone === true,
+        
+        // Login notification settings from users table
+        login_notify_every_login: userSettingsData?.login_notify_every_login ?? true,
+        login_notify_new_device_only: userSettingsData?.login_notify_new_device_only ?? false,
+        login_notify_via_email: userSettingsData?.login_notify_via_email ?? true,
+        login_notify_via_sms: userSettingsData?.login_notify_via_sms ?? false,
+        login_notify_via_push: userSettingsData?.login_notify_via_push ?? true,
+        password_change_notify: userSettingsData?.password_change_notify ?? true,
+        email_change_notify: userSettingsData?.email_change_notify ?? true,
+        phone_change_notify: userSettingsData?.phone_change_notify ?? true
+      };
+
+      setSettings(combinedSettings);
 
       // Calculate data stats
       await calculateDataStats(userData.id);
@@ -121,18 +156,31 @@ const PrivacySettingsPage: React.FC = () => {
       // Update local state immediately for responsive UI
       setSettings(prev => ({ ...prev, [setting]: value }));
 
-      // Upsert to database
-      const { error } = await supabase
-        .from('user_privacy_settings')
-        .upsert({
-          user_id: userData.id,
-          [setting]: value,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+      // Determine which table to update based on the setting
+      if (['login_notify_every_login', 'login_notify_new_device_only', 'login_notify_via_email', 
+           'login_notify_via_sms', 'login_notify_via_push', 'password_change_notify', 
+           'email_change_notify', 'phone_change_notify'].includes(setting)) {
+        // Update users table for login notification settings
+        const { error } = await supabase
+          .from('users')
+          .update({ [setting]: value })
+          .eq('id', userData.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Update user_privacy_settings table for other settings
+        const { error } = await supabase
+          .from('user_privacy_settings')
+          .upsert({
+            user_id: userData.id,
+            [setting]: value,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (error) throw error;
+      }
 
       setSuccess('Privacy setting updated');
       setTimeout(() => setSuccess(''), 3000);
@@ -225,6 +273,7 @@ const PrivacySettingsPage: React.FC = () => {
   const tabs = [
     { id: 'data', label: 'Your Data', icon: Database },
     { id: 'sharing', label: 'Data Sharing', icon: Share2 },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'account', label: 'Account Control', icon: Shield }
   ];
 
@@ -508,6 +557,163 @@ const PrivacySettingsPage: React.FC = () => {
                 >
                   <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.third_party_sharing ? 'translate-x-7' : 'translate-x-1'}`} />
                 </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notifications' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-2">Security Notifications</h2>
+                <p className="text-[#86868b]">Manage notifications for account security events</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                      <Bell className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">Notify on every login</p>
+                      <p className="text-sm text-[#86868b]">Send notification for every sign-in</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('login_notify_every_login', !settings.login_notify_every_login)}
+                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notify_every_login ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notify_every_login ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">Notify only for new devices</p>
+                      <p className="text-sm text-[#86868b]">Only send notification for unrecognized devices</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('login_notify_new_device_only', !settings.login_notify_new_device_only)}
+                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notify_new_device_only ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notify_new_device_only ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">Email notifications</p>
+                      <p className="text-sm text-[#86868b]">Send security alerts via email</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('login_notify_via_email', !settings.login_notify_via_email)}
+                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notify_via_email ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notify_via_email ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">SMS notifications</p>
+                      <p className="text-sm text-[#86868b]">Send security alerts via SMS</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('login_notify_via_sms', !settings.login_notify_via_sms)}
+                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notify_via_sms ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notify_via_sms ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                      <Bell className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">Push notifications</p>
+                      <p className="text-sm text-[#86868b]">Send security alerts via push notification</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('login_notify_via_push', !settings.login_notify_via_push)}
+                    className={`w-14 h-8 rounded-full transition-all ${settings.login_notify_via_push ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.login_notify_via_push ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                        <Shield className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-[#1d1d1f]">Password change notifications</p>
+                        <p className="text-sm text-[#86868b]">Notify when your password is changed</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSettingChange('password_change_notify', !settings.password_change_notify)}
+                      className={`w-14 h-8 rounded-full transition-all ${settings.password_change_notify ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                    >
+                      <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.password_change_notify ? 'translate-x-7' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-[#1d1d1f]">Email change notifications</p>
+                        <p className="text-sm text-[#86868b]">Notify when your email is changed</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSettingChange('email_change_notify', !settings.email_change_notify)}
+                      className={`w-14 h-8 rounded-full transition-all ${settings.email_change_notify ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                    >
+                      <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.email_change_notify ? 'translate-x-7' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0071e3]">
+                        <Smartphone className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-[#1d1d1f]">Phone change notifications</p>
+                        <p className="text-sm text-[#86868b]">Notify when your phone number is changed</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSettingChange('phone_change_notify', !settings.phone_change_notify)}
+                      className={`w-14 h-8 rounded-full transition-all ${settings.phone_change_notify ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
+                    >
+                      <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.phone_change_notify ? 'translate-x-7' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
