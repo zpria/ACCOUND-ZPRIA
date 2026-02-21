@@ -147,6 +147,7 @@ const PrivacySettingsPage: React.FC = () => {
   };
 
   const handleSettingChange = async (setting: keyof PrivacySettings, value: any) => {
+    console.log('handleSettingChange called with:', { setting, value });
     try {
       const savedUser = localStorage.getItem('zpria_user');
       if (!savedUser) return;
@@ -397,7 +398,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">Help us improve by sharing usage data</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('analytics_consent', !settings.analytics_consent)}
+                    onClick={() => {
+                      console.log('Analytics consent button clicked');
+                      handleSettingChange('analytics_consent', !settings.analytics_consent);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.analytics_consent ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.analytics_consent ? 'translate-x-7' : 'translate-x-1'}`} />
@@ -410,7 +414,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">Get personalized content and recommendations</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('personalization_consent', !settings.personalization_consent)}
+                    onClick={() => {
+                      console.log('Personalization consent button clicked');
+                      handleSettingChange('personalization_consent', !settings.personalization_consent);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.personalization_consent ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.personalization_consent ? 'translate-x-7' : 'translate-x-1'}`} />
@@ -476,7 +483,10 @@ const PrivacySettingsPage: React.FC = () => {
                   {(['public', 'friends', 'private'] as const).map((visibility) => (
                     <button
                       key={visibility}
-                      onClick={() => handleSettingChange('profile_visibility', visibility)}
+                      onClick={() => {
+                        console.log('Profile visibility button clicked:', visibility);
+                        handleSettingChange('profile_visibility', visibility);
+                      }}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         settings.profile_visibility === visibility
                           ? 'border-[#0071e3] bg-blue-50'
@@ -509,7 +519,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">Allow others to see your email address</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('show_email', !settings.show_email)}
+                    onClick={() => {
+                      console.log('Show email button clicked');
+                      handleSettingChange('show_email', !settings.show_email);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.show_email ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.show_email ? 'translate-x-7' : 'translate-x-1'}`} />
@@ -522,7 +535,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">Allow others to see your phone number</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('show_phone', !settings.show_phone)}
+                    onClick={() => {
+                      console.log('Show phone button clicked');
+                      handleSettingChange('show_phone', !settings.show_phone);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.show_phone ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.show_phone ? 'translate-x-7' : 'translate-x-1'}`} />
@@ -540,7 +556,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">People can find you using your email</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('allow_search_by_email', !settings.allow_search_by_email)}
+                    onClick={() => {
+                      console.log('Allow search by email button clicked');
+                      handleSettingChange('allow_search_by_email', !settings.allow_search_by_email);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.allow_search_by_email ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.allow_search_by_email ? 'translate-x-7' : 'translate-x-1'}`} />
@@ -553,7 +572,10 @@ const PrivacySettingsPage: React.FC = () => {
                     <p className="text-sm text-[#86868b]">People can find you using your phone</p>
                   </div>
                   <button
-                    onClick={() => handleSettingChange('allow_search_by_phone', !settings.allow_search_by_phone)}
+                    onClick={() => {
+                      console.log('Allow search by phone button clicked');
+                      handleSettingChange('allow_search_by_phone', !settings.allow_search_by_phone);
+                    }}
                     className={`w-14 h-8 rounded-full transition-all ${settings.allow_search_by_phone ? 'bg-[#0071e3]' : 'bg-gray-300'}`}
                   >
                     <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${settings.allow_search_by_phone ? 'translate-x-7' : 'translate-x-1'}`} />

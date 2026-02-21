@@ -54,12 +54,18 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
 
 export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>): Promise<boolean> => {
   const dbUpdates = mapUserProfileToDatabase(updates);
+  console.log('Updating user profile with:', dbUpdates);
   const { error } = await supabase
     .from('users')
     .update(dbUpdates)
     .eq('id', userId);
   
-  return !error;
+  if (error) {
+    console.error('Failed to update user profile:', error);
+    return false;
+  }
+  
+  return true;
 };
 
 // ==================== USER ADDRESSES ====================
@@ -838,8 +844,11 @@ function mapUserProfileToDatabase(profile: Partial<UserProfile>): any {
     coverPhotoUrl: 'cover_photo_url',
     maritalStatus: 'marital_status',
     hasChildren: 'has_children',
+    education: 'education',
     companyName: 'company_name',
     monthlyIncomeRange: 'monthly_income_range',
+    religion: 'religion',
+    lifestyle: 'lifestyle',
     postalCode: 'postal_code',
     emailNewsletter: 'email_newsletter',
     smsNotification: 'sms_notification',

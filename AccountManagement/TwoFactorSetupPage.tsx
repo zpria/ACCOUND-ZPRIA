@@ -26,18 +26,22 @@ const TwoFactorSetupPage: React.FC = () => {
 
   const checkExisting2FA = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const savedUser = localStorage.getItem('zpria_user');
+      if (!savedUser) {
         navigate('/signin');
         return;
       }
-
-      const { data } = await supabase
+        
+      const userData = JSON.parse(savedUser);
+        
+      const { data, error } = await supabase
         .from('users')
         .select('two_factor_enabled, two_factor_method')
-        .eq('id', user.id)
+        .eq('id', userData.id)
         .single();
-
+        
+      if (error) throw error;
+        
       if (data?.two_factor_enabled) {
         // Already enabled, show management options
         setSelectedMethod(data.two_factor_method || '');
@@ -45,6 +49,7 @@ const TwoFactorSetupPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Error checking 2FA status:', err);
+      setError('Failed to load 2FA settings');
     } finally {
       setIsLoading(false);
     }
@@ -82,13 +87,16 @@ const TwoFactorSetupPage: React.FC = () => {
     } else if (methodId === 'email') {
       // Load user's email from database
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+        const savedUser = localStorage.getItem('zpria_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
           const { data, error } = await supabase
             .from('users')
             .select('email')
-            .eq('id', user.id)
+            .eq('id', userData.id)
             .single();
+          
+          if (error) throw error;
           
           if (data) {
             setEmail(data.email);
@@ -96,6 +104,7 @@ const TwoFactorSetupPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Error loading email:', err);
+        setError('Failed to load email address');
       }
       setStep('email-setup');
     } else {
@@ -133,23 +142,25 @@ const TwoFactorSetupPage: React.FC = () => {
     setIsLoading(true);
     try {
       // Verify OTP and enable 2FA
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
+      const savedUser = localStorage.getItem('zpria_user');
+      if (!savedUser) throw new Error('Not authenticated');
+        
+      const userData = JSON.parse(savedUser);
+        
       // Simulate verification
       await new Promise(resolve => setTimeout(resolve, 1500));
-
+        
       // Save 2FA settings using the user account service
-      const updateSuccess = await updateUserProfile(user.id, {
+      const updateSuccess = await updateUserProfile(userData.id, {
         twoFactorEnabled: true,
         twoFactorMethod: selectedMethod === 'authenticator' ? 'totp' : selectedMethod,
         updatedAt: new Date().toISOString()
       });
-
+        
       if (!updateSuccess) {
         throw new Error('Failed to update 2FA settings');
       }
-
+        
       setStep('complete');
     } catch (err: any) {
       setError(err.message);

@@ -11,26 +11,27 @@ interface UserProfile {
   id: string;
   username: string;
   login_id: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   mobile: string;
   address: string;
   dob: string;
   gender: string;
-  avatar_url?: string;
+  avatarUrl?: string;
   bio?: string;
   occupation?: string;
   education?: string;
-  marital_status?: string;
-  has_children?: boolean;
-  monthly_income_range?: string;
+  maritalStatus?: string;
+  hasChildren?: boolean;
+  monthlyIncomeRange?: string;
   city?: string;
   country?: string;
-  postal_code?: string;
+  postalCode?: string;
   language?: string;
   religion?: string;
   lifestyle?: string;
+  themePreference?: string;
 }
 
 const ProfilePage: React.FC = () => {
@@ -63,7 +64,8 @@ const ProfilePage: React.FC = () => {
     postalCode: '',
     language: 'bn',
     religion: '',
-    lifestyle: ''
+    lifestyle: '',
+    themePreference: 'purple'
   });
 
   useEffect(() => {
@@ -91,7 +93,6 @@ const ProfilePage: React.FC = () => {
 
       if (data) {
         setProfile({
-          ...profile,
           id: data.id || '',
           username: data.username || '',
           login_id: data.login_id || '',
@@ -114,6 +115,7 @@ const ProfilePage: React.FC = () => {
           language: data.language || 'bn',
           religion: data.religion || '',
           lifestyle: data.lifestyle || '',
+          themePreference: data.themePreference || data.theme_preference || 'purple',
           avatarUrl: data.avatarUrl || data.avatar_url || '',
         });
       }
@@ -131,7 +133,7 @@ const ProfilePage: React.FC = () => {
 
     try {
       // Use the user account service to update profile
-      const updateSuccess = await updateUserProfile(profile.id, {
+      console.log('Updating profile with:', {
         firstName: profile.firstName,
         lastName: profile.lastName,
         address: profile.address,
@@ -151,9 +153,56 @@ const ProfilePage: React.FC = () => {
         lifestyle: profile.lifestyle,
         updatedAt: new Date().toISOString()
       });
+      
+      const updateSuccess = await updateUserProfile(profile.id, {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        address: profile.address,
+        dob: profile.dob,
+        gender: profile.gender,
+        bio: profile.bio,
+        occupation: profile.occupation,
+        education: profile.education,
+        maritalStatus: profile.maritalStatus,
+        hasChildren: profile.hasChildren,
+        monthlyIncomeRange: profile.monthlyIncomeRange,
+        city: profile.city,
+        country: profile.country,
+        postalCode: profile.postalCode,
+        language: profile.language,
+        religion: profile.religion,
+        lifestyle: profile.lifestyle,
+        themePreference: profile.themePreference,
+        updatedAt: new Date().toISOString()
+      });
 
       if (!updateSuccess) {
         throw new Error('Failed to update profile');
+      }
+
+      // Update localStorage with new profile data
+      const savedUser = localStorage.getItem('zpria_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        userData.firstName = profile.firstName;
+        userData.lastName = profile.lastName;
+        userData.address = profile.address;
+        userData.dob = profile.dob;
+        userData.gender = profile.gender;
+        userData.bio = profile.bio;
+        userData.occupation = profile.occupation;
+        userData.education = profile.education;
+        userData.maritalStatus = profile.maritalStatus;
+        userData.hasChildren = profile.hasChildren;
+        userData.monthlyIncomeRange = profile.monthlyIncomeRange;
+        userData.city = profile.city;
+        userData.country = profile.country;
+        userData.postalCode = profile.postalCode;
+        userData.language = profile.language;
+        userData.religion = profile.religion;
+        userData.lifestyle = profile.lifestyle;
+        userData.themePreference = profile.themePreference;
+        localStorage.setItem('zpria_user', JSON.stringify(userData));
       }
 
       setSuccess('Profile updated successfully');
@@ -186,6 +235,14 @@ const ProfilePage: React.FC = () => {
           throw new Error('Failed to update profile picture');
         }
 
+        // Update localStorage with new avatar
+        const savedUser = localStorage.getItem('zpria_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          userData.avatarUrl = base64;
+          localStorage.setItem('zpria_user', JSON.stringify(userData));
+        }
+        
         // Reload profile to reflect changes
         await loadProfile();
         
@@ -382,10 +439,11 @@ const ProfilePage: React.FC = () => {
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
                   >
                     <option value="">Select Status</option>
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                    <option value="Divorced">Divorced</option>
-                    <option value="Widowed">Widowed</option>
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                    <option value="divorced">Divorced</option>
+                    <option value="widowed">Widowed</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
                   </select>
                 </div>
                 <div>
@@ -518,8 +576,8 @@ const ProfilePage: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-[#86868b] mb-2">Monthly Income Range</label>
                 <select
-                  value={profile.monthly_income_range || ''}
-                  onChange={(e) => handleChange('monthly_income_range', e.target.value)}
+                  value={profile.monthlyIncomeRange || ''}
+                  onChange={(e) => handleChange('monthlyIncomeRange', e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
                 >
                   <option value="">Select Range</option>
@@ -530,13 +588,7 @@ const ProfilePage: React.FC = () => {
                   <option value="200000+">৳200,000+</option>
                 </select>
               </div>
-            </div>
-          )}
 
-          {activeTab === 'preferences' && (
-            <div className="space-y-6">
-              <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-6">Preferences</h2>
-              
               <div>
                 <label className="block text-sm font-medium text-[#86868b] mb-2">Preferred Language</label>
                 <select
@@ -579,6 +631,47 @@ const ProfilePage: React.FC = () => {
                   <option value="Relaxed">Relaxed</option>
                   <option value="Busy">Busy</option>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'preferences' && (
+            <div className="space-y-6">
+              <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-6">Preferences</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-[#86868b] mb-2">Theme Preference</label>
+                  <select
+                    value={profile.themePreference || 'purple'}
+                    onChange={(e) => handleChange('themePreference', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
+                  >
+                    <option value="purple">Purple</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="dark">Dark</option>
+                    <option value="coral">Coral</option>
+                    <option value="lime">Lime</option>
+                    <option value="forest">Forest</option>
+                    <option value="indigo">Indigo</option>
+                    <option value="royal">Royal</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="nature">Nature</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-[#86868b] mb-2">Font Size</label>
+                  <select
+                    value={profile.preferredFontSize || 'medium'}
+                    onChange={(e) => handleChange('preferredFontSize', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all bg-white"
+                  >
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                  </select>
+                </div>
               </div>
             </div>
           )}

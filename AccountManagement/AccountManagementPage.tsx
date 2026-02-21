@@ -227,7 +227,6 @@ const AccountManagementPage: React.FC = () => {
     { icon: Heart, label: 'Wishlist', path: '/account/wishlist', color: 'bg-pink-500', badge: stats.wishlistCount },
     { icon: CreditCard, label: 'Payments', path: '/account/payments', color: 'bg-green-500' },
     { icon: Shield, label: 'Security', path: '/account/security', color: 'bg-purple-500' },
-    { icon: Bell, label: 'Notifications', path: '/account/notifications', color: 'bg-orange-500', badge: stats.unreadNotifications },
     { icon: MapPin, label: 'Addresses', path: '/account/addresses', color: 'bg-red-500' },
     { icon: Wallet, label: 'Wallet', path: '/account/wallet', color: 'bg-cyan-500' },
     { icon: Gift, label: 'Rewards', path: '/account/rewards', color: 'bg-yellow-500' },
@@ -304,14 +303,6 @@ const AccountManagementPage: React.FC = () => {
       icon: Lock,
       path: '/account/privacy',
       color: 'bg-orange-500',
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      description: 'Choose what you want to be notified about via email, SMS, and push',
-      icon: Bell,
-      path: '/account/notifications',
-      color: 'bg-pink-500',
     },
     {
       id: 'payments',

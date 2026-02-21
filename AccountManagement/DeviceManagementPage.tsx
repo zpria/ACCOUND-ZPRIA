@@ -77,17 +77,32 @@ const DeviceManagementPage: React.FC = () => {
   };
 
   const generateDeviceDisplayName = (device: any): string => {
-    if (device.os && device.device_type) {
-      if (device.device_type === 'mobile') {
-        return `${device.os} Phone`;
-      } else if (device.device_type === 'tablet') {
-        return `${device.os} Tablet`;
-      } else {
-        return `${device.os} Computer`;
-      }
-    } else if (device.browser) {
-      return `${device.browser} on ${device.device_type}`;
+    // First check if there's a custom device name
+    if (device.device_name) {
+      return device.device_name;
     }
+    
+    // Generate a name based on available information
+    if (device.os && device.device_type) {
+      const osName = device.os.replace('Windows', 'Win').replace('Mac OS', 'Mac').split(' ')[0];
+      if (device.device_type === 'mobile') {
+        return `${osName} Phone`;
+      } else if (device.device_type === 'tablet') {
+        return `${osName} Tablet`;
+      } else {
+        return `${osName} Computer`;
+      }
+    } else if (device.os) {
+      const osName = device.os.replace('Windows', 'Win').replace('Mac OS', 'Mac').split(' ')[0];
+      return `${osName} Device`;
+    } else if (device.browser && device.device_type) {
+      return `${device.browser} on ${device.device_type}`;
+    } else if (device.browser) {
+      return `${device.browser} Browser`;
+    } else if (device.device_type) {
+      return `${device.device_type.charAt(0).toUpperCase() + device.device_type.slice(1)} Device`;
+    }
+    
     return 'Unknown Device';
   };
 

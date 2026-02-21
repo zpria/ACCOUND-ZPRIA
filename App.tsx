@@ -24,6 +24,8 @@ const LegalPage = React.lazy(() => import('./pages/LegalPage'));
 const SupportPage = React.lazy(() => import('./pages/SupportPage'));
 const AccountServicesPage = React.lazy(() => import('./AccountManagement/AccountServicesPage'));
 const AccountManagementPage = React.lazy(() => import('./AccountManagement/AccountManagementPage'));
+const PasswordVerificationPage = React.lazy(() => import('./AccountManagement/PasswordVerificationPage'));
+const LoginNotificationSetupPage = React.lazy(() => import('./AccountManagement/LoginNotificationSetupPage'));
 const DiagnosticsPage = React.lazy(() => import('./pages/DiagnosticsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 const TeamsPage = React.lazy(() => import('./pages/TeamsPage'));
@@ -37,7 +39,6 @@ const DeviceManagementPage = React.lazy(() => import('./AccountManagement/Device
 const PrivacySettingsPage = React.lazy(() => import('./AccountManagement/PrivacySettingsPage'));
 const NotificationPreferencesPage = React.lazy(() => import('./AccountManagement/NotificationPreferencesPage'));
 const PaymentMethodsPage = React.lazy(() => import('./AccountManagement/PaymentMethodsPage'));
-const OrderHistoryPage = React.lazy(() => import('./AccountManagement/OrderHistoryPage'));
 const ConnectedAppsPage = React.lazy(() => import('./AccountManagement/ConnectedAppsPage'));
 const ActivityLogsPage = React.lazy(() => import('./AccountManagement/ActivityLogsPage'));
 const AccountDashboardPage = React.lazy(() => import('./AccountManagement/AccountDashboardPage'));
@@ -48,6 +49,7 @@ const SubscriptionsPage = React.lazy(() => import('./AccountManagement/Subscript
 const AddressesPage = React.lazy(() => import('./AccountManagement/AddressesPage'));
 const RewardsPage = React.lazy(() => import('./AccountManagement/RewardsPage'));
 const PreferencesPage = React.lazy(() => import('./AccountManagement/PreferencesPage'));
+const AccountDeletionPage = React.lazy(() => import('./AccountManagement/AccountDeletionPage'));
 
 const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogout: () => void, onClose: () => void }) => {
   const navigate = useNavigate();
@@ -78,7 +80,11 @@ const AccountPopover = ({ user, onLogout, onClose }: { user: UserProfile, onLogo
       <div className="flex flex-col items-center px-6 pb-6">
         <div className="relative mb-4 group cursor-pointer">
           <div className="w-[84px] h-[84px] rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl border-4 border-[#303134]" style={{ backgroundColor: '#004d40' }}>
-            {user.firstName[0]}
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              user.firstName[0]
+            )}
           </div>
           <div className="absolute bottom-0 right-0 bg-[#303134] border border-[#3c4043] p-1.5 rounded-full shadow-lg">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
@@ -293,12 +299,12 @@ const App: React.FC = () => {
           <Route path="/security/devices" element={<DevicesPage />} />
           <Route path="/account" element={<AccountManagementPage />} />
           <Route path="/account/profile" element={<ProfilePage />} />
-          <Route path="/account/security" element={<SecuritySettingsPage />} />
+          <Route path="/account/security" element={<PasswordVerificationPage />} />
+          <Route path="/security-settings" element={<SecuritySettingsPage />} />
+          <Route path="/security/login-notifications" element={<LoginNotificationSetupPage />} />
           <Route path="/account/devices" element={<DeviceManagementPage />} />
           <Route path="/account/privacy" element={<PrivacySettingsPage />} />
-          <Route path="/account/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/account/payments" element={<PaymentMethodsPage />} />
-          <Route path="/account/orders" element={<OrderHistoryPage />} />
           <Route path="/account/apps" element={<ConnectedAppsPage />} />
           <Route path="/account/activity" element={<ActivityLogsPage />} />
           <Route path="/account/wishlist" element={<WishlistPage />} />
@@ -308,6 +314,7 @@ const App: React.FC = () => {
           <Route path="/account/addresses" element={<AddressesPage />} />
           <Route path="/account/rewards" element={<RewardsPage />} />
           <Route path="/account/preferences" element={<PreferencesPage />} />
+          <Route path="/account/delete" element={<AccountDeletionPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

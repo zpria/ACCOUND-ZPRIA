@@ -29,6 +29,7 @@ const PaymentMethodsPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   
@@ -44,6 +45,7 @@ const PaymentMethodsPage: React.FC = () => {
 
   useEffect(() => {
     loadPaymentMethods();
+    loadPaymentHistory();
     detectUserLocation();
   }, []);
 
@@ -110,6 +112,30 @@ const PaymentMethodsPage: React.FC = () => {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadPaymentHistory = async () => {
+    try {
+      const savedUser = localStorage.getItem('zpria_user');
+      if (!savedUser) return;
+
+      const userData = JSON.parse(savedUser);
+      
+      const { data, error } = await supabase
+        .from('user_purchases')
+        .select('*')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      if (data) {
+        setPaymentHistory(data);
+      }
+    } catch (err: any) {
+      console.error('Failed to load payment history:', err);
     }
   };
 
@@ -346,7 +372,49 @@ const PaymentMethodsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Payment Methods List */}
+        {/* Payment History */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-[#1d1d1f] mb-6">Payment History</h2>
+          
+          <div className="space-y-4">
+            {paymentHistory.length > 0 ? (
+              paymentHistory.map((payment) => (
+                <div key={payment.id} className="p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-[#1d1d1f]">
+                        {payment.product_name || 'Purchase'}
+                      </p>
+                      <p className="text-sm text-[#86868b]">
+                        {new Date(payment.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-[#1d1d1f]">
+                        ৳{payment.total_price?.toFixed(2) || '0.00'}
+                      </p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        payment.status === 'completed' 
+                          ? 'bg-green-100 text-green-700' 
+                          : payment.status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {payment.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-[#86868b]">
+                <Wallet className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No payment history found</p>
+                <p className="text-sm mt-1">Your payment history will appear here</p>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-[#1d1d1f]">Saved Methods</h2>
