@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { UserProfile, LogoVariant } from '../types';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { dataIds, colors } from '../config';
+import { getUserProfile } from '../services/userAccountService';
 
 interface Props {
   user: UserProfile | null;

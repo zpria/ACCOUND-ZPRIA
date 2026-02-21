@@ -22,7 +22,7 @@ export const emailConfig = {
   apiEndpoint: 'https://api.emailjs.com/api/v1.0/email/send',
 
   // Site URL for email templates
-  siteUrl: 'https://account-zpria.vercel.app',
+  siteUrl: 'https://account.zpria.vercel.app',
   
   // Default email settings
   defaults: {
@@ -34,6 +34,6 @@ export const emailConfig = {
   // Email content defaults
   content: {
     physicalAddress: 'ZPRIA, Dhaka, Bangladesh',
-    unsubscribeUrl: 'https://account-zpria.vercel.app/privacy',
+    unsubscribeUrl: 'https://account.zpria.vercel.app/privacy',
   },
 };

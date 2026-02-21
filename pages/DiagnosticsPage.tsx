@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 // Fix: Use ZPRIA_MAIN_LOGO instead of non-existent ZIPRA_LOGO
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { dataIds, colors } from '../config';
+import { supabase } from '../services/supabaseService';
 
 const DiagnosticsPage: React.FC = () => {
   return (

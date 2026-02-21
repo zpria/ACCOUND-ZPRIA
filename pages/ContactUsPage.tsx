@@ -5,6 +5,7 @@ import { ZPRIA_MAIN_LOGO } from '../constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { Send, AlertCircle, CheckCircle, Mail, User, Building, MessageSquare, ChevronDown } from 'lucide-react';
 import { dataIds, colors } from '../config';
+import { createSupportTicket } from '../services/userAccountService';
 
 interface FormData {
   name: string;
@@ -57,39 +58,33 @@ const ContactUsPage: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Prepare email data
-    const emailData = {
-      to: 'help.zpria@gmail.com',
-      subject: `[ZPRIA Support] ${formData.subject}`,
-      body: `
-Name: ${formData.name}
-Email: ${formData.email}
-Category: ${categories.find(c => c.value === formData.category)?.label}
-Department: ${departments.find(d => d.value === formData.department)?.label}
-
-Description:
-${formData.description}
-      `,
-      formData: formData
-    };
-
     try {
-      // Here you would typically send to your backend
-      // For now, we'll simulate the email sending
-      console.log('Sending email to help.zpria@gmail.com:', emailData);
+      // Create support ticket in the database
+      // Note: In a real scenario, you'd get the actual user ID if the user is logged in
+      // For now, we'll create the ticket without a user_id (which may be null in the database)
+      const ticketData = {
+        userId: null, // Would be actual user ID if authenticated
+        category: formData.category,
+        subject: formData.subject,
+        message: `From: ${formData.name} (${formData.email})\n\n${formData.description}`,
+        priority: 'normal' as const, // Default priority
+      };
+
+      const result = await createSupportTicket(ticketData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        category: '',
-        department: '',
-        subject: '',
-        description: ''
-      });
+      if (result) {
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          category: '',
+          department: '',
+          subject: '',
+          description: ''
+        });
+      } else {
+        throw new Error('Failed to create support ticket');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
