@@ -6,6 +6,7 @@ import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { updateUserProfile } from '../services/userAccountService';
+import { dataIds, colors } from '../config';
 
 interface UserProfile {
   id: string;

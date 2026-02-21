@@ -7,6 +7,7 @@ import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword, checkAvailability } from '../services/supabaseService';
 import { sendOTP } from '../services/emailService';
+import { dataIds, colors } from '../config';
 
 const STORAGE_KEY = 'zpria_signup_draft';
 
@@ -309,7 +310,7 @@ const SignupPage: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8" data-id={dataIds.formSignup}>
         {/* PERSONAL IDENTIFIER */}
         <section className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -418,6 +419,7 @@ const SignupPage: React.FC = () => {
           type="submit" 
           disabled={isLoading} 
           className="w-full py-4 bg-[#0071e3] text-white rounded-full font-black text-lg hover:scale-[1.01] active:scale-95 transition-all shadow-xl disabled:opacity-40 uppercase tracking-widest"
+          data-id={dataIds.btnSubmit}
         >
           {isLoading ? "Provisioning..." : "Sign Up"}
         </button>

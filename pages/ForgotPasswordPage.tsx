@@ -7,6 +7,7 @@ import { sendOTP } from '../services/emailService';
 import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { UserProfile } from '../types';
+import { dataIds, colors } from '../config';
 
 type RecoveryStep = 'SEARCH' | 'SELECT' | 'METHOD' | 'DONE';
 
@@ -135,22 +136,24 @@ const ForgotPasswordPage: React.FC = () => {
             <p className="text-[17px] text-gray-500 font-medium mb-10 leading-tight">
               Enter your email address, mobile number, or username to search for your ZPRIA ID.
             </p>
-            <form onSubmit={handleSearch} className="w-full space-y-6">
+            <form onSubmit={handleSearch} className="w-full space-y-6" data-id={dataIds.formPasswordReset}>
               <FloatingInput 
                 label="Email, Mobile, or Username" 
                 value={identifier} 
                 onChange={(e) => setIdentifier(e.target.value)} 
                 required 
+                data-id={dataIds.inputSignInIdentifier}
               />
-              {error && <p className="text-red-500 text-sm font-bold text-center animate-shake">{error}</p>}
+              {error && <p className="text-red-500 text-sm font-bold text-center animate-shake" data-id={dataIds.msgError}>{error}</p>}
               <button 
                 type="submit" 
                 disabled={isLoading || !identifier} 
                 className="apple-btn-primary w-full py-5 text-lg tracking-widest uppercase"
+                data-id={dataIds.btnSubmit}
               >
                 {isLoading ? "Searching..." : "Search"}
               </button>
-              <Link to="/signin" className="block text-[#0066cc] font-bold text-sm uppercase tracking-widest hover:underline">Cancel</Link>
+              <Link to="/signin" className="block text-[#0066cc] font-bold text-sm uppercase tracking-widest hover:underline" data-id={dataIds.linkCancel}>Cancel</Link>
             </form>
           </div>
         )}
@@ -163,7 +166,7 @@ const ForgotPasswordPage: React.FC = () => {
               These ZPRIA profiles match the information you entered.
             </p>
             <div className="space-y-3">
-              {foundAccounts.map((acc) => (
+              {foundAccounts.map((acc, index) => (
                 <button
                   key={acc.id}
                   onClick={() => {
@@ -171,23 +174,25 @@ const ForgotPasswordPage: React.FC = () => {
                     setStep('METHOD');
                   }}
                   className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-[18px] hover:bg-gray-50 transition-all group"
+                  data-id={`${dataIds.btnSelectAccount}-${index}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xl font-bold group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #f5f5f7 0%, #e5e5ea 100%)' }}>
                       {acc.firstName[0]}
                     </div>
                     <div className="text-left">
-                      <p className="font-bold text-[#1d1d1f] text-lg leading-tight">{acc.firstName} {acc.lastName}</p>
-                      <p className="text-sm text-gray-400 font-medium">{acc.login_id}</p>
+                      <p className="font-bold text-[#1d1d1f] text-lg leading-tight" data-id={`${dataIds.txtAccountName}-${index}`}>{acc.firstName} {acc.lastName}</p>
+                      <p className="text-sm text-gray-400 font-medium" data-id={`${dataIds.txtAccountId}-${index}`}>{acc.login_id}</p>
                     </div>
                   </div>
-                  <svg className="w-6 h-6 text-gray-300 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
+                  <svg className="w-6 h-6 text-gray-300 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" data-id={`${dataIds.iconArrow}-${index}`}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               ))}
             </div>
             <button 
               onClick={() => setStep('SEARCH')}
               className="mt-8 w-full py-4 border border-gray-200 rounded-full font-bold text-gray-500 text-sm uppercase tracking-widest hover:bg-gray-50"
+              data-id={dataIds.btnNotYourAccount}
             >
               Not seeing your account?
             </button>
@@ -213,35 +218,35 @@ const ForgotPasswordPage: React.FC = () => {
 
             <div className="space-y-4 mb-10">
               {/* Email Option */}
-              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer transition-all ${method === 'email' ? 'border-blue-500 bg-blue-50/20 ring-1 ring-blue-500' : 'border-gray-200'}`}>
+              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer transition-all ${method === 'email' ? 'border-blue-500 bg-blue-50/20 ring-1 ring-blue-500' : 'border-gray-200'}`} data-id={dataIds.lblRecoveryEmail}>
                 <div className="flex flex-col">
-                  <span className="font-bold text-[#1d1d1f]">Get code via email</span>
-                  <span className="text-sm text-gray-500 font-medium">{maskEmail(selectedAccount.email)}</span>
+                  <span className="font-bold text-[#1d1d1f]" data-id={dataIds.txtRecoveryLabel}>Get code via email</span>
+                  <span className="text-sm text-gray-500 font-medium" data-id={dataIds.txtRecoveryEmail}>{maskEmail(selectedAccount.email)}</span>
                 </div>
-                <input type="radio" name="method" checked={method === 'email'} onChange={() => setMethod('email')} className="w-6 h-6 accent-blue-600" />
+                <input type="radio" name="method" checked={method === 'email'} onChange={() => setMethod('email')} className="w-6 h-6 accent-blue-600" data-id={dataIds.radioRecoveryEmail} />
               </label>
 
               {/* SMS Option - Visual but Placeholder */}
-              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer opacity-80 ${method === 'sms' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'}`}>
+              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer opacity-80 ${method === 'sms' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'}`} data-id={dataIds.lblRecoverySms}>
                 <div className="flex flex-col">
-                  <span className="font-bold text-[#1d1d1f]">Get code via SMS</span>
-                  <span className="text-sm text-gray-500 font-medium">{maskMobile(selectedAccount.mobile || '')}</span>
+                  <span className="font-bold text-[#1d1d1f]" data-id={dataIds.txtRecoverySmsLabel}>Get code via SMS</span>
+                  <span className="text-sm text-gray-500 font-medium" data-id={dataIds.txtRecoverySms}>{maskMobile(selectedAccount.mobile || '')}</span>
                 </div>
-                <input type="radio" name="method" checked={method === 'sms'} onChange={() => setMethod('sms')} className="w-6 h-6 accent-blue-600" />
+                <input type="radio" name="method" checked={method === 'sms'} onChange={() => setMethod('sms')} className="w-6 h-6 accent-blue-600" data-id={dataIds.radioRecoverySms} />
               </label>
 
               {/* Password Option */}
-              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer ${method === 'password' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'}`}>
+              <label className={`flex items-center justify-between p-5 border rounded-[22px] cursor-pointer ${method === 'password' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'}`} data-id={dataIds.lblRecoveryPassword}>
                 <div className="flex flex-col">
-                  <span className="font-bold text-[#1d1d1f]">Continue with password</span>
-                  <span className="text-sm text-gray-500 font-medium">Use your password to continue</span>
+                  <span className="font-bold text-[#1d1d1f]" data-id={dataIds.txtRecoveryPasswordLabel}>Continue with password</span>
+                  <span className="text-sm text-gray-500 font-medium" data-id={dataIds.txtRecoveryPassword}>Use your password to continue</span>
                 </div>
-                <input type="radio" name="method" checked={method === 'password'} onChange={() => setMethod('password')} className="w-6 h-6 accent-blue-600" />
+                <input type="radio" name="method" checked={method === 'password'} onChange={() => setMethod('password')} className="w-6 h-6 accent-blue-600" data-id={dataIds.radioRecoveryPassword} />
               </label>
             </div>
 
             <div className="text-center mb-10">
-               <button className="text-[#0066cc] font-bold text-sm uppercase tracking-tight hover:underline">No longer have access to these?</button>
+               <button className="text-[#0066cc] font-bold text-sm uppercase tracking-tight hover:underline" data-id={dataIds.btnNoAccess}>No longer have access to these?</button>
             </div>
 
             <div className="space-y-3">
@@ -253,6 +258,7 @@ const ForgotPasswordPage: React.FC = () => {
                 }}
                 disabled={isLoading}
                 className="apple-btn-primary w-full py-4 text-[16px] tracking-widest font-black uppercase"
+                data-id={dataIds.btnContinue}
               >
                 {isLoading ? "Synchronizing..." : "Continue"}
               </button>
@@ -263,6 +269,7 @@ const ForgotPasswordPage: React.FC = () => {
                   setFoundAccounts([]);
                 }}
                 className="w-full py-4 bg-gray-50 text-gray-500 font-black text-sm uppercase tracking-widest rounded-full hover:bg-gray-100 transition-colors"
+                data-id={dataIds.btnNotYou}
               >
                 Not you?
               </button>

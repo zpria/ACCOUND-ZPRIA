@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { dataIds } from '../config';
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> {
   label: string;
@@ -49,14 +50,15 @@ const FloatingInput: React.FC<Props> = ({
   `;
 
   return (
-    <div className="w-full">
-      <div className={containerClasses}>
+    <div className="w-full" data-id={dataIds.componentFloatingInput}>
+      <div className={containerClasses} data-id={dataIds.containerFloatingInput}>
         {isSelect ? (
           <select
             {...props}
             onFocus={(e) => { setIsFocused(true); props.onFocus?.(e); }}
             onBlur={(e) => { setIsFocused(false); props.onBlur?.(e); }}
             className={inputClasses}
+            data-id={dataIds.selectFloatingInput}
           >
             {children}
           </select>
@@ -67,12 +69,13 @@ const FloatingInput: React.FC<Props> = ({
             onBlur={(e) => { setIsFocused(false); props.onBlur?.(e); }}
             className={inputClasses}
             placeholder=""
+            data-id={dataIds.inputFloatingInput}
           />
         )}
-        <label className={labelClasses}>{label}</label>
+        <label className={labelClasses} data-id={dataIds.labelFloatingInput}>{label}</label>
         
         {isSelect && (
-          <div className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#86868b]">
+          <div className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#86868b]" data-id={dataIds.dropdownIcon}>
              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
              </svg>
@@ -80,7 +83,7 @@ const FloatingInput: React.FC<Props> = ({
         )}
       </div>
       {isInvalid && errorMessage && (
-        <p className="mt-2 text-[12px] text-[#ff3b30] font-medium ml-1">{errorMessage}</p>
+        <p className="mt-2 text-[12px] text-[#ff3b30] font-medium ml-1" data-id={dataIds.errorMsgFloatingInput}>{errorMessage}</p>
       )}
     </div>
   );

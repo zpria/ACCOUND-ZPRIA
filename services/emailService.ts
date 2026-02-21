@@ -1,12 +1,14 @@
 
-// EmailJS Configuration
-const OTP_SERVICE_ID = 'service_6dasibh';
-const WELCOME_SERVICE_ID = 'service_d0xcjoj';
-const PUBLIC_KEY = 'snLhsAMRJ_FFWBzZf';
-const PRIVATE_KEY = 'kD5BU_NNa3tEjq-rJtlgQ';
+import { emailConfig } from '../config';
 
-const OTP_TEMPLATE_ID = 'template_ituj83r';
-const WELCOME_TEMPLATE_ID = 'template_m53qmps';
+// EmailJS Configuration
+const OTP_SERVICE_ID = emailConfig.emailJS.serviceId.otp;
+const WELCOME_SERVICE_ID = emailConfig.emailJS.serviceId.welcome;
+const PUBLIC_KEY = emailConfig.emailJS.publicKey;
+const PRIVATE_KEY = emailConfig.emailJS.privateKey;
+
+const OTP_TEMPLATE_ID = emailConfig.emailJS.templateId.otp;
+const WELCOME_TEMPLATE_ID = emailConfig.emailJS.templateId.welcome;
 
 export interface ZpriaEmailParams {
   to_name: string;
@@ -82,7 +84,7 @@ export const sendZpriaEmail = async (params: ZpriaEmailParams) => {
   const serviceId = isOTP ? OTP_SERVICE_ID : WELCOME_SERVICE_ID;
   
   const security = await getSecurityContext();
-  const siteUrl = 'https://account-zpria.vercel.app';
+  const siteUrl = emailConfig.siteUrl;
 
   // Explicitly mapping variables to match template requirements
   const templateParams = {
@@ -91,7 +93,7 @@ export const sendZpriaEmail = async (params: ZpriaEmailParams) => {
     
     // SPAM PREVENTION & COMPLIANCE
     unsubscribe_url: `${siteUrl}/privacy`,
-    physical_address: 'ZPRIA, Dhaka, Bangladesh',
+    physical_address: emailConfig.content.physicalAddress,
     
     // OTP SPECIFIC
     otp_code: params.otp_code || '',
@@ -116,7 +118,7 @@ export const sendZpriaEmail = async (params: ZpriaEmailParams) => {
   };
 
   try {
-    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    const response = await fetch(emailConfig.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -1,10 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
+import { dbConfig } from '../config';
 
-const SUPABASE_URL = 'https://ojiswabilogpeidzhidu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qaXN3YWJpbG9ncGVpZHpoaWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNzQ4NDAsImV4cCI6MjA4NDg1MDg0MH0.VF0JsThZjrGgCe9kQHrf5mdrwpwE4ZWwmtn20B64l30';
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(dbConfig.supabase.url, dbConfig.supabase.anonKey);
 
 export async function hashPassword(password: string): Promise<string> {
   // Always trim password before hashing to prevent hidden space issues

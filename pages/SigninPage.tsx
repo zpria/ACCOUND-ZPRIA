@@ -8,6 +8,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { hashPassword, handleLoginAttempt, supabase } from '../services/supabaseService';
 import { sendWelcomeAlert } from '../services/emailService';
 import { getFullDeviceInfo, saveDeviceToDatabase, logActivity } from '../services/deviceDetection';
+import { dataIds, colors } from '../config';
 
 interface Props {
   onLogin: (user: UserProfile) => void;
@@ -363,19 +364,20 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
           )}
 
           {step === 'identifier' ? (
-            <form onSubmit={handleContinue} className="w-full space-y-4 reveal-stagger">
+            <form onSubmit={handleContinue} className="w-full space-y-4 reveal-stagger" data-id={dataIds.formLogin}>
               <div className="space-y-4">
                 <FloatingInput 
                   label="Username, Login ID, or Mobile" 
                   value={identifier} 
                   onChange={(e) => setIdentifier(e.target.value)} 
                   autoFocus
+                  data-id={dataIds.inputSignInIdentifier}
                 />
               </div>
               
               <div className="flex items-center justify-between py-1">
-                <label className="flex items-center text-xs text-gray-400 font-bold cursor-pointer hover:text-gray-600 transition-colors">
-                  <input type="checkbox" className="w-3 h-3 mr-2 accent-[#7C3AED]" /> Remember me
+                <label className="flex items-center text-xs text-gray-400 font-bold cursor-pointer hover:text-gray-600 transition-colors" data-id={dataIds.labelRememberMe}>
+                  <input type="checkbox" className="w-3 h-3 mr-2 accent-[#7C3AED]" data-id={dataIds.checkboxRememberMe} /> Remember me
                 </label>
               </div>
 
@@ -383,12 +385,13 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
                 type="submit" 
                 disabled={isLoading || !identifier} 
                 className="w-full py-3.5 bg-[#7C3AED] text-white rounded-2xl font-black text-base shadow-xl shadow-purple-500/20 hover:opacity-90 transition-all uppercase tracking-widest disabled:opacity-40"
+                data-id={dataIds.btnSignInContinue}
               >
                 {isLoading ? "VERIFYING..." : "CONTINUE"}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleSubmit} className="w-full space-y-4 reveal-stagger">
+            <form onSubmit={handleSubmit} className="w-full space-y-4 reveal-stagger" data-id={dataIds.formSignInPassword}>
               <div className="relative group space-y-2">
                 <FloatingInput 
                   label="Password" 
@@ -396,11 +399,13 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
                   autoFocus
+                  data-id={dataIds.inputPassword}
                 />
                 <div className="flex justify-end">
                   <Link 
                     to="/forgot-password" 
                     className="text-[11px] font-black text-[#7C3AED] uppercase tracking-widest hover:underline"
+                    data-id={dataIds.linkForgotPassword}
                   >
                     Forgot Password?
                   </Link>
@@ -414,6 +419,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
                     setError('');
                   }}
                   className="text-[11px] font-black text-[#7C3AED] uppercase tracking-widest hover:underline block mx-auto pt-2"
+                  data-id={dataIds.btnChangeAccount}
                 >
                   Change Account
                 </button>
@@ -423,6 +429,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
                 type="submit" 
                 disabled={isLoading || !password} 
                 className="w-full py-3.5 bg-[#7C3AED] text-white rounded-2xl font-black text-base shadow-xl shadow-purple-500/20 hover:opacity-90 transition-all uppercase tracking-widest disabled:opacity-40"
+                data-id={dataIds.btnSignIn}
               >
                 {isLoading ? "SYNCHRONIZING..." : "SIGN IN"}
               </button>

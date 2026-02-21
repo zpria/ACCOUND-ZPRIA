@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabaseService';
+import { dataIds, colors } from '../../config';
 
 const PasswordVerificationPage: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -79,7 +80,7 @@ const PasswordVerificationPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} data-id={dataIds.formPasswordReset}>
             <div className="mb-6">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Current Password
@@ -93,6 +94,7 @@ const PasswordVerificationPage: React.FC = () => {
                 placeholder="Enter your current password"
                 required
                 autoComplete="current-password"
+                data-id={dataIds.inputPassword}
               />
             </div>
 
@@ -100,6 +102,7 @@ const PasswordVerificationPage: React.FC = () => {
               type="submit"
               disabled={loading}
               className="w-full bg-purple-600 text-white py-3 px-4 rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              data-id={dataIds.btnSubmit}
             >
               {loading ? 'Verifying...' : 'Verify Password'}
             </button>
