@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Mail, MessageSquare, Smartphone, ChevronLeft, Check, X, Volume2, Megaphone, Shield, ShoppingBag, Heart, Star, Zap } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors, DB_CONFIG } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface NotificationSettings {
   // Email notifications
@@ -125,13 +125,13 @@ const NotificationPreferencesPage: React.FC = () => {
       
       // Load all notification settings from user_notification_settings table
       const { data: notificationData, error: notificationError } = await supabase
-        .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
+        .from(dbConfig.tables.notification_preferences)
         .select('*')
         .eq('user_id', userData.id);
 
       // Load login notification settings from users table
       const { data: userSettingsData, error: userSettingsError } = await supabase
-        .from(DB_CONFIG.TABLES.USERS)
+        .from(dbConfig.tables.users)
         .select('login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
@@ -231,7 +231,7 @@ const NotificationPreferencesPage: React.FC = () => {
            'email_change_notify', 'phone_change_notify'].includes(setting)) {
         // Update users table for login notification settings
         const { error } = await supabase
-          .from(DB_CONFIG.TABLES.USERS)
+          .from(dbConfig.tables.users)
           .update({ [setting]: value })
           .eq('id', userData.id);
 
@@ -268,7 +268,7 @@ const NotificationPreferencesPage: React.FC = () => {
           }
           
           const { error } = await supabase
-            .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
+            .from(dbConfig.tables.notification_preferences)
             .upsert(updateObj, {
               onConflict: ['user_id', 'notification_type']
             });
@@ -333,7 +333,7 @@ const NotificationPreferencesPage: React.FC = () => {
         }
         
         const { error } = await supabase
-          .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
+          .from(dbConfig.tables.notification_preferences)
           .upsert(updateObj, {
             onConflict: ['user_id', 'notification_type']
           });

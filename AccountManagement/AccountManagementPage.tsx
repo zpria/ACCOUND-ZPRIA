@@ -13,7 +13,7 @@ import {
 import { supabase } from '../services/supabaseService';
 import { UserProfile } from '../types';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface DashboardStats {
   totalOrders: number;
@@ -83,48 +83,48 @@ const AccountManagementPage: React.FC = () => {
     try {
       // Get purchase stats
       const { data: purchases } = await supabase
-        .from('user_purchases')
+        .from(dbConfig.tables.user_purchases)
         .select('total_price')
         .eq('user_id', userId)
         .eq('status', 'completed');
 
       // Get wishlist count
       const { count: wishlistCount } = await supabase
-        .from('user_wishlists')
+        .from(dbConfig.tables.user_wishlists)
         .select('*', { count: 'exact' })
         .eq('user_id', userId);
 
       // Get cart count
       const { count: cartCount } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .eq('saved_for_later', false);
 
       // Get active subscriptions
       const { count: activeSubs } = await supabase
-        .from('user_subscriptions')
+        .from(dbConfig.tables.user_subscriptions)
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .in('status', ['active', 'trial']);
 
       // Get unread notifications
       const { count: unreadNotifs } = await supabase
-        .from('user_notifications')
+        .from(dbConfig.tables.user_notifications)
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .eq('is_opened', false);
 
       // Get streak
       const { data: streak } = await supabase
-        .from('user_streaks')
+        .from(dbConfig.tables.user_streaks)
         .select('current_streak')
         .eq('user_id', userId)
         .single();
 
       // Get wallet balance as loyalty points
       const { data: wallet } = await supabase
-        .from('user_wallets')
+        .from(dbConfig.tables.user_wallets)
         .select('balance')
         .eq('user_id', userId)
         .single();
@@ -149,7 +149,7 @@ const AccountManagementPage: React.FC = () => {
   const loadRecentActivity = async (userId: string) => {
     try {
       const { data: logs } = await supabase
-        .from('user_activity_logs')
+        .from(dbConfig.tables.user_activity_logs)
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })

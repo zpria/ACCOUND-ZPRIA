@@ -6,7 +6,7 @@ import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { updateUserProfile } from '../services/userAccountService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface UserProfile {
   id: string;
@@ -85,7 +85,7 @@ const ProfilePage: React.FC = () => {
       
       // Fetch full profile from database
       const { data, error } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('*')
         .eq('id', userData.id)
         .single();

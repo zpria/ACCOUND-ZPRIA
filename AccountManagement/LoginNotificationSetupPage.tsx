@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Smartphone, MessageSquare, ChevronLeft, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 const LoginNotificationSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const LoginNotificationSetupPage: React.FC = () => {
         
         const userData = JSON.parse(savedUser);
         const { data, error } = await supabase
-          .from('users')
+          .from(dbConfig.tables.users)
           .select('email, mobile')
           .eq('id', userData.id)
           .single();
@@ -106,7 +106,7 @@ const LoginNotificationSetupPage: React.FC = () => {
         updateFields.updated_at = new Date().toISOString();
         
         const { error: updateError } = await supabase
-          .from('users')
+          .from(dbConfig.tables.users)
           .update(updateFields)
           .eq('id', userData.id);
         

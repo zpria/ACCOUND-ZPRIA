@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface WalletData {
   id: string;
@@ -63,7 +63,7 @@ const WalletPage: React.FC = () => {
       
       // Load wallet
       const { data: walletData, error: walletError } = await supabase
-        .from('user_wallets')
+        .from(dbConfig.tables.user_wallets)
         .select('*')
         .eq('user_id', userData.id)
         .single();
@@ -77,7 +77,7 @@ const WalletPage: React.FC = () => {
       } else {
         // Create wallet if not exists
         const { data: newWallet, error: createError } = await supabase
-          .from('user_wallets')
+          .from(dbConfig.tables.user_wallets)
           .insert({
             user_id: userData.id,
             balance: 0,
@@ -94,7 +94,7 @@ const WalletPage: React.FC = () => {
 
       // Load transactions
       const { data: txData, error: txError } = await supabase
-        .from('user_wallet_transactions')
+        .from(dbConfig.tables.user_wallet_transactions)
         .select('*')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false })
@@ -130,7 +130,7 @@ const WalletPage: React.FC = () => {
 
       // Create transaction
       const { error: txError } = await supabase
-        .from('user_wallet_transactions')
+        .from(dbConfig.tables.user_wallet_transactions)
         .insert({
           user_id: userData.id,
           wallet_id: wallet?.id,
@@ -145,7 +145,7 @@ const WalletPage: React.FC = () => {
 
       // Update wallet balance
       const { error: walletError } = await supabase
-        .from('user_wallets')
+        .from(dbConfig.tables.user_wallets)
         .update({ balance: newBalance, updated_at: new Date().toISOString() })
         .eq('id', wallet?.id);
 

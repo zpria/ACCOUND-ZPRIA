@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dbConfig } from '../config';
 
 interface Address {
   id: string;
@@ -77,7 +78,7 @@ const AddressesPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_addresses')
+        .from(dbConfig.tables.user_addresses)
         .select('*')
         .eq('user_id', userData.id)
         .order('is_default', { ascending: false })
@@ -111,7 +112,7 @@ const AddressesPage: React.FC = () => {
       if (editingAddress) {
         // Update existing
         const { error } = await supabase
-          .from('user_addresses')
+          .from(dbConfig.tables.user_addresses)
           .update(addressData)
           .eq('id', editingAddress.id);
 
@@ -120,7 +121,7 @@ const AddressesPage: React.FC = () => {
       } else {
         // Create new
         const { error } = await supabase
-          .from('user_addresses')
+          .from(dbConfig.tables.user_addresses)
           .insert(addressData);
 
         if (error) throw error;
@@ -144,7 +145,7 @@ const AddressesPage: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from('user_addresses')
+        .from(dbConfig.tables.user_addresses)
         .delete()
         .eq('id', addressId);
 
@@ -165,13 +166,13 @@ const AddressesPage: React.FC = () => {
 
       // Remove default from all addresses
       await supabase
-        .from('user_addresses')
+        .from(dbConfig.tables.user_addresses)
         .update({ is_default: false })
         .eq('user_id', userData.id);
 
       // Set new default
       const { error } = await supabase
-        .from('user_addresses')
+        .from(dbConfig.tables.user_addresses)
         .update({ is_default: true })
         .eq('id', addressId);
 

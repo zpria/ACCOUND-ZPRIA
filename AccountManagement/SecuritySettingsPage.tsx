@@ -4,7 +4,7 @@ import { Shield, Lock, Smartphone, Key, History, AlertTriangle, ChevronLeft, Eye
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { updateUserProfile } from '../services/userAccountService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface SecuritySettings {
   two_factor_enabled: boolean;
@@ -90,7 +90,7 @@ const SecuritySettingsPage: React.FC = () => {
       
       // Fetch security settings using the user account service
       const { data, error } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('two_factor_enabled, two_factor_method, login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
@@ -125,7 +125,7 @@ const SecuritySettingsPage: React.FC = () => {
     try {
       // Query user_activity_logs table for login activities
       const { data, error } = await supabase
-        .from('user_activity_logs')
+        .from(dbConfig.tables.user_activity_logs)
         .select('*')
         .eq('user_id', userId)
         .ilike('action', '%login%')  // Filter for login-related actions
@@ -194,7 +194,7 @@ const SecuritySettingsPage: React.FC = () => {
 
       // Verify current password
       const { data: user, error: verifyError } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('password_hash')
         .eq('id', userData.id)
         .single();
@@ -205,7 +205,7 @@ const SecuritySettingsPage: React.FC = () => {
 
       // Update password
       const { error: updateError } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .update({
           password_hash: newHash,
           last_password_change: new Date().toISOString(),

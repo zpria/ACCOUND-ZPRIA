@@ -6,6 +6,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { updateUserProfile } from '../services/userAccountService';
 import { dataIds, colors } from '../config';
+import { dbConfig } from '../config/dbConfig';
 
 const TwoFactorSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const TwoFactorSetupPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
         
       const { data, error } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('two_factor_enabled, two_factor_method')
         .eq('id', userData.id)
         .single();
@@ -92,7 +93,7 @@ const TwoFactorSetupPage: React.FC = () => {
         if (savedUser) {
           const userData = JSON.parse(savedUser);
           const { data, error } = await supabase
-            .from('users')
+            .from(dbConfig.tables.users)
             .select('email')
             .eq('id', userData.id)
             .single();

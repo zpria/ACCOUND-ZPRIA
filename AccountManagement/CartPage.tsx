@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface CartItem {
   id: string;
@@ -71,7 +71,7 @@ const CartPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .select(`
           *,
           product:products(id, name, image_url, is_available, stock_quantity),

@@ -9,6 +9,7 @@ import {
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { dataIds, colors } from '../config';
+import { dbConfig } from '../config/dbConfig';
 
 interface Subscription {
   id: string;
@@ -69,7 +70,7 @@ const SubscriptionsPage: React.FC = () => {
       
       // Load user subscriptions
       const { data: subData, error: subError } = await supabase
-        .from('user_subscriptions')
+        .from(dbConfig.tables.user_subscriptions)
         .select('*')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false });
@@ -79,7 +80,7 @@ const SubscriptionsPage: React.FC = () => {
 
       // Load available plans
       const { data: planData, error: planError } = await supabase
-        .from('subscription_plans')
+        .from(dbConfig.tables.subscription_plans)
         .select('*')
         .eq('is_active', true)
         .order('monthly_price', { ascending: true });
@@ -101,7 +102,7 @@ const SubscriptionsPage: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from('user_subscriptions')
+        .from(dbConfig.tables.user_subscriptions)
         .update({
           status: 'cancelled',
           cancelled_at: new Date().toISOString(),
@@ -127,7 +128,7 @@ const SubscriptionsPage: React.FC = () => {
     setIsProcessing(true);
     try {
       const { error } = await supabase
-        .from('user_subscriptions')
+        .from(dbConfig.tables.user_subscriptions)
         .update({ auto_renew: !subscription.auto_renew })
         .eq('id', subscription.id);
 

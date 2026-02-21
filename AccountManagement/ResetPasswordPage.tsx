@@ -7,7 +7,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword } from '../services/supabaseService';
 import { sendPasswordChangeAlert, sendWelcomeAlert } from '../services/emailService';
 import { UserProfile } from '../pages/types';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Props {
   onLogin: (user: UserProfile) => void;
@@ -68,7 +68,7 @@ const ResetPasswordPage: React.FC<Props> = ({ onLogin }) => {
       
       // Update password in Supabase
       const { data: user, error: updateError } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .update({ password_hash: hPassword })
         .eq('email', email)
         .select('*')

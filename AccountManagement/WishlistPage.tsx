@@ -9,6 +9,7 @@ import {
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { dataIds, colors } from '../config';
+import { dbConfig } from '../config/dbConfig';
 
 interface WishlistItem {
   id: string;
@@ -68,7 +69,7 @@ const WishlistPage: React.FC = () => {
       
       // Load wishlist lists
       const { data: listsData, error: listsError } = await supabase
-        .from('user_wishlist_lists')
+        .from(dbConfig.tables.user_wishlist_lists)
         .select('*')
         .eq('user_id', userData.id)
         .order('is_default', { ascending: false })
@@ -85,7 +86,7 @@ const WishlistPage: React.FC = () => {
 
       // Load wishlist items
       const { data: itemsData, error: itemsError } = await supabase
-        .from('user_wishlists')
+        .from(dbConfig.tables.user_wishlists)
         .select(`
           *,
           product:products(id, name, image_url, is_available, stock_quantity)
@@ -133,7 +134,7 @@ const WishlistPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
 
       const { data, error } = await supabase
-        .from('user_wishlist_lists')
+        .from(dbConfig.tables.user_wishlist_lists)
         .insert({
           user_id: userData.id,
           list_name: newListName.trim(),
@@ -163,7 +164,7 @@ const WishlistPage: React.FC = () => {
   const removeFromWishlist = async (itemId: string) => {
     try {
       const { error } = await supabase
-        .from('user_wishlists')
+        .from(dbConfig.tables.user_wishlists)
         .delete()
         .eq('id', itemId);
 
@@ -188,7 +189,7 @@ const WishlistPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
 
       const { error } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .insert({
           user_id: userData.id,
           product_id: item.product_id,
@@ -214,7 +215,7 @@ const WishlistPage: React.FC = () => {
   const updatePriority = async (itemId: string, priority: 'low' | 'medium' | 'high') => {
     try {
       const { error } = await supabase
-        .from('user_wishlists')
+        .from(dbConfig.tables.user_wishlists)
         .update({ priority })
         .eq('id', itemId);
 

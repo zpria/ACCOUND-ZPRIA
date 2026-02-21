@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Trash2, AlertTriangle, User, Mail, MessageCircle, Heart, Shield, X } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface DeletionReason {
   id: string;
@@ -167,7 +167,7 @@ const AccountDeletionPage: React.FC = () => {
     deletionScheduledFor.setDate(deletionScheduledFor.getDate() + 30); // 30 days from now
 
     const { error } = await supabase
-      .from('users')
+      .from(dbConfig.tables.users)
       .update({
         account_status: 'deactivated',
         deactivated_at: new Date().toISOString(),
@@ -180,7 +180,7 @@ const AccountDeletionPage: React.FC = () => {
 
     // Also update privacy settings
     await supabase
-      .from('user_privacy_settings')
+      .from(dbConfig.tables.user_privacy_settings)
       .update({
         last_updated: new Date().toISOString()
       })

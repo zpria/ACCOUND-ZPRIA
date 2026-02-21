@@ -7,7 +7,7 @@ import { sendOTP } from '../services/emailService';
 import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { UserProfile } from '../pages/types';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 type RecoveryStep = 'SEARCH' | 'SELECT' | 'METHOD' | 'DONE';
 
@@ -43,7 +43,7 @@ const ForgotPasswordPage: React.FC = () => {
       const normalizedId = identifier.trim().toLowerCase();
       // Search for any account matching the identifier across username, email, or mobile
       const { data, error: searchError } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('*')
         .or(`email.ilike."${normalizedId}",login_id.ilike."${normalizedId}",username.ilike."${normalizedId}",mobile.eq."${normalizedId}"`);
 
@@ -88,7 +88,7 @@ const ForgotPasswordPage: React.FC = () => {
     try {
       const otpCode = Math.floor(10000000 + Math.random() * 90000000).toString();
       
-      await supabase.from('otp_verifications').insert({ 
+      await supabase.from(dbConfig.tables.one_time_passwords).insert({ 
         email: selectedAccount.email, 
         otp_code: otpCode, 
         purpose: 'password_reset', 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Activity, ChevronLeft, Smartphone, Globe, Shield, AlertTriangle, User, Lock, CreditCard, ShoppingBag, LogIn, LogOut, Edit, Trash2, Eye, Filter, Download, X, Check } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 type ActivityType = 'login' | 'logout' | 'profile_update' | 'password_change' | 'security_change' | 'payment_added' | 'payment_removed' | 'order_placed' | 'order_cancelled' | 'device_added' | 'device_removed' | 'privacy_change' | 'notification_change' | 'app_connected' | 'app_disconnected' | 'suspicious';
 
@@ -52,7 +52,7 @@ const ActivityLogsPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_activity_logs')
+        .from(dbConfig.tables.user_activity_logs)
         .select('*')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false })

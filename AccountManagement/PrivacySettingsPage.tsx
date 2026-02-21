@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ChevronLeft, Shield, Database, Share2, Trash2, Download, Check, X, AlertTriangle, Bell, Smartphone, Mail } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors, DB_CONFIG } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface PrivacySettings {
   analytics_consent: boolean;
@@ -85,14 +85,14 @@ const PrivacySettingsPage: React.FC = () => {
       
       // Fetch privacy settings from user_privacy_settings table
       const { data: privacyData, error: privacyError } = await supabase
-        .from(DB_CONFIG.tables.user_privacy_settings)
+        .from(dbConfig.tables.user_privacy_settings)
         .select('*')
         .eq('user_id', userData.id)
         .single();
 
       // Fetch login notification settings from users table
       const { data: userSettingsData, error: userSettingsError } = await supabase
-        .from(DB_CONFIG.tables.users)
+        .from(dbConfig.tables.users)
         .select('login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
@@ -164,7 +164,7 @@ const PrivacySettingsPage: React.FC = () => {
            'email_change_notify', 'phone_change_notify'].includes(setting)) {
         // Update users table for login notification settings
         const { error } = await supabase
-          .from(DB_CONFIG.tables.users)
+          .from(dbConfig.tables.users)
           .update({ [setting]: value })
           .eq('id', userData.id);
 
@@ -172,7 +172,7 @@ const PrivacySettingsPage: React.FC = () => {
       } else {
         // Update user_privacy_settings table for other settings
         const { error } = await supabase
-          .from(DB_CONFIG.tables.user_privacy_settings)
+          .from(dbConfig.tables.user_privacy_settings)
           .upsert({
             user_id: userData.id,
             [setting]: value,
@@ -252,7 +252,7 @@ const PrivacySettingsPage: React.FC = () => {
       const deletionScheduledFor = new Date(deletionScheduledAt.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
       
       const { error } = await supabase
-        .from(DB_CONFIG.tables.users)
+        .from(dbConfig.tables.users)
         .update({
           account_status: 'deactivated',  // Changed from 'pending_deletion' to 'deactivated'
           deactivated_at: deletionScheduledAt.toISOString(),
@@ -265,7 +265,7 @@ const PrivacySettingsPage: React.FC = () => {
 
       // Also update privacy settings to mark as deactivated
       await supabase
-        .from(DB_CONFIG.tables.user_privacy_settings)
+        .from(dbConfig.tables.user_privacy_settings)
         .update({
           last_updated: new Date().toISOString()
         })

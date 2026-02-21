@@ -9,6 +9,7 @@ import {
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { dataIds, colors } from '../config';
+import { dbConfig } from '../config/dbConfig';
 
 interface LoyaltyData {
   id: string;
@@ -67,7 +68,7 @@ const RewardsPage: React.FC = () => {
       
       // Load loyalty points
       const { data: loyaltyData, error: loyaltyError } = await supabase
-        .from('user_loyalty_points')
+        .from(dbConfig.tables.user_loyalty_points)
         .select('*')
         .eq('user_id', userData.id)
         .single();
@@ -81,7 +82,7 @@ const RewardsPage: React.FC = () => {
       } else {
         // Create default loyalty record
         const { data: newLoyalty } = await supabase
-          .from('user_loyalty_points')
+          .from(dbConfig.tables.user_loyalty_points)
           .insert({
             user_id: userData.id,
             points_balance: 0,
@@ -96,7 +97,7 @@ const RewardsPage: React.FC = () => {
 
       // Load badges
       const { data: badgesData, error: badgesError } = await supabase
-        .from('user_badges')
+        .from(dbConfig.tables.user_badges)
         .select(`
           *,
           badge:badges(*)
@@ -116,7 +117,7 @@ const RewardsPage: React.FC = () => {
 
       // Load transactions
       const { data: txData, error: txError } = await supabase
-        .from('user_loyalty_transactions')
+        .from(dbConfig.tables.user_loyalty_transactions)
         .select('*')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false })

@@ -4,7 +4,7 @@ import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Shield, Lock, Smartphone, Key, Eye, History, ChevronRight, AlertCircle } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface SecurityStatus {
   twoFactorEnabled: boolean;
@@ -29,21 +29,21 @@ const SecurityPage: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch security settings from database
-      const { data, error } = await supabase
-        .from('user_security_settings')
-        .select('*')
-        .eq('user_id', user.id)
+      // Fetch security settings from users table
+      const { data: userData, error: userError } = await supabase
+        .from(dbConfig.tables.users)
+        .select('two_factor_enabled, last_login, password_changed_at')
+        .eq('id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (userError && userError.code !== 'PGRST116') throw userError;
 
       setSecurityStatus({
-        twoFactorEnabled: data?.two_factor_enabled || false,
-        trustedDevices: data?.trusted_devices_count || 0,
-        activeSessions: data?.active_sessions_count || 1,
-        lastLogin: data?.last_login || new Date().toISOString(),
-        passwordLastChanged: data?.password_changed_at || new Date().toISOString(),
+        twoFactorEnabled: userData?.two_factor_enabled || false,
+        trustedDevices: 0, // Placeholder value - actual count would need separate query
+        activeSessions: 1, // Placeholder value - actual count would need separate query
+        lastLogin: userData?.last_login || new Date().toISOString(),
+        passwordLastChanged: userData?.password_changed_at || new Date().toISOString(),
       });
     } catch (err: any) {
       setError(err.message);

@@ -9,6 +9,7 @@ import { autoGenerateProfileImage } from '../services/aiImageService';
 import { logActivity } from '../services/deviceDetection';
 import { UserProfile } from '../pages/types';
 import { dataIds, colors } from '../config';
+import { dbConfig } from '../config/dbConfig';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const VerifyEmailPage: React.FC = () => {
       const newOtpCode = Math.floor(10000000 + Math.random() * 90000000).toString();
       
       // Update DB with new OTP
-      await supabase.from('otp_verifications').insert({ 
+      await supabase.from(dbConfig.tables.one_time_passwords).insert({ 
         email, 
         otp_code: newOtpCode, 
         purpose: isResetMode ? 'password_reset' : 'registration', 
@@ -127,7 +128,7 @@ const VerifyEmailPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      const { data: vData } = await supabase.from('otp_verifications')
+      const { data: vData } = await supabase.from(dbConfig.tables.one_time_passwords)
         .select('*')
         .eq('email', email)
         .eq('otp_code', code)
@@ -137,7 +138,7 @@ const VerifyEmailPage: React.FC = () => {
       if (!vData) throw new Error('Invalid code. Please check and try again.');
 
       // Mark OTP as used
-      await supabase.from('otp_verifications').update({ is_used: true }).eq('id', vData.id);
+      await supabase.from(dbConfig.tables.one_time_passwords).update({ is_used: true }).eq('id', vData.id);
 
       if (isResetMode) {
         // Handle Password Reset verification success
