@@ -4,6 +4,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { UserProfile, ZipraProduct, ProductType } from '../types';
 import { supabase } from '../services/supabaseService';
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import { dataIds, colors } from '../config';
 
 interface Props {
   user: UserProfile | null;

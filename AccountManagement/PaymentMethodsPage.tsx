@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, Wallet, Smartphone, ChevronLeft, Plus, Trash2, Star, Check, X, Shield, Lock } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 type PaymentType = 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay';
 

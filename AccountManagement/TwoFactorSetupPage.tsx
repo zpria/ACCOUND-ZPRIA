@@ -5,6 +5,7 @@ import { Shield, Smartphone, Mail, Key, ChevronRight, Check, AlertCircle, Copy, 
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { updateUserProfile } from '../services/userAccountService';
+import { dataIds, colors } from '../config';
 
 const TwoFactorSetupPage: React.FC = () => {
   const navigate = useNavigate();

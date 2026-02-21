@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link2, ChevronLeft, Shield, ExternalLink, X, Check, AlertTriangle, RefreshCw, Lock, Globe, Smartphone, Zap } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 interface ConnectedApp {
   id: string;

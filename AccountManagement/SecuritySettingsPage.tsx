@@ -4,6 +4,7 @@ import { Shield, Lock, Smartphone, Key, History, AlertTriangle, ChevronLeft, Eye
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { updateUserProfile } from '../services/userAccountService';
+import { dataIds, colors } from '../config';
 
 interface SecuritySettings {
   two_factor_enabled: boolean;

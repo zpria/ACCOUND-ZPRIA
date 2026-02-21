@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ZipraProduct } from '../types';
 import { supabase } from '../services/supabaseService';
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import { dataIds, colors } from '../config';
 
 const Badge = ({ children, color = 'blue' }: { children?: React.ReactNode, color?: 'blue' | 'gray' | 'green' | 'indigo' }) => {
   const colors = {

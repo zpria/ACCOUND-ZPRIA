@@ -13,6 +13,7 @@ import {
 import { supabase } from '../services/supabaseService';
 import { UserProfile } from '../types';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 interface DashboardStats {
   totalOrders: number;

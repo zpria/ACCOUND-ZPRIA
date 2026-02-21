@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Trash2, AlertTriangle, User, Mail, MessageCircle, Heart, Shield, X } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
+import { dataIds, colors } from '../config';
 
 interface DeletionReason {
   id: string;

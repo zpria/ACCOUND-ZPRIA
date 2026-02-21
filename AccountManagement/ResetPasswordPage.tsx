@@ -7,6 +7,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword } from '../services/supabaseService';
 import { sendPasswordChangeAlert, sendWelcomeAlert } from '../services/emailService';
 import { UserProfile } from '../pages/types';
+import { dataIds, colors } from '../config';
 
 interface Props {
   onLogin: (user: UserProfile) => void;

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Smartphone, MessageSquare, ChevronLeft, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 const LoginNotificationSetupPage: React.FC = () => {
   const navigate = useNavigate();

@@ -5,6 +5,7 @@ import { ZPRIA_MAIN_LOGO, COUNTRY_LIST } from '../pages/constants';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
 import { UserProfile } from '../pages/types';
+import { dataIds, colors } from '../config';
 
 interface Props {
   onLogin: (user: UserProfile) => void;

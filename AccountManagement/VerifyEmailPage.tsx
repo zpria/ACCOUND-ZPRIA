@@ -8,6 +8,7 @@ import { sendOTP, sendWelcomeAlert } from '../services/emailService';
 import { autoGenerateProfileImage } from '../services/aiImageService';
 import { logActivity } from '../services/deviceDetection';
 import { UserProfile } from '../pages/types';
+import { dataIds, colors } from '../config';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();

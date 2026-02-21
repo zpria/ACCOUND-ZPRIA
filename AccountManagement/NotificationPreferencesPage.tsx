@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Mail, MessageSquare, Smartphone, ChevronLeft, Check, X, Volume2, Megaphone, Shield, ShoppingBag, Heart, Star, Zap } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 interface NotificationSettings {
   // Email notifications

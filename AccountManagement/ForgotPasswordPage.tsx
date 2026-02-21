@@ -7,6 +7,7 @@ import { sendOTP } from '../services/emailService';
 import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { UserProfile } from '../pages/types';
+import { dataIds, colors } from '../config';
 
 type RecoveryStep = 'SEARCH' | 'SELECT' | 'METHOD' | 'DONE';
 

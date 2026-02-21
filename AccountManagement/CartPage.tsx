@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 interface CartItem {
   id: string;

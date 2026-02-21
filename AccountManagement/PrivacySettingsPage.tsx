@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ChevronLeft, Shield, Database, Share2, Trash2, Download, Check, X, AlertTriangle, Bell, Smartphone, Mail } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 interface PrivacySettings {
   analytics_consent: boolean;

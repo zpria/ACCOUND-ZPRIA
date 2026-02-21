@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search, Filter, Download, Eye, MapPin, CreditCard, DollarSign, RotateCcw, Gift, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'returned' | 'on_hold';
 type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';

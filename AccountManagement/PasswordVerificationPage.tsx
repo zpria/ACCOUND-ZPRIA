@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, ChevronLeft, ArrowRight, Check } from 'lucide-react';
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { dataIds, colors } from '../config';
 
 const PasswordVerificationPage: React.FC = () => {
   const navigate = useNavigate();

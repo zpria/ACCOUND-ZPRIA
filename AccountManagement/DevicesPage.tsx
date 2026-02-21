@@ -4,6 +4,7 @@ import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Smartphone, Monitor, Globe, LogOut, Shield, AlertCircle, Check } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
+import { dataIds, colors } from '../config';
 
 interface Device {
   id: string;

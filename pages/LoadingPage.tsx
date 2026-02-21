@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { dataIds, colors } from '../config';
 
 const LoadingPage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);

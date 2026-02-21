@@ -4,6 +4,7 @@ import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Shield, Lock, Smartphone, Key, Eye, History, ChevronRight, AlertCircle } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
+import { dataIds, colors } from '../config';
 
 interface SecurityStatus {
   twoFactorEnabled: boolean;
