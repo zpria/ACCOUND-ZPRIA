@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, DB_CONFIG } from '../config';
 
 interface UserPreferences {
   // Language & Region
@@ -161,7 +161,7 @@ const PreferencesPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_preferences')
+        .from(DB_CONFIG.TABLES.USER_PREFERENCES)
         .select('*')
         .eq('user_id', userData.id)
         .single();
@@ -200,7 +200,7 @@ const PreferencesPage: React.FC = () => {
       } else {
         // Create default preferences
         const { error: insertError } = await supabase
-          .from('user_preferences')
+          .from(DB_CONFIG.TABLES.USER_PREFERENCES)
           .insert({ user_id: userData.id });
         
         if (insertError) throw insertError;
@@ -224,7 +224,7 @@ const PreferencesPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
 
       const { error } = await supabase
-        .from('user_preferences')
+        .from(DB_CONFIG.TABLES.USER_PREFERENCES)
         .upsert({
           user_id: userData.id,
           ...preferences,

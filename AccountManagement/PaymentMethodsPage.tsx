@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, Wallet, Smartphone, ChevronLeft, Plus, Trash2, Star, Check, X, Shield, Lock } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, DB_CONFIG } from '../config';
 
 type PaymentType = 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay';
 
@@ -88,7 +88,7 @@ const PaymentMethodsPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_payment_methods')
+        .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
         .select('*')
         .eq('user_id', userData.id)
         .order('is_default', { ascending: false })
@@ -124,7 +124,7 @@ const PaymentMethodsPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
       
       const { data, error } = await supabase
-        .from('user_purchases')
+        .from(DB_CONFIG.TABLES.USER_PURCHASES)
         .select('*')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false })
@@ -226,7 +226,7 @@ const PaymentMethodsPage: React.FC = () => {
       }
 
       const { error } = await supabase
-        .from('user_payment_methods')
+        .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
         .insert([paymentData]);
 
       if (error) throw error;
@@ -234,7 +234,7 @@ const PaymentMethodsPage: React.FC = () => {
       // If this is default, unset others
       if (makeDefault || paymentMethods.length === 0) {
         await supabase
-          .from('user_payment_methods')
+          .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
           .update({ is_default: false })
           .eq('user_id', userData.id)
           .neq('id', paymentData.id);
@@ -280,13 +280,13 @@ const PaymentMethodsPage: React.FC = () => {
 
       // Unset all others
       await supabase
-        .from('user_payment_methods')
+        .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
         .update({ is_default: false })
         .eq('user_id', userData.id);
 
       // Set this one as default
       await supabase
-        .from('user_payment_methods')
+        .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
         .update({ is_default: true })
         .eq('id', id);
 
@@ -304,7 +304,7 @@ const PaymentMethodsPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('user_payment_methods')
+        .from(DB_CONFIG.TABLES.USER_PAYMENT_METHODS)
         .delete()
         .eq('id', id);
 
