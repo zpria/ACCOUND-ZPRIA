@@ -407,7 +407,7 @@ export const getUserCart = async (userId: string): Promise<UserCart[]> => {
 export const addToCart = async (item: Omit<UserCart, 'id' | 'addedAt' | 'updatedAt'>): Promise<UserCart | null> => {
   const dbItem = mapUserCartToDatabase(item);
   const { data, error } = await supabase
-    .from('user_carts')
+    .from(TABLES.user_carts)
     .insert([dbItem])
     .select()
     .single();
@@ -419,7 +419,7 @@ export const addToCart = async (item: Omit<UserCart, 'id' | 'addedAt' | 'updated
 export const updateCartItem = async (cartId: string, updates: Partial<UserCart>): Promise<boolean> => {
   const dbUpdates = mapUserCartToDatabase(updates);
   const { error } = await supabase
-    .from('user_carts')
+    .from(TABLES.user_carts)
     .update(dbUpdates)
     .eq('id', cartId);
   
@@ -428,7 +428,7 @@ export const updateCartItem = async (cartId: string, updates: Partial<UserCart>)
 
 export const removeFromCart = async (cartId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_carts')
+    .from(TABLES.user_carts)
     .delete()
     .eq('id', cartId);
   
@@ -439,7 +439,7 @@ export const removeFromCart = async (cartId: string): Promise<boolean> => {
 
 export const getUserSocialAccounts = async (userId: string): Promise<UserSocialAccount[]> => {
   const { data, error } = await supabase
-    .from('user_social_accounts')
+    .from(TABLES.user_social_accounts)
     .select('*')
     .eq('user_id', userId)
     .order('linked_at', { ascending: false });
@@ -450,7 +450,7 @@ export const getUserSocialAccounts = async (userId: string): Promise<UserSocialA
 
 export const disconnectSocialAccount = async (accountId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_social_accounts')
+    .from(TABLES.user_social_accounts)
     .delete()
     .eq('id', accountId);
   
@@ -461,7 +461,7 @@ export const disconnectSocialAccount = async (accountId: string): Promise<boolea
 
 export const getUserBadges = async (userId: string): Promise<UserBadge[]> => {
   const { data, error } = await supabase
-    .from('user_badges')
+    .from(TABLES.user_badges)
     .select('*')
     .eq('user_id', userId)
     .order('earned_at', { ascending: false });
@@ -474,7 +474,7 @@ export const getUserBadges = async (userId: string): Promise<UserBadge[]> => {
 
 export const getUserMilestones = async (userId: string): Promise<UserMilestone[]> => {
   const { data, error } = await supabase
-    .from('user_milestones')
+    .from(TABLES.user_milestones)
     .select('*')
     .eq('user_id', userId)
     .order('achieved_at', { ascending: false });
@@ -487,7 +487,7 @@ export const getUserMilestones = async (userId: string): Promise<UserMilestone[]
 
 export const getUserStreak = async (userId: string): Promise<UserStreak | null> => {
   const { data, error } = await supabase
-    .from('user_streaks')
+    .from(TABLES.user_streaks)
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -500,7 +500,7 @@ export const getUserStreak = async (userId: string): Promise<UserStreak | null> 
 
 export const getUserNotes = async (userId: string): Promise<UserNote[]> => {
   const { data, error } = await supabase
-    .from('user_notes')
+    .from(TABLES.user_notes)
     .select('*')
     .eq('user_id', userId)
     .eq('is_trashed', false)
@@ -514,7 +514,7 @@ export const getUserNotes = async (userId: string): Promise<UserNote[]> => {
 export const createNote = async (note: Omit<UserNote, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserNote | null> => {
   const dbNote = mapUserNoteToDatabase(note);
   const { data, error } = await supabase
-    .from('user_notes')
+    .from(TABLES.user_notes)
     .insert([dbNote])
     .select()
     .single();
@@ -526,7 +526,7 @@ export const createNote = async (note: Omit<UserNote, 'id' | 'createdAt' | 'upda
 export const updateNote = async (noteId: string, updates: Partial<UserNote>): Promise<boolean> => {
   const dbUpdates = mapUserNoteToDatabase(updates);
   const { error } = await supabase
-    .from('user_notes')
+    .from(TABLES.user_notes)
     .update(dbUpdates)
     .eq('id', noteId);
   
@@ -535,7 +535,7 @@ export const updateNote = async (noteId: string, updates: Partial<UserNote>): Pr
 
 export const deleteNote = async (noteId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_notes')
+    .from(TABLES.user_notes)
     .delete()
     .eq('id', noteId);
   
@@ -546,7 +546,7 @@ export const deleteNote = async (noteId: string): Promise<boolean> => {
 
 export const getUserSupportTickets = async (userId: string): Promise<UserSupportTicket[]> => {
   const { data, error } = await supabase
-    .from('user_support_tickets')
+    .from(TABLES.user_support_tickets)
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -566,7 +566,7 @@ export const createSupportTicket = async (
   };
   
   const { data, error } = await supabase
-    .from('user_support_tickets')
+    .from(TABLES.user_support_tickets)
     .insert([dbTicket])
     .select()
     .single();
@@ -579,7 +579,7 @@ export const createSupportTicket = async (
 
 export const getUserNotifications = async (userId: string, limit: number = 50): Promise<UserNotification[]> => {
   const { data, error } = await supabase
-    .from('user_notifications')
+    .from(TABLES.user_notifications)
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -591,7 +591,7 @@ export const getUserNotifications = async (userId: string, limit: number = 50): 
 
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_notifications')
+    .from(TABLES.user_notifications)
     .update({ is_opened: true, opened_at: new Date().toISOString() })
     .eq('id', notificationId);
   
@@ -602,7 +602,7 @@ export const markNotificationAsRead = async (notificationId: string): Promise<bo
 
 export const getUser2FA = async (userId: string): Promise<UserTwoFA | null> => {
   const { data, error } = await supabase
-    .from('user_2fa')
+    .from(TABLES.user_2fa)
     .select('*')
     .eq('user_id', userId)
     .eq('is_enabled', true)
@@ -616,7 +616,7 @@ export const getUser2FA = async (userId: string): Promise<UserTwoFA | null> => {
 
 export const getUserPasskeys = async (userId: string): Promise<UserPasskey[]> => {
   const { data, error } = await supabase
-    .from('user_passkeys')
+    .from(TABLES.user_passkeys)
     .select('*')
     .eq('user_id', userId)
     .order('last_used_at', { ascending: false });
@@ -629,7 +629,7 @@ export const getUserPasskeys = async (userId: string): Promise<UserPasskey[]> =>
 
 export const getUserOnboarding = async (userId: string): Promise<UserOnboarding | null> => {
   const { data, error } = await supabase
-    .from('user_onboarding')
+    .from(TABLES.user_onboarding)
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -644,7 +644,7 @@ export const updateOnboardingStep = async (
   completed: boolean
 ): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_onboarding')
+    .from(TABLES.user_onboarding)
     .update({ [step]: completed, updated_at: new Date().toISOString() })
     .eq('user_id', userId);
   
@@ -803,12 +803,98 @@ function mapDatabaseToUserProfile(data: any): UserProfile {
     isDealHunter: data.is_deal_hunter,
     isMobileOnly: data.is_mobile_only,
     isDesktopOnly: data.is_desktop_only,
-    lastLogin: data.last_login,
+    lastLogin: data.last_login_at,  // Fixed: Changed from data.last_login to data.last_login_at
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     extraData: data.extra_data,
     dynamicData: data.dynamic_data,
-    authUserId: data.auth_user_id
+    authUserId: data.auth_user_id,
+    
+    // Added missing fields from SQL schema
+    favoriteColor: data.favorite_color,
+    middleName: data.middle_name,
+    namePronunciation: data.name_pronunciation,
+    pronouns: data.pronouns,
+    customPronouns: data.custom_pronouns,
+    profileUrl: data.profile_url,
+    websiteUrl: data.website_url,
+    profileCompletionPercent: data.profile_completion_percent,
+    isVerifiedUser: data.is_verified_user,
+    verifiedAt: data.verified_at,
+    verificationBadgeType: data.verification_badge_type,
+    accountType: data.account_type,
+    isPublicFigure: data.is_public_figure,
+    profileVisibility: data.profile_visibility,
+    bioVisibility: data.bio_visibility,
+    dobVisibility: data.dob_visibility,
+    genderVisibility: data.gender_visibility,
+    phoneVisibility: data.phone_visibility,
+    emailVisibility: data.email_visibility,
+    locationVisibility: data.location_visibility,
+    workVisibility: data.work_visibility,
+    educationVisibility: data.education_visibility,
+    friendsVisibility: data.friends_visibility,
+    postsVisibility: data.posts_visibility,
+    taggedPostsVisibility: data.tagged_posts_visibility,
+    mobileSecondary: data.mobile_secondary,
+    recoveryEmail: data.recovery_email,
+    recoveryPhone: data.recovery_phone,
+    emergencyContactName: data.emergency_contact_name,
+    emergencyContactPhone: data.emergency_contact_phone,
+    emergencyContactRelation: data.emergency_contact_relation,
+    suspiciousLoginBlock: data.suspicious_login_block,
+    lastPasswordChange: data.last_password_change,
+    passwordStrengthScore: data.password_strength_score,
+    passkeyEnabled: data.passkey_enabled,
+    magicLinkEnabled: data.magic_link_enabled,
+    biometricEnabled: data.biometric_enabled,
+    autoLogoutMinutes: data.auto_logout_minutes,
+    sessionLimit: data.session_limit,
+    requirePasswordOnSensitive: data.require_password_on_sensitive,
+    searchVisibility: data.search_visibility,
+    discoverableByEmail: data.discoverable_by_email,
+    discoverableByPhone: data.discoverable_by_phone,
+    showOnlineStatus: data.show_online_status,
+    showLastSeen: data.show_last_seen,
+    showReadReceipts: data.show_read_receipts,
+    showTypingIndicator: data.show_typing_indicator,
+    allowFriendRequests: data.allow_friend_requests,
+    allowMessageFrom: data.allow_message_from,
+    allowTagFrom: data.allow_tag_from,
+    allowMentionFrom: data.allow_mention_from,
+    hideFromSearchEngines: data.hide_from_search_engines,
+    faceRecognitionOptOut: data.face_recognition_opt_out,
+    aiTrainingOptOut: data.ai_training_opt_out,
+    sensitiveContentFilter: data.sensitive_content_filter,
+    crossAppTrackingDisabled: data.cross_app_tracking_disabled,
+    dataDownloadRequestedAt: data.data_download_requested_at,
+    accountDeleteRequestedAt: data.account_delete_requested_at,
+    accountDeleteScheduledAt: data.account_delete_scheduled_at,
+    notifEmailMaster: data.notif_email_master,
+    notifSmsMaster: data.notif_sms_master,
+    notifPushMaster: data.notif_push_master,
+    notifInAppMaster: data.notif_in_app_master,
+    notifWhatsappMaster: data.notif_whatsapp_master,
+    darkMode: data.dark_mode,
+    autoDarkMode: data.auto_dark_mode,
+    compactMode: data.compact_mode,
+    animationEnabled: data.animation_enabled,
+    highContrast: data.high_contrast,
+    reduceMotion: data.reduce_motion,
+    sidebarCollapsed: data.sidebar_collapsed,
+    fontScale: data.font_scale,
+    dateFormat: data.date_format,
+    timeFormat: data.time_format,
+    firstDayOfWeek: data.first_day_of_week,
+    numberFormat: data.number_format,
+    measurementUnit: data.measurement_unit,
+    screenReaderEnabled: data.screen_reader_enabled,
+    keyboardShortcutsEnabled: data.keyboard_shortcuts_enabled,
+    focusMode: data.focus_mode,
+    dyslexiaFriendlyFont: data.dyslexia_friendly_font,
+    colorBlindMode: data.color_blind_mode,
+    closedCaptionsEnabled: data.closed_captions_enabled,
+    audioDescriptionEnabled: data.audio_description_enabled
   };
 }
 
@@ -954,12 +1040,98 @@ function mapUserProfileToDatabase(profile: Partial<UserProfile>): any {
     isDealHunter: 'is_deal_hunter',
     isMobileOnly: 'is_mobile_only',
     isDesktopOnly: 'is_desktop_only',
-    lastLogin: 'last_login',
+    lastLogin: 'last_login_at',  // Fixed: Changed from 'last_login' to 'last_login_at'
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     extraData: 'extra_data',
     dynamicData: 'dynamic_data',
-    authUserId: 'auth_user_id'
+    authUserId: 'auth_user_id',
+    
+    // Added mappings for new fields
+    favoriteColor: 'favorite_color',
+    middleName: 'middle_name',
+    namePronunciation: 'name_pronunciation',
+    pronouns: 'pronouns',
+    customPronouns: 'custom_pronouns',
+    profileUrl: 'profile_url',
+    websiteUrl: 'website_url',
+    profileCompletionPercent: 'profile_completion_percent',
+    isVerifiedUser: 'is_verified_user',
+    verifiedAt: 'verified_at',
+    verificationBadgeType: 'verification_badge_type',
+    accountType: 'account_type',
+    isPublicFigure: 'is_public_figure',
+    profileVisibility: 'profile_visibility',
+    bioVisibility: 'bio_visibility',
+    dobVisibility: 'dob_visibility',
+    genderVisibility: 'gender_visibility',
+    phoneVisibility: 'phone_visibility',
+    emailVisibility: 'email_visibility',
+    locationVisibility: 'location_visibility',
+    workVisibility: 'work_visibility',
+    educationVisibility: 'education_visibility',
+    friendsVisibility: 'friends_visibility',
+    postsVisibility: 'posts_visibility',
+    taggedPostsVisibility: 'tagged_posts_visibility',
+    mobileSecondary: 'mobile_secondary',
+    recoveryEmail: 'recovery_email',
+    recoveryPhone: 'recovery_phone',
+    emergencyContactName: 'emergency_contact_name',
+    emergencyContactPhone: 'emergency_contact_phone',
+    emergencyContactRelation: 'emergency_contact_relation',
+    suspiciousLoginBlock: 'suspicious_login_block',
+    lastPasswordChange: 'last_password_change',
+    passwordStrengthScore: 'password_strength_score',
+    passkeyEnabled: 'passkey_enabled',
+    magicLinkEnabled: 'magic_link_enabled',
+    biometricEnabled: 'biometric_enabled',
+    autoLogoutMinutes: 'auto_logout_minutes',
+    sessionLimit: 'session_limit',
+    requirePasswordOnSensitive: 'require_password_on_sensitive',
+    searchVisibility: 'search_visibility',
+    discoverableByEmail: 'discoverable_by_email',
+    discoverableByPhone: 'discoverable_by_phone',
+    showOnlineStatus: 'show_online_status',
+    showLastSeen: 'show_last_seen',
+    showReadReceipts: 'show_read_receipts',
+    showTypingIndicator: 'show_typing_indicator',
+    allowFriendRequests: 'allow_friend_requests',
+    allowMessageFrom: 'allow_message_from',
+    allowTagFrom: 'allow_tag_from',
+    allowMentionFrom: 'allow_mention_from',
+    hideFromSearchEngines: 'hide_from_search_engines',
+    faceRecognitionOptOut: 'face_recognition_opt_out',
+    aiTrainingOptOut: 'ai_training_opt_out',
+    sensitiveContentFilter: 'sensitive_content_filter',
+    crossAppTrackingDisabled: 'cross_app_tracking_disabled',
+    dataDownloadRequestedAt: 'data_download_requested_at',
+    accountDeleteRequestedAt: 'account_delete_requested_at',
+    accountDeleteScheduledAt: 'account_delete_scheduled_at',
+    notifEmailMaster: 'notif_email_master',
+    notifSmsMaster: 'notif_sms_master',
+    notifPushMaster: 'notif_push_master',
+    notifInAppMaster: 'notif_in_app_master',
+    notifWhatsappMaster: 'notif_whatsapp_master',
+    darkMode: 'dark_mode',
+    autoDarkMode: 'auto_dark_mode',
+    compactMode: 'compact_mode',
+    animationEnabled: 'animation_enabled',
+    highContrast: 'high_contrast',
+    reduceMotion: 'reduce_motion',
+    sidebarCollapsed: 'sidebar_collapsed',
+    fontScale: 'font_scale',
+    dateFormat: 'date_format',
+    timeFormat: 'time_format',
+    firstDayOfWeek: 'first_day_of_week',
+    numberFormat: 'number_format',
+    measurementUnit: 'measurement_unit',
+    screenReaderEnabled: 'screen_reader_enabled',
+    keyboardShortcutsEnabled: 'keyboard_shortcuts_enabled',
+    focusMode: 'focus_mode',
+    dyslexiaFriendlyFont: 'dyslexia_friendly_font',
+    colorBlindMode: 'color_blind_mode',
+    closedCaptionsEnabled: 'closed_captions_enabled',
+    audioDescriptionEnabled: 'audio_description_enabled'
   };
 
   const result: any = {};
@@ -980,12 +1152,12 @@ function mapDatabaseToUserAddress(data: any): UserAddress {
   return {
     id: data.id,
     userId: data.user_id,
-    addressType: data.address_type,
+    addressType: data.label,  // Fixed: SQL uses 'label' for address type
     label: data.label,
-    streetAddress: data.street_address,
-    apartment: data.apartment,
+    streetAddress: data.address_line_1,  // Fixed: SQL uses 'address_line_1' instead of 'street_address'
+    apartment: data.address_line_2,  // Fixed: SQL uses 'address_line_2' instead of 'apartment'
     city: data.city,
-    state: data.state,
+    state: data.area,  // Fixed: SQL uses 'area' instead of 'state'
     postalCode: data.postal_code,
     country: data.country,
     isDefault: data.is_default,
@@ -999,12 +1171,12 @@ function mapDatabaseToUserAddress(data: any): UserAddress {
 function mapUserAddressToDatabase(address: Partial<UserAddress>): any {
   return {
     user_id: address.userId,
-    address_type: address.addressType,
-    label: address.label,
-    street_address: address.streetAddress,
-    apartment: address.apartment,
+    label: address.addressType,  // Fixed: SQL uses 'label' for address type
+    full_name: address.label,  // Fixed: SQL uses 'full_name' for the label field
+    address_line_1: address.streetAddress,  // Fixed: SQL uses 'address_line_1' instead of 'street_address'
+    address_line_2: address.apartment,  // Fixed: SQL uses 'address_line_2' instead of 'apartment'
     city: address.city,
-    state: address.state,
+    area: address.state,  // Fixed: SQL uses 'area' instead of 'state'
     postal_code: address.postalCode,
     country: address.country,
     is_default: address.isDefault,
@@ -1136,9 +1308,9 @@ function mapDatabaseToUserSession(data: any): UserSession {
     id: data.id,
     userId: data.user_id,
     sessionToken: data.session_token,
-    deviceType: data.device_type,
-    os: data.os,
-    browser: data.browser,
+    deviceType: data.device_info,  // Fixed: SQL uses 'device_info' instead of 'device_type'
+    os: data.os_name,  // Fixed: SQL has separate os_name field
+    browser: data.browser_name,  // Fixed: SQL has separate browser_name field
     ipAddress: data.ip_address,
     location: data.location,
     rememberMe: data.remember_me,
@@ -1167,9 +1339,9 @@ function mapUserSessionToDatabase(session: Partial<UserSession>): any {
   return {
     user_id: session.userId,
     session_token: session.sessionToken,
-    device_type: session.deviceType,
-    os: session.os,
-    browser: session.browser,
+    device_info: session.deviceType,  // Fixed: SQL uses 'device_info' instead of 'device_type'
+    os_name: session.os,  // Fixed: SQL has separate os_name field
+    browser_name: session.browser,  // Fixed: SQL has separate browser_name field
     ip_address: session.ipAddress,
     location: session.location,
     remember_me: session.rememberMe,
@@ -1189,8 +1361,8 @@ function mapUserSessionToDatabase(session: Partial<UserSession>): any {
     login_notification_sent: session.loginNotificationSent,
     country_code: session.countryCode,
     city_name: session.cityName,
-    os_name: session.osName,
-    browser_name: session.browserName
+    os_name: session.os,  // Removed duplicate
+    browser_name: session.browser  // Removed duplicate
   };
 }
 
@@ -1891,7 +2063,7 @@ function mapDatabaseToUserTwoFA(data: any): UserTwoFA {
     userId: data.user_id,
     method: data.method,
     secretRef: data.secret_key,
-    backupCodes: data.backup_codes,
+    backupCodes: data.backup_codes,  // Fixed: Need to ensure this works with ARRAY type from SQL
     isEnabled: data.is_enabled,
     isVerified: data.is_verified,
     createdAt: data.created_at,
@@ -2053,7 +2225,7 @@ export const mappers = {
 
 export const getUserAuditLogs = async (userId: string, limit: number = 100): Promise<UserAuditLog[]> => {
   const { data, error } = await supabase
-    .from('user_audit_logs')
+    .from(TABLES.user_audit_logs)
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -2065,7 +2237,7 @@ export const getUserAuditLogs = async (userId: string, limit: number = 100): Pro
 
 export const getUserBackupCodes = async (userId: string): Promise<UserBackupCode[]> => {
   const { data, error } = await supabase
-    .from('user_backup_codes')
+    .from(TABLES.user_backup_codes)
     .select('*')
     .eq('user_id', userId);
   
@@ -2075,7 +2247,7 @@ export const getUserBackupCodes = async (userId: string): Promise<UserBackupCode
 
 export const getUserAccountRecoveryOptions = async (userId: string): Promise<UserAccountRecovery[]> => {
   const { data, error } = await supabase
-    .from('user_account_recovery')
+    .from(TABLES.user_account_recovery)
     .select('*')
     .eq('user_id', userId);
   
@@ -2085,7 +2257,7 @@ export const getUserAccountRecoveryOptions = async (userId: string): Promise<Use
 
 export const getUserSecurityQuestions = async (userId: string): Promise<UserSecurityQuestion[]> => {
   const { data, error } = await supabase
-    .from('user_security_questions')
+    .from(TABLES.user_security_questions)
     .select('*')
     .eq('user_id', userId);
   
@@ -2095,7 +2267,7 @@ export const getUserSecurityQuestions = async (userId: string): Promise<UserSecu
 
 export const getUserTrustedDevices = async (userId: string): Promise<UserTrustedDevice[]> => {
   const { data, error } = await supabase
-    .from('user_trusted_devices')
+    .from(TABLES.user_trusted_devices)
     .select('*')
     .eq('user_id', userId);
   
@@ -2105,7 +2277,7 @@ export const getUserTrustedDevices = async (userId: string): Promise<UserTrusted
 
 export const getUserSessionPreferences = async (userId: string): Promise<UserSessionPreference[]> => {
   const { data, error } = await supabase
-    .from('user_session_preferences')
+    .from(TABLES.user_session_preferences)
     .select('*')
     .eq('user_id', userId);
   
@@ -2115,7 +2287,7 @@ export const getUserSessionPreferences = async (userId: string): Promise<UserSes
 
 export const getUserAccountHistory = async (userId: string, limit: number = 50): Promise<UserAccountHistory[]> => {
   const { data, error } = await supabase
-    .from('user_account_history')
+    .from(TABLES.user_account_history)
     .select('*')
     .eq('user_id', userId)
     .order('changed_at', { ascending: false })
@@ -2127,10 +2299,10 @@ export const getUserAccountHistory = async (userId: string, limit: number = 50):
 
 export const getUserLoginHistory = async (userId: string, limit: number = 100): Promise<LoginHistory[]> => {
   const { data, error } = await supabase
-    .from('login_history')
+    .from(TABLES.user_login_notifications)
     .select('*')
     .eq('user_id', userId)
-    .order('login_time', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(limit);
   
   if (error || !data) return [];
