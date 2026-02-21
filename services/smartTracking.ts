@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseService';
 import { logActivity } from './deviceDetection';
+import { TABLES } from '../config';
 
 // Track page visit with time spent
 export const trackPageVisit = async (
@@ -14,11 +15,11 @@ export const trackPageVisit = async (
   const timeSpent = Math.floor((Date.now() - entryTime) / 1000); // in seconds
   
   try {
-    await supabase.from('user_page_visits').insert([{
+    await supabase.from(TABLES.user_activity_history).insert([{
       user_id: userId,
-      page,
-      time_spent_seconds: timeSpent,
-      visited_at: new Date().toISOString()
+      action: `page_visit_${page}`,
+      metadata: { page, time_spent_seconds: timeSpent },
+      created_at: new Date().toISOString()
     }]);
     
     // Update user stats
@@ -36,7 +37,7 @@ export const trackInteraction = async (
   metadata?: Record<string, any>
 ) => {
   try {
-    await supabase.from('user_interactions').insert([{
+    await supabase.from(TABLES.user_ai_interactions).insert([{
       user_id: userId,
       action,
       element,
@@ -51,16 +52,17 @@ export const trackInteraction = async (
 // Auto-detect user interests based on behavior
 export const detectUserInterests = async (userId: string): Promise<string[]> => {
   try {
-    // Get page visits
+    // Get page visits (using user_activity_history)
     const { data: visits } = await supabase
-      .from('user_page_visits')
-      .select('page, time_spent_seconds')
+      .from(TABLES.user_activity_history)
+      .select('action, metadata')
       .eq('user_id', userId)
-      .gte('visited_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      .ilike('action', 'page_visit_%')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
     
     // Get interactions
     const { data: interactions } = await supabase
-      .from('user_interactions')
+      .from(TABLES.user_ai_interactions)
       .select('action, element')
       .eq('user_id', userId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
@@ -69,9 +71,12 @@ export const detectUserInterests = async (userId: string): Promise<string[]> => 
     
     // Analyze page visits
     visits?.forEach(visit => {
-      const interest = pageToInterest(visit.page);
+      // Extract page from action (format: page_visit_/path/to/page)
+      const page = visit.action.replace('page_visit_', '');
+      const timeSpent = visit.metadata?.time_spent_seconds || 0;
+      const interest = pageToInterest(page);
       if (interest) {
-        interests[interest] = (interests[interest] || 0) + visit.time_spent_seconds;
+        interests[interest] = (interests[interest] || 0) + timeSpent;
       }
     });
     
@@ -127,14 +132,14 @@ const updateUserStats = async (
 ) => {
   try {
     const { data: existing } = await supabase
-      .from('user_stats')
+      .from(TABLES.user_daily_activity)
       .select('*')
       .eq('user_id', userId)
       .single();
     
     if (existing) {
       await supabase
-        .from('user_stats')
+        .from(TABLES.user_daily_activity)
         .update({
           total_page_visits: existing.total_page_visits + (increment.page_visits || 0),
           total_time_spent_seconds: existing.total_time_spent_seconds + (increment.time_spent || 0),
@@ -142,7 +147,7 @@ const updateUserStats = async (
         })
         .eq('user_id', userId);
     } else {
-      await supabase.from('user_stats').insert([{
+      await supabase.from(TABLES.user_daily_activity).insert([{
         user_id: userId,
         total_page_visits: increment.page_visits || 0,
         total_time_spent_seconds: increment.time_spent || 0,
@@ -185,7 +190,7 @@ export const calculateEngagementScore = async (userId: string): Promise<number> 
 export const detectBestContactTime = async (userId: string): Promise<string> => {
   try {
     const { data: activities } = await supabase
-      .from('user_activity_logs')
+      .from(TABLES.user_activity_logs)
       .select('created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -214,7 +219,7 @@ export const detectBestContactTime = async (userId: string): Promise<string> => 
 export const predictNextAction = async (userId: string): Promise<string | null> => {
   try {
     const { data: recentActions } = await supabase
-      .from('user_activity_logs')
+      .from(TABLES.user_activity_logs)
       .select('action')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })

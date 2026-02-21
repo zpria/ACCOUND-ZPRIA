@@ -61,6 +61,17 @@ export const aiServicesConfig = {
     defaultModel: 'nlp-processor-v3',
     supportedFeatures: ['sentiment', 'entities', 'keywords', 'summarization'],
   },
+
+  // Gemini AI Service
+  gemini: {
+    apiKey: import.meta.env.VITE_GEMINI_API_KEY || '', // Use environment variable or empty string
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/',
+    rateLimit: 60, // requests per minute
+    maxRetries: 3,
+    timeout: 30000, // 30 seconds
+    defaultModel: 'gemini-pro',
+    supportedModels: ['gemini-pro', 'gemini-pro-vision'],
+  },
 };
 
 // Export individual AI service configurations for convenience
@@ -69,7 +80,8 @@ export const {
   textAnalysis,
   voiceService,
   recommendationEngine,
-  nlpProcessor
+  nlpProcessor,
+  gemini
 } = aiServicesConfig;
 
 // Export API keys separately if needed
@@ -79,6 +91,7 @@ export const aiApiKeys = {
   voiceService: aiServicesConfig.voiceService.apiKey,
   recommendationEngine: aiServicesConfig.recommendationEngine.apiKey,
   nlpProcessor: aiServicesConfig.nlpProcessor.apiKey,
+  gemini: aiServicesConfig.gemini.apiKey,
 };
 
 // Export endpoints separately if needed
@@ -88,4 +101,5 @@ export const aiEndpoints = {
   voiceService: aiServicesConfig.voiceService.endpoint,
   recommendationEngine: aiServicesConfig.recommendationEngine.endpoint,
   nlpProcessor: aiServicesConfig.nlpProcessor.endpoint,
+  gemini: aiServicesConfig.gemini.endpoint,
 };

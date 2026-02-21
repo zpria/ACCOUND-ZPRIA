@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // Fix: Use ZPRIA_MAIN_LOGO instead of non-existent ZIPRA_LOGO
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import { dataIds, colors } from '../config';
 
 const TeamsPage: React.FC = () => {
   return (

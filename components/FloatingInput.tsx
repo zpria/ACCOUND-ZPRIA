@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { dataIds } from '../config';
+import { dataIds, colors } from '../config';
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> {
   label: string;

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, ChevronDown, LogOut, User, Check, X } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import { logActivity } from '../services/deviceDetection';
+import { dataIds, colors } from '../config';
 
 interface Account {
   id: string;

@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, User, Bot } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
+import { dataIds, colors } from '../config';
 
 interface Message {
   id: string;

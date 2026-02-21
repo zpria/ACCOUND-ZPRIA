@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LOGO_VARIANTS } from '../constants';
 import { LogoVariant } from '../types';
+import { dataIds, colors } from '../config';
 
 interface Props {
   onSelectTheme: (variant: LogoVariant) => void;

@@ -3,6 +3,7 @@
 // Handles all user-related database operations
 
 import { supabase } from './supabaseService';
+import { TABLES } from '../config';
 import type {
   UserProfile,
   UserAddress,
@@ -43,7 +44,7 @@ import type {
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   const { data, error } = await supabase
-    .from('users')
+    .from(TABLES.users)
     .select('*')
     .eq('id', userId)
     .single();
@@ -56,15 +57,15 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
   const dbUpdates = mapUserProfileToDatabase(updates);
   console.log('Updating user profile with:', dbUpdates);
   const { error } = await supabase
-    .from('users')
+    .from(TABLES.users)
     .update(dbUpdates)
     .eq('id', userId);
-  
+
   if (error) {
     console.error('Failed to update user profile:', error);
     return false;
   }
-  
+
   return true;
 };
 
@@ -72,11 +73,11 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
 
 export const getUserAddresses = async (userId: string): Promise<UserAddress[]> => {
   const { data, error } = await supabase
-    .from('user_addresses')
+    .from(TABLES.user_addresses)
     .select('*')
     .eq('user_id', userId)
     .order('is_default', { ascending: false });
-  
+
   if (error || !data) return [];
   return data.map(mapDatabaseToUserAddress);
 };
@@ -84,11 +85,11 @@ export const getUserAddresses = async (userId: string): Promise<UserAddress[]> =
 export const addUserAddress = async (address: Omit<UserAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserAddress | null> => {
   const dbAddress = mapUserAddressToDatabase(address);
   const { data, error } = await supabase
-    .from('user_addresses')
+    .from(TABLES.user_addresses)
     .insert([dbAddress])
     .select()
     .single();
-  
+
   if (error || !data) return null;
   return mapDatabaseToUserAddress(data);
 };
@@ -96,19 +97,19 @@ export const addUserAddress = async (address: Omit<UserAddress, 'id' | 'createdA
 export const updateUserAddress = async (addressId: string, updates: Partial<UserAddress>): Promise<boolean> => {
   const dbUpdates = mapUserAddressToDatabase(updates);
   const { error } = await supabase
-    .from('user_addresses')
+    .from(TABLES.user_addresses)
     .update(dbUpdates)
     .eq('id', addressId);
-  
+
   return !error;
 };
 
 export const deleteUserAddress = async (addressId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_addresses')
+    .from(TABLES.user_addresses)
     .delete()
     .eq('id', addressId);
-  
+
   return !error;
 };
 
@@ -116,7 +117,7 @@ export const deleteUserAddress = async (addressId: string): Promise<boolean> => 
 
 export const getUserPaymentMethods = async (userId: string): Promise<UserPaymentMethod[]> => {
   const { data, error } = await supabase
-    .from('user_payment_methods')
+    .from(TABLES.user_payment_methods)
     .select('*')
     .eq('user_id', userId)
     .order('is_default', { ascending: false });
@@ -128,7 +129,7 @@ export const getUserPaymentMethods = async (userId: string): Promise<UserPayment
 export const addPaymentMethod = async (method: Omit<UserPaymentMethod, 'id' | 'createdAt'>): Promise<UserPaymentMethod | null> => {
   const dbMethod = mapUserPaymentMethodToDatabase(method);
   const { data, error } = await supabase
-    .from('user_payment_methods')
+    .from(TABLES.user_payment_methods)
     .insert([dbMethod])
     .select()
     .single();
@@ -140,13 +141,13 @@ export const addPaymentMethod = async (method: Omit<UserPaymentMethod, 'id' | 'c
 export const setDefaultPaymentMethod = async (userId: string, methodId: string): Promise<boolean> => {
   // First, unset all defaults
   await supabase
-    .from('user_payment_methods')
+    .from(TABLES.user_payment_methods)
     .update({ is_default: false })
     .eq('user_id', userId);
   
   // Set new default
   const { error } = await supabase
-    .from('user_payment_methods')
+    .from(TABLES.user_payment_methods)
     .update({ is_default: true })
     .eq('id', methodId);
   
@@ -157,7 +158,7 @@ export const setDefaultPaymentMethod = async (userId: string, methodId: string):
 
 export const getUserDevices = async (userId: string): Promise<UserDevice[]> => {
   const { data, error } = await supabase
-    .from('user_devices')
+    .from(TABLES.user_devices)
     .select('*')
     .eq('user_id', userId)
     .order('last_used_at', { ascending: false });
@@ -168,7 +169,7 @@ export const getUserDevices = async (userId: string): Promise<UserDevice[]> => {
 
 export const trustDevice = async (deviceId: string, trusted: boolean): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_devices')
+    .from(TABLES.user_devices)
     .update({ is_trusted: trusted })
     .eq('id', deviceId);
   
@@ -177,7 +178,7 @@ export const trustDevice = async (deviceId: string, trusted: boolean): Promise<b
 
 export const removeDevice = async (deviceId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_devices')
+    .from(TABLES.user_devices)
     .delete()
     .eq('id', deviceId);
   
@@ -188,7 +189,7 @@ export const removeDevice = async (deviceId: string): Promise<boolean> => {
 
 export const getUserSessions = async (userId: string): Promise<UserSession[]> => {
   const { data, error } = await supabase
-    .from('user_sessions')
+    .from(TABLES.user_sessions)
     .select('*')
     .eq('user_id', userId)
     .order('last_activity', { ascending: false });
@@ -199,7 +200,7 @@ export const getUserSessions = async (userId: string): Promise<UserSession[]> =>
 
 export const revokeSession = async (sessionId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_sessions')
+    .from(TABLES.user_sessions)
     .delete()
     .eq('id', sessionId);
   
@@ -208,7 +209,7 @@ export const revokeSession = async (sessionId: string): Promise<boolean> => {
 
 export const revokeAllOtherSessions = async (userId: string, currentSessionId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_sessions')
+    .from(TABLES.user_sessions)
     .delete()
     .eq('user_id', userId)
     .neq('id', currentSessionId);
@@ -220,7 +221,7 @@ export const revokeAllOtherSessions = async (userId: string, currentSessionId: s
 
 export const getConnectedApps = async (userId: string): Promise<UserConnectedApp[]> => {
   const { data, error } = await supabase
-    .from('user_connected_apps')
+    .from(TABLES.user_connected_apps)
     .select('*')
     .eq('user_id', userId)
     .order('last_used_at', { ascending: false });
@@ -231,7 +232,7 @@ export const getConnectedApps = async (userId: string): Promise<UserConnectedApp
 
 export const disconnectApp = async (appId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_connected_apps')
+    .from(TABLES.user_connected_apps)
     .delete()
     .eq('id', appId);
   
@@ -242,7 +243,7 @@ export const disconnectApp = async (appId: string): Promise<boolean> => {
 
 export const getNotificationSettings = async (userId: string): Promise<UserNotificationSetting[]> => {
   const { data, error } = await supabase
-    .from('user_notification_settings')
+    .from(TABLES.user_notification_settings)
     .select('*')
     .eq('user_id', userId);
   
@@ -256,7 +257,7 @@ export const updateNotificationSetting = async (
 ): Promise<boolean> => {
   const dbUpdates = mapUserNotificationSettingToDatabase(updates);
   const { error } = await supabase
-    .from('user_notification_settings')
+    .from(TABLES.user_notification_settings)
     .update(dbUpdates)
     .eq('id', settingId);
   
@@ -267,7 +268,7 @@ export const updateNotificationSetting = async (
 
 export const getPrivacySettings = async (userId: string): Promise<UserPrivacySetting | null> => {
   const { data, error } = await supabase
-    .from('user_privacy_settings')
+    .from(TABLES.user_privacy_settings)
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -282,7 +283,7 @@ export const updatePrivacySettings = async (
 ): Promise<boolean> => {
   const dbUpdates = mapUserPrivacySettingToDatabase(updates);
   const { error } = await supabase
-    .from('user_privacy_settings')
+    .from(TABLES.user_privacy_settings)
     .update(dbUpdates)
     .eq('user_id', userId);
   
@@ -293,7 +294,7 @@ export const updatePrivacySettings = async (
 
 export const getActivityLogs = async (userId: string, limit: number = 100): Promise<UserActivityLog[]> => {
   const { data, error } = await supabase
-    .from('user_activity_logs')
+    .from(TABLES.user_activity_logs)
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -307,7 +308,7 @@ export const getActivityLogs = async (userId: string, limit: number = 100): Prom
 
 export const getUserWallet = async (userId: string): Promise<UserWallet | null> => {
   const { data, error } = await supabase
-    .from('user_wallets')
+    .from(TABLES.user_wallets)
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -318,7 +319,7 @@ export const getUserWallet = async (userId: string): Promise<UserWallet | null> 
 
 export const getWalletTransactions = async (walletId: string, limit: number = 50): Promise<UserWalletTransaction[]> => {
   const { data, error } = await supabase
-    .from('user_wallet_transactions')
+    .from(TABLES.user_wallet_transactions)
     .select('*')
     .eq('wallet_id', walletId)
     .order('created_at', { ascending: false })
@@ -332,7 +333,7 @@ export const getWalletTransactions = async (walletId: string, limit: number = 50
 
 export const getUserSubscriptions = async (userId: string): Promise<UserSubscription[]> => {
   const { data, error } = await supabase
-    .from('user_subscriptions')
+    .from(TABLES.user_subscriptions)
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -345,7 +346,7 @@ export const getUserSubscriptions = async (userId: string): Promise<UserSubscrip
 
 export const getUserPurchases = async (userId: string, limit: number = 50): Promise<UserPurchase[]> => {
   const { data, error } = await supabase
-    .from('user_purchases')
+    .from(TABLES.user_purchases)
     .select('*')
     .eq('user_id', userId)
     .order('purchased_at', { ascending: false })
@@ -359,7 +360,7 @@ export const getUserPurchases = async (userId: string, limit: number = 50): Prom
 
 export const getUserWishlist = async (userId: string): Promise<UserWishlist[]> => {
   const { data, error } = await supabase
-    .from('user_wishlists')
+    .from(TABLES.user_wishlists)
     .select('*')
     .eq('user_id', userId)
     .order('added_at', { ascending: false });
@@ -371,7 +372,7 @@ export const getUserWishlist = async (userId: string): Promise<UserWishlist[]> =
 export const addToWishlist = async (item: Omit<UserWishlist, 'id' | 'addedAt'>): Promise<UserWishlist | null> => {
   const dbItem = mapUserWishlistToDatabase(item);
   const { data, error } = await supabase
-    .from('user_wishlists')
+    .from(TABLES.user_wishlists)
     .insert([dbItem])
     .select()
     .single();
@@ -382,7 +383,7 @@ export const addToWishlist = async (item: Omit<UserWishlist, 'id' | 'addedAt'>):
 
 export const removeFromWishlist = async (wishlistId: string): Promise<boolean> => {
   const { error } = await supabase
-    .from('user_wishlists')
+    .from(TABLES.user_wishlists)
     .delete()
     .eq('id', wishlistId);
   
@@ -393,7 +394,7 @@ export const removeFromWishlist = async (wishlistId: string): Promise<boolean> =
 
 export const getUserCart = async (userId: string): Promise<UserCart[]> => {
   const { data, error } = await supabase
-    .from('user_carts')
+    .from(TABLES.user_carts)
     .select('*')
     .eq('user_id', userId)
     .eq('saved_for_later', false)

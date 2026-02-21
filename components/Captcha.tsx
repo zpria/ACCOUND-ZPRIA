@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { dataIds, colors } from '../config';
 
 interface Props {
   onVerify: (isValid: boolean) => void;

@@ -1,8 +1,9 @@
 
 import { GoogleGenerativeAI } from "@google/genai";
+import { dataIds, colors, aiServicesConfig } from '../config';
 
 export const getGeminiGreeting = async (name: string): Promise<string> => {
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  const API_KEY = aiServicesConfig.gemini.apiKey || import.meta.env.VITE_GEMINI_API_KEY;
   if (!API_KEY) return `Welcome back to ZPRIA, ${name}! Ready to explore?`;
   
   try {
@@ -23,7 +24,7 @@ export const getGeminiGreeting = async (name: string): Promise<string> => {
 };
 
 export const getSecurityRecommendation = async (userStatus: { emailVerified: boolean, mobileVerified: boolean }): Promise<string> => {
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  const API_KEY = aiServicesConfig.gemini.apiKey || import.meta.env.VITE_GEMINI_API_KEY;
   if (!API_KEY) return "Protect your ZPRIA PRAGOD with two-factor authentication.";
 
   try {

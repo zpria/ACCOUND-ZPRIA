@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { dataIds, colors } from '../config';
 
 interface LoadingOverlayProps {
   isLoading: boolean;

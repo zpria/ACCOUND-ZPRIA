@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { Search, Lock, User, Mail, Phone, Shield, HelpCircle, MessageCircle, ChevronRight } from 'lucide-react';
 import AIAssistant from '../components/AIAssistant';
+import { dataIds, colors } from '../config';
 
 const SupportCard = ({ 
   icon: Icon, 

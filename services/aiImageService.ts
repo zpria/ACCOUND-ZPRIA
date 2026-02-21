@@ -1,9 +1,10 @@
 
 // AI Image Generation Service for Profile Pictures
 // Uses Stability AI for image generation
+import { dataIds, colors, aiServicesConfig, storageConfig } from '../config';
 
-const STABILITY_API_KEY = import.meta.env.VITE_STABILITY_API_KEY || '';
-const STABILITY_API_URL = 'https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image';
+const STABILITY_API_KEY = aiServicesConfig.imageGenerator.apiKey || import.meta.env.VITE_STABILITY_API_KEY || '';
+const STABILITY_API_URL = aiServicesConfig.imageGenerator.endpoint || 'https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image';
 
 export interface ProfileImageParams {
   gender: 'male' | 'female' | 'other';
@@ -142,13 +143,13 @@ const generateColorFromString = (str: string): string => {
 // Upload image to Cloudinary
 export const uploadToCloudinary = async (imageBase64: string): Promise<string | null> => {
   try {
-    const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
-    const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
+    const CLOUDINARY_UPLOAD_PRESET = storageConfig.cloudinary.uploadPreset || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
+    const CLOUDINARY_CLOUD_NAME = storageConfig.cloudinary.cloudName || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
     
     const formData = new FormData();
     formData.append('file', imageBase64);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    formData.append('folder', 'zpria_profiles');
+    formData.append('folder', storageConfig.cloudinary.uploadFolder);
     
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,

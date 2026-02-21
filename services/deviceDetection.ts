@@ -1,5 +1,6 @@
 
 // Device Detection Service - Auto detects device, browser, IP, location
+import { dataIds, colors } from '../config';
 
 export interface DeviceInfo {
   device_type: 'mobile' | 'tablet' | 'desktop';

@@ -77,6 +77,28 @@ export const storageConfig = {
     videoThumbnailInterval: 5, // Seconds interval for video thumbnails
     metadataExtraction: true,
     automaticTagging: true,
+  },
+
+  // Cloudinary Configuration
+  cloudinary: {
+    enabled: true,
+    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',
+    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '',
+    apiKey: '', // Default API key - can be overridden in environment
+    apiSecret: '', // Default API secret - can be overridden in environment
+    secureDistribution: 'res.cloudinary.com',
+    cname: null,
+    privateCdn: false,
+    secure: true,
+    cdnSubdomain: true,
+    uploadFolder: 'zpria_profiles',
+    transformations: {
+      format: 'auto',
+      quality: 'auto',
+      crop: 'fill',
+      width: 512,
+      height: 512
+    }
   }
 };
 
@@ -86,7 +108,8 @@ export const {
   secondaryStorage,
   cdn,
   upload,
-  assets
+  assets,
+  cloudinary
 } = storageConfig;
 
 // Export storage paths and settings
