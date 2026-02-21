@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
+import AIAssistant from '../components/AIAssistant';
 
 const HelpPage: React.FC = () => {
   const navigate = useNavigate();
@@ -154,6 +155,11 @@ const HelpPage: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* AI Assistant */}
+      <AIAssistant 
+        userId="help-page-user" 
+        userName="Support User" 
+      />
     </div>
   );
 };

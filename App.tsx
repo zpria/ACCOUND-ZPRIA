@@ -7,7 +7,6 @@ import LoadingPage from './pages/LoadingPage';
 import DashboardPage from './pages/DashboardPage';
 import SignupPage from './pages/SignupPage';
 import AccountSwitcher from './components/AccountSwitcher';
-import AIAssistant from './components/AIAssistant';
 
 // Lazy load secondary pages
 const VerifyEmailPage = React.lazy(() => import('./AccountManagement/VerifyEmailPage'));
@@ -223,12 +222,6 @@ const Layout = ({ children, user, onLogout }: { children?: React.ReactNode, user
         </Suspense>
       </main>
       <Footer />
-      {user && (
-        <AIAssistant 
-          userId={user.id} 
-          userName={user.firstName} 
-        />
-      )}
     </div>
   );
 };

@@ -135,7 +135,7 @@ const ProductDetailsPage: React.FC = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                   crossOrigin="anonymous"
                   referrerPolicy="no-referrer"
-                  onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x600?text=ZPRIA+Identity'}
+                  onError={(e) => (e.target as HTMLImageElement).src = '/facebook-icon.png'}
                 />
               ) : (
                 <ZPRIA_MAIN_LOGO className="w-32 h-32 opacity-10" />
@@ -240,7 +240,7 @@ const ProductDetailsPage: React.FC = () => {
                          className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-105" 
                          crossOrigin="anonymous"
                          referrerPolicy="no-referrer"
-                         onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x675?text=ZPRIA+Interface+Registry'}
+                         onError={(e) => (e.target as HTMLImageElement).src = '/facebook-icon.png'}
                        />
                     </div>
                   ))}
@@ -336,7 +336,7 @@ const ProductDetailsPage: React.FC = () => {
                       className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
                       crossOrigin="anonymous"
                       referrerPolicy="no-referrer"
-                      onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=ZPRIA'}
+                      onError={(e) => (e.target as HTMLImageElement).src = '/facebook-icon.png'}
                     />
                   </div>
                   <div className="mt-6 text-center">

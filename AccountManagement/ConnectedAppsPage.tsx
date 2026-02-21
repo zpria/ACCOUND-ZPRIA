@@ -54,7 +54,8 @@ const ConnectedAppsPage: React.FC = () => {
       const { data: connectedData, error: connectedError } = await supabase
         .from('user_connected_apps')
         .select(`
-          *
+          *,
+          zipra_app:zipra_apps(*)
         `)
         .eq('user_id', userData.id)
         .eq('is_active', true)
@@ -65,68 +66,37 @@ const ConnectedAppsPage: React.FC = () => {
       if (connectedData) {
         setConnectedApps(connectedData.map((conn: any) => ({
           id: conn.id,
-          app_name: conn.app_name || 'Unknown App',
-          app_icon: conn.app_icon_url || conn.app_icon_svg,
-          app_description: conn.app_description || '',
+          app_name: conn.zipra_app?.app_name || conn.app_name || 'Unknown App',
+          app_icon: conn.zipra_app?.app_icon_url || conn.zipra_app?.app_icon_svg || conn.app_icon_url || conn.app_icon_svg,
+          app_description: conn.zipra_app?.app_description || conn.app_description || '',
           connected_at: conn.connected_at,
           last_used: conn.last_used || conn.connected_at,
           permissions: conn.permissions || [],
           is_active: conn.is_active,
-          app_url: conn.app_url
+          app_url: conn.zipra_app?.app_url || conn.app_url
         })));
       }
 
-      // Load available ZPRIA apps
-      setAvailableApps([
-        {
-          id: 'zpria-social',
-          name: 'ZPRIA Social',
-          icon: '👥',
-          description: 'Connect with friends and share moments',
-          category: 'Social',
-          benefits: ['Single sign-on', 'Sync profile', 'Share posts']
-        },
-        {
-          id: 'zpria-ai',
-          name: 'ZPRIA AI',
-          icon: '🤖',
-          description: 'AI-powered assistant and tools',
-          category: 'Productivity',
-          benefits: ['Personalized AI', 'Saved preferences', 'Cross-device sync']
-        },
-        {
-          id: 'zpria-shop',
-          name: 'ZPRIA Shop',
-          icon: '🛒',
-          description: 'Shop products and track orders',
-          category: 'Shopping',
-          benefits: ['Saved addresses', 'Payment methods', 'Order history']
-        },
-        {
-          id: 'zpria-learn',
-          name: 'ZPRIA Learn',
-          icon: '📚',
-          description: 'Online courses and learning',
-          category: 'Education',
-          benefits: ['Progress sync', 'Certificates', 'Bookmarks']
-        },
-        {
-          id: 'zpria-cloud',
-          name: 'ZPRIA Cloud',
-          icon: '☁️',
-          description: 'Store and access your files',
-          category: 'Storage',
-          benefits: ['5GB free storage', 'File sync', 'Secure backup']
-        },
-        {
-          id: 'zpria-music',
-          name: 'ZPRIA Music',
-          icon: '🎵',
-          description: 'Stream music and podcasts',
-          category: 'Entertainment',
-          benefits: ['Playlists sync', 'Recommendations', 'Offline mode']
-        }
-      ]);
+      // Load available ZPRIA apps from database
+      const { data: availableData, error: availableError } = await supabase
+        .from('zipra_apps')
+        .select('*')
+        .eq('is_active', true)
+        .eq('is_launched', true)
+        .order('display_order', { ascending: true });
+
+      if (availableError) throw availableError;
+
+      if (availableData) {
+        setAvailableApps(availableData.map((app: any) => ({
+          id: app.id,
+          name: app.app_name,
+          icon: app.app_icon_svg || app.app_icon_url || '🔗',
+          description: app.app_description || app.app_tagline || '',
+          category: app.product_id || 'General',
+          benefits: ['Single sign-on', 'Sync profile', 'Cross-app integration']
+        })));
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -171,10 +141,11 @@ const ConnectedAppsPage: React.FC = () => {
         .from('user_connected_apps')
         .insert([{
           user_id: userData.id,
-          app_id: appId,
+          zipra_app_id: appId,
           connected_at: new Date().toISOString(),
           permissions: ['profile', 'email'],
-          is_active: true
+          is_active: true,
+          app_category: 'zipra_product'
         }]);
 
       if (error) throw error;
@@ -369,7 +340,7 @@ const ConnectedAppsPage: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {availableApps.map((app) => {
-                  const isConnected = connectedApps.some(ca => ca.app_name.includes(app.name));
+                  const isConnected = connectedApps.some(ca => ca.id === app.id);
                   
                   return (
                     <div key={app.id} className="p-4 rounded-2xl border border-gray-200 hover:border-[#0071e3] transition-colors">
