@@ -37,7 +37,9 @@ import type {
   UserTrustedDevice,
   UserSessionPreference,
   UserAccountHistory,
-  LoginHistory
+  LoginHistory,
+  ZipraProduct,
+  ProductType
 } from '../types';
 
 // ==================== USER PROFILE ====================
@@ -2302,9 +2304,143 @@ export const getUserLoginHistory = async (userId: string, limit: number = 100): 
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
-  
+
   if (error || !data) return [];
   return data.map(mapDatabaseToLoginHistory);
+};
+
+// Search for user profiles by identifier (email, mobile, username, or login_id)
+export const getUserProfilesByIdentifier = async (identifier: string): Promise<UserProfile[]> => {
+  const normalizedId = identifier.trim().toLowerCase();
+  
+  const { data, error } = await supabase
+    .from(TABLES.users)
+    .select('*')
+    .or(`email.ilike.${normalizedId},login_id.ilike.${normalizedId},username.ilike.${normalizedId},mobile.eq.${normalizedId}`);
+
+  if (error || !data) return [];
+
+  return data.map(mapDatabaseToUserProfile);
+};
+
+// Get product by product_id
+export const getProductById = async (productId: string): Promise<ZipraProduct | null> => {
+  const { data, error } = await supabase
+    .from('zipra_products')
+    .select('*')
+    .eq('product_id', productId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  
+  // Map the database fields to the ZipraProduct interface
+  return {
+    id: data.id,
+    product_id: data.product_id,
+    product_name: data.product_name,
+    product_url: data.product_url,
+    description: data.description,
+    long_description: data.long_description,
+    product_type: data.product_type,
+    type_label: data.type_label,
+    benefits: data.benefits || [],
+    features: data.features || [],
+    process_steps: data.process_steps || [],
+    setup_guide: data.setup_guide,
+    tags: data.tags || '',
+    requirements: data.requirements,
+    documentation_url: data.documentation_url,
+    support_url: data.support_url,
+    icon_url: data.icon_url,
+    banner_url: data.banner_url,
+    screenshot_urls: data.screenshot_urls || [],
+    is_active: data.is_active,
+    is_featured: data.is_featured,
+    display_order: data.display_order,
+    target_audience: data.target_audience,
+    pricing_type: data.pricing_type,
+    price: Number(data.price), // Ensure price is a number
+    currency: data.currency,
+    version: data.version,
+    total_users: data.total_users,
+    rating: Number(data.rating) || 0,
+    review_count: data.review_count,
+    meta_title: data.meta_title,
+    meta_description: data.meta_description,
+    keywords: data.keywords,
+    launched_at: data.launched_at ? new Date(data.launched_at).toISOString() : ''
+  };
+};
+
+// Get all active products
+export const getAllProducts = async (): Promise<ZipraProduct[]> => {
+  const { data, error } = await supabase
+    .from('zipra_products')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order');
+
+  if (error || !data) return [];
+  
+  // Map the database fields to the ZipraProduct interface
+  return data.map(item => ({
+    id: item.id,
+    product_id: item.product_id,
+    product_name: item.product_name,
+    product_url: item.product_url,
+    description: item.description,
+    long_description: item.long_description,
+    product_type: item.product_type,
+    type_label: item.type_label,
+    benefits: item.benefits || [],
+    features: item.features || [],
+    process_steps: item.process_steps || [],
+    setup_guide: item.setup_guide,
+    tags: item.tags || '',
+    requirements: item.requirements,
+    documentation_url: item.documentation_url,
+    support_url: item.support_url,
+    icon_url: item.icon_url,
+    banner_url: item.banner_url,
+    screenshot_urls: item.screenshot_urls || [],
+    is_active: item.is_active,
+    is_featured: item.is_featured,
+    display_order: item.display_order,
+    target_audience: item.target_audience,
+    pricing_type: item.pricing_type,
+    price: Number(item.price),
+    currency: item.currency,
+    version: item.version,
+    total_users: item.total_users,
+    rating: Number(item.rating) || 0,
+    review_count: item.review_count,
+    meta_title: item.meta_title,
+    meta_description: item.meta_description,
+    keywords: item.keywords,
+    launched_at: item.launched_at ? new Date(item.launched_at).toISOString() : ''
+  }));
+};
+
+// Get all active product types
+export const getAllProductTypes = async (): Promise<ProductType[]> => {
+  const { data, error } = await supabase
+    .from('product_types')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order');
+
+  if (error || !data) return [];
+  
+  // Map the database fields to the ProductType interface
+  return data.map(item => ({
+    type_id: item.type_id,
+    type_name: item.type_name,
+    type_description: item.type_description,
+    type_icon: item.type_icon,
+    type_question: item.type_question,
+    display_order: item.display_order,
+    is_active: item.is_active
+  }));
 };
 
 
@@ -2593,5 +2729,7 @@ export default {
   getUserTrustedDevices,
   getUserSessionPreferences,
   getUserAccountHistory,
-  getUserLoginHistory
+  getUserLoginHistory,
+  getUserProfilesByIdentifier,
+  getProductById
 };

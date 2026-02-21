@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Mail, MessageSquare, Smartphone, ChevronLeft, Check, X, Volume2, Megaphone, Shield, ShoppingBag, Heart, Star, Zap } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, DB_CONFIG } from '../config';
 
 interface NotificationSettings {
   // Email notifications
@@ -123,54 +123,78 @@ const NotificationPreferencesPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
-      // Load notification settings from user_notification_settings table
+      // Load all notification settings from user_notification_settings table
       const { data: notificationData, error: notificationError } = await supabase
-        .from('user_notification_settings')
+        .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
         .select('*')
-        .eq('user_id', userData.id)
-        .single();
+        .eq('user_id', userData.id);
 
       // Load login notification settings from users table
       const { data: userSettingsData, error: userSettingsError } = await supabase
-        .from('users')
+        .from(DB_CONFIG.TABLES.USERS)
         .select('login_notify_every_login, login_notify_new_device_only, login_notify_via_email, login_notify_via_sms, login_notify_via_push, password_change_notify, email_change_notify, phone_change_notify')
         .eq('id', userData.id)
         .single();
 
+      // Process the notification settings from rows to the expected format
+      const notificationSettingsMap: Record<string, any> = {};
+      if (notificationData && notificationData.length > 0) {
+        notificationData.forEach((row: any) => {
+          // Map notification type to enabled flags per channel
+          const baseType = row.notification_type.replace(/_/g, '');
+          notificationSettingsMap[`email_${row.notification_type}`] = row.email_enabled;
+          notificationSettingsMap[`sms_${row.notification_type}`] = row.sms_enabled;
+          notificationSettingsMap[`push_${row.notification_type}`] = row.push_enabled;
+          notificationSettingsMap[`inapp_${row.notification_type}`] = row.in_app_enabled;
+          
+          // Set frequency if this is a general setting row
+          if (row.frequency) {
+            notificationSettingsMap.email_frequency = row.frequency;
+          }
+          
+          // Set quiet hours if this is a general setting row
+          if (row.quiet_hours_enabled !== undefined) {
+            notificationSettingsMap.quiet_hours_enabled = row.quiet_hours_enabled;
+            notificationSettingsMap.quiet_hours_start = row.quiet_hours_start || '22:00';
+            notificationSettingsMap.quiet_hours_end = row.quiet_hours_end || '08:00';
+          }
+        });
+      }
+
       // Combine both sets of settings
       const combinedSettings: NotificationSettings = {
-        email_marketing: notificationData?.email_marketing ?? false,
-        email_product_updates: notificationData?.email_product_updates ?? true,
-        email_newsletter: notificationData?.email_newsletter ?? true,
-        email_security_alerts: notificationData?.email_security_alerts ?? true,
-        email_account_activity: notificationData?.email_account_activity ?? true,
-        email_promotions: notificationData?.email_promotions ?? false,
-        email_social: notificationData?.email_social ?? true,
+        email_marketing: notificationSettingsMap['email_marketing'] ?? false,
+        email_product_updates: notificationSettingsMap['email_product_updates'] ?? true,
+        email_newsletter: notificationSettingsMap['email_newsletter'] ?? true,
+        email_security_alerts: notificationSettingsMap['email_security_alerts'] ?? true,
+        email_account_activity: notificationSettingsMap['email_account_activity'] ?? true,
+        email_promotions: notificationSettingsMap['email_promotions'] ?? false,
+        email_social: notificationSettingsMap['email_social'] ?? true,
         
-        sms_security_alerts: notificationData?.sms_security_alerts ?? true,
-        sms_otp: notificationData?.sms_otp ?? true,
-        sms_marketing: notificationData?.sms_marketing ?? false,
-        sms_appointments: notificationData?.sms_appointments ?? true,
+        sms_security_alerts: notificationSettingsMap['sms_security_alerts'] ?? true,
+        sms_otp: notificationSettingsMap['sms_otp'] ?? true,
+        sms_marketing: notificationSettingsMap['sms_marketing'] ?? false,
+        sms_appointments: notificationSettingsMap['sms_appointments'] ?? true,
         
-        push_all: notificationData?.push_all ?? true,
-        push_messages: notificationData?.push_messages ?? true,
-        push_mentions: notificationData?.push_mentions ?? true,
-        push_likes: notificationData?.push_likes ?? true,
-        push_comments: notificationData?.push_comments ?? true,
-        push_follows: notificationData?.push_follows ?? true,
-        push_order_updates: notificationData?.push_order_updates ?? true,
-        push_promotions: notificationData?.push_promotions ?? false,
+        push_all: true, // Default to true, will be controlled by individual settings
+        push_messages: notificationSettingsMap['push_messages'] ?? true,
+        push_mentions: notificationSettingsMap['push_mentions'] ?? true,
+        push_likes: notificationSettingsMap['push_likes'] ?? true,
+        push_comments: notificationSettingsMap['push_comments'] ?? true,
+        push_follows: notificationSettingsMap['push_follows'] ?? true,
+        push_order_updates: notificationSettingsMap['push_order_updates'] ?? true,
+        push_promotions: notificationSettingsMap['push_promotions'] ?? false,
         
-        inapp_all: notificationData?.inapp_all ?? true,
-        inapp_tips: notificationData?.inapp_tips ?? true,
-        inapp_achievements: notificationData?.inapp_achievements ?? true,
-        inapp_recommendations: notificationData?.inapp_recommendations ?? true,
+        inapp_all: true, // Default to true, will be controlled by individual settings
+        inapp_tips: notificationSettingsMap['inapp_tips'] ?? true,
+        inapp_achievements: notificationSettingsMap['inapp_achievements'] ?? true,
+        inapp_recommendations: notificationSettingsMap['inapp_recommendations'] ?? true,
         
-        quiet_hours_enabled: notificationData?.quiet_hours_enabled ?? false,
-        quiet_hours_start: notificationData?.quiet_hours_start ?? '22:00',
-        quiet_hours_end: notificationData?.quiet_hours_end ?? '08:00',
+        quiet_hours_enabled: notificationSettingsMap.quiet_hours_enabled ?? false,
+        quiet_hours_start: notificationSettingsMap.quiet_hours_start ?? '22:00',
+        quiet_hours_end: notificationSettingsMap.quiet_hours_end ?? '08:00',
         
-        email_frequency: notificationData?.email_frequency ?? 'immediate',
+        email_frequency: notificationSettingsMap.email_frequency ?? 'immediate',
         
         // Login notification settings from users table
         login_notify_every_login: userSettingsData?.login_notify_every_login ?? true,
@@ -207,24 +231,50 @@ const NotificationPreferencesPage: React.FC = () => {
            'email_change_notify', 'phone_change_notify'].includes(setting)) {
         // Update users table for login notification settings
         const { error } = await supabase
-          .from('users')
+          .from(DB_CONFIG.TABLES.USERS)
           .update({ [setting]: value })
           .eq('id', userData.id);
 
         if (error) throw error;
       } else {
         // Update user_notification_settings table for other settings
-        const { error } = await supabase
-          .from('user_notification_settings')
-          .upsert({
+        // Extract the notification type from the setting name (e.g., 'email_security_alerts' -> 'security_alerts')
+        const settingParts = setting.split('_');
+        if (settingParts.length >= 2) {
+          const channel = settingParts[0]; // 'email', 'sms', 'push', 'inapp'
+          const notificationType = settingParts.slice(1).join('_'); // 'security_alerts', 'marketing', etc.
+          
+          // Prepare the update based on the channel
+          let updateObj: any = {
             user_id: userData.id,
-            [setting]: value,
+            notification_type: notificationType,
             updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id'
-          });
+          };
+          
+          // Set the appropriate channel flag based on the setting
+          switch(channel) {
+            case 'email':
+              updateObj.email_enabled = value;
+              break;
+            case 'sms':
+              updateObj.sms_enabled = value;
+              break;
+            case 'push':
+              updateObj.push_enabled = value;
+              break;
+            case 'inapp':
+              updateObj.in_app_enabled = value;
+              break;
+          }
+          
+          const { error } = await supabase
+            .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
+            .upsert(updateObj, {
+              onConflict: ['user_id', 'notification_type']
+            });
 
-        if (error) throw error;
+          if (error) throw error;
+        }
       }
 
       setSuccess('Notification preference updated');
@@ -263,18 +313,33 @@ const NotificationPreferencesPage: React.FC = () => {
 
       setSettings(prev => ({ ...prev, ...updates }));
 
-      // Update user_notification_settings table
-      const { error } = await supabase
-        .from('user_notification_settings')
-        .upsert({
+      // Update user_notification_settings table for each notification type
+      // For master toggles, we'll update the specific notification types for the given category
+      const notificationTypes = category === 'push' 
+        ? ['messages', 'mentions', 'likes', 'comments', 'follows', 'order_updates', 'promotions']
+        : ['tips', 'achievements', 'recommendations'];
+      
+      for (const type of notificationTypes) {
+        const updateObj: any = {
           user_id: userData.id,
-          ...updates,
+          notification_type: type,
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+        };
+        
+        if (category === 'push') {
+          updateObj.push_enabled = value;
+        } else {
+          updateObj.in_app_enabled = value;
+        }
+        
+        const { error } = await supabase
+          .from(DB_CONFIG.TABLES.USER_NOTIFICATION_SETTINGS)
+          .upsert(updateObj, {
+            onConflict: ['user_id', 'notification_type']
+          });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setSuccess(`${category === 'push' ? 'Push' : 'In-app'} notifications ${value ? 'enabled' : 'disabled'}`);
       setTimeout(() => setSuccess(''), 3000);

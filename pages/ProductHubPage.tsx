@@ -5,6 +5,7 @@ import { UserProfile, ZipraProduct, ProductType } from '../types';
 import { supabase } from '../services/supabaseService';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { dataIds, colors } from '../config';
+import { getAllProducts, getAllProductTypes } from '../services/userAccountService';
 
 interface Props {
   user: UserProfile | null;
@@ -21,20 +22,13 @@ const ProductHubPage: React.FC<Props> = ({ user, onLogout }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: typesData } = await supabase
-          .from('product_types')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order');
-        
-        const { data: productsData } = await supabase
-          .from('zipra_products')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order');
+        const [typesData, productsData] = await Promise.all([
+          getAllProductTypes(),
+          getAllProducts()
+        ]);
 
-        if (typesData) setTypes(typesData);
-        if (productsData) setProducts(productsData);
+        setTypes(typesData);
+        setProducts(productsData);
       } catch (error) {
         console.error("Data fetch failed", error);
       } finally {
@@ -183,7 +177,7 @@ const ProductHubPage: React.FC<Props> = ({ user, onLogout }) => {
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-24 justify-items-center">
               {filteredProducts.map((p) => (
-                <ProductIconCard key={p.id} product={p} />
+                <ProductIconCard key={p.product_id} product={p} />
               ))}
             </div>
 

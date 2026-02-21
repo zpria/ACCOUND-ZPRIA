@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search, Filter, Download, Eye, MapPin, CreditCard, DollarSign, RotateCcw, Gift, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, DB_CONFIG } from '../config';
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'returned' | 'on_hold';
 type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
@@ -113,90 +113,107 @@ const OrderHistoryPage: React.FC = () => {
 
       const userData = JSON.parse(savedUser);
       
-      // Fetch from user_orders table with all SQL fields
+      // Fetch from user_purchases table (using the UserPurchase interface from types.ts)
       const { data, error } = await supabase
-        .from('user_orders')
-        .select(`
-          *,
-          items:user_order_items(*)
-        `)
-        .eq('user_id', userData.id)
-        .order('created_at', { ascending: false });
+        .from(DB_CONFIG.tables.user_purchases)
+        .select('*')
+        .eq('userId', userData.id)
+        .order('purchasedAt', { ascending: false });
 
       if (error) throw error;
 
       if (data) {
-        const formattedOrders: Order[] = data.map((order: any) => ({
-          // Core
-          id: order.id,
-          order_number: order.order_number || `ZPR-${order.id.slice(0, 8).toUpperCase()}`,
-          status: order.status || 'pending',
-          items: (order.items || []).map((item: any) => ({
-            id: item.id,
-            product_id: item.product_id,
-            product_name: item.product_name || 'Unknown Product',
-            product_image: item.product_image,
-            product_sku: item.product_sku,
-            quantity: item.quantity || 1,
-            unit_price: item.unit_price || 0,
-            sale_price: item.sale_price,
-            total_price: item.total_price || 0,
-            variant_name: item.variant_name,
-            is_digital: item.is_digital || false,
-            download_url: item.download_url,
-            download_count: item.download_count,
-            max_downloads: item.max_downloads
-          })),
-          item_count: order.item_count || (order.items || []).length,
+        // Group purchases by order ID to create orders with multiple items
+        const ordersMap: Record<string, Order> = {};
+        
+        data.forEach((purchase: any) => {
+          // Use orderId as the key to group items
+          const orderId = purchase.orderId;
           
-          // Pricing
-          subtotal: order.subtotal || 0,
-          tax: order.tax || 0,
-          tax_rate: order.tax_rate || 0,
-          shipping: order.shipping || 0,
-          shipping_cost: order.shipping_cost || 0,
-          discount: order.discount || 0,
-          coupon_code: order.coupon_code,
-          loyalty_points_used: order.loyalty_points_used || 0,
-          loyalty_points_earned: order.loyalty_points_earned || 0,
-          total: order.total || 0,
-          currency: order.currency || 'BDT',
+          if (!ordersMap[orderId]) {
+            // Create a new order entry
+            ordersMap[orderId] = {
+              // Core
+              id: orderId,
+              order_number: orderId || `ZPR-${orderId.slice(0, 8).toUpperCase()}`,
+              status: purchase.status || 'pending',
+              items: [],
+              item_count: 0,
+              
+              // Pricing
+              subtotal: purchase.totalPrice || 0,
+              tax: 0, // Not available in UserPurchase
+              tax_rate: 0, // Not available in UserPurchase
+              shipping: 0, // Not available in UserPurchase
+              shipping_cost: 0, // Not available in UserPurchase
+              discount: purchase.discountAmount || 0,
+              coupon_code: purchase.couponCode,
+              loyalty_points_used: 0, // Not available in UserPurchase
+              loyalty_points_earned: 0, // Not available in UserPurchase
+              total: purchase.totalPrice || 0,
+              currency: purchase.currency || 'BDT',
+              
+              // Payment
+              payment_method: purchase.paymentMethod || 'Unknown',
+              payment_status: purchase.status === 'completed' ? 'paid' : purchase.status as PaymentStatus || 'pending',
+              payment_id: '', // Not available in UserPurchase
+              invoice_url: '', // Not available in UserPurchase
+              receipt_url: '', // Not available in UserPurchase
+              
+              // Shipping
+              shipping_address: 'Address not available', // Not available in UserPurchase
+              shipping_method: 'standard', // Default
+              estimated_delivery: '', // Not available in UserPurchase
+              delivered_at: '', // Not available in UserPurchase
+              tracking_number: '', // Not available in UserPurchase
+              tracking_url: '', // Not available in UserPurchase
+              shipping_carrier: '', // Not available in UserPurchase
+              
+              // Metadata
+              notes: '', // Not available in UserPurchase
+              gift_message: '', // Not available in UserPurchase
+              is_gift: purchase.isGift || false,
+              gift_wrap: false, // Not available in UserPurchase
+              
+              // Timestamps
+              created_at: purchase.purchasedAt,
+              updated_at: purchase.purchasedAt, // Use purchasedAt as updated_at
+              paid_at: purchase.status === 'completed' ? purchase.purchasedAt : undefined,
+              shipped_at: undefined, // Not available in UserPurchase
+              cancelled_at: purchase.status === 'cancelled' ? purchase.purchasedAt : undefined,
+              cancel_reason: purchase.status === 'cancelled' ? 'Order was cancelled' : undefined,
+              
+              // User info
+              customer_email: userData.email || '',
+              customer_phone: userData.mobile || '',
+              billing_address: 'Address not available' // Not available in UserPurchase
+            };
+          }
           
-          // Payment
-          payment_method: order.payment_method || 'Unknown',
-          payment_status: order.payment_status || 'pending',
-          payment_id: order.payment_id,
-          invoice_url: order.invoice_url,
-          receipt_url: order.receipt_url,
+          // Add the item to the order
+          ordersMap[orderId].items.push({
+            id: purchase.id,
+            product_id: purchase.productId,
+            product_name: purchase.productName || 'Unknown Product',
+            product_image: '', // Not available in UserPurchase
+            product_sku: '', // Not available in UserPurchase
+            quantity: purchase.quantity || 1,
+            unit_price: purchase.unitPrice || 0,
+            sale_price: purchase.unitPrice, // Use unitPrice as sale_price
+            total_price: purchase.totalPrice || 0,
+            variant_name: '', // Not available in UserPurchase
+            is_digital: purchase.isDigital || false,
+            download_url: purchase.downloadLink || '',
+            download_count: 0, // Not available in UserPurchase
+            max_downloads: 0 // Not available in UserPurchase
+          });
           
-          // Shipping
-          shipping_address: order.shipping_address || 'No address provided',
-          shipping_method: order.shipping_method || 'standard',
-          estimated_delivery: order.estimated_delivery,
-          delivered_at: order.delivered_at,
-          tracking_number: order.tracking_number,
-          tracking_url: order.tracking_url,
-          shipping_carrier: order.shipping_carrier,
-          
-          // Metadata
-          notes: order.notes,
-          gift_message: order.gift_message,
-          is_gift: order.is_gift || false,
-          gift_wrap: order.gift_wrap || false,
-          
-          // Timestamps
-          created_at: order.created_at,
-          updated_at: order.updated_at,
-          paid_at: order.paid_at,
-          shipped_at: order.shipped_at,
-          cancelled_at: order.cancelled_at,
-          cancel_reason: order.cancel_reason,
-          
-          // User info
-          customer_email: order.customer_email || userData.email,
-          customer_phone: order.customer_phone,
-          billing_address: order.billing_address || order.shipping_address || 'No address provided'
-        }));
+          // Update item count
+          ordersMap[orderId].item_count = ordersMap[orderId].items.length;
+        });
+        
+        // Convert map to array
+        const formattedOrders: Order[] = Object.values(ordersMap);
         setOrders(formattedOrders);
       }
     } catch (err: any) {

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { supabase } from '../services/supabaseService';
 import { sendOTP } from '../services/emailService';
+import { getUserProfilesByIdentifier } from '../services/userAccountService'; // Import the service function
 import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { UserProfile } from '../types';
@@ -40,31 +41,10 @@ const ForgotPasswordPage: React.FC = () => {
     setError('');
 
     try {
-      const normalizedId = identifier.trim().toLowerCase();
-      // Search for any account matching the identifier across username, email, or mobile
-      const { data, error: searchError } = await supabase
-        .from('users')
-        .select('*')
-        .or(`email.ilike."${normalizedId}",login_id.ilike."${normalizedId}",username.ilike."${normalizedId}",mobile.eq."${normalizedId}"`);
+      // Use the service function to search for user profiles
+      const accounts = await getUserProfilesByIdentifier(identifier.trim().toLowerCase());
 
-      if (searchError) throw searchError;
-      if (!data || data.length === 0) throw new Error('No ZPRIA Account found with that information.');
-
-      const accounts: UserProfile[] = data.map(u => ({
-        id: u.id,
-        username: u.username,
-        login_id: u.login_id,
-        firstName: u.first_name,
-        lastName: u.last_name,
-        email: u.email,
-        mobile: u.mobile,
-        address: u.address,
-        dob: u.dob,
-        gender: u.gender,
-        isEmailVerified: u.is_email_verified,
-        themePreference: u.theme_preference,
-        accountStatus: u.account_status
-      }));
+      if (!accounts || accounts.length === 0) throw new Error('No ZPRIA Account found with that information.');
 
       if (accounts.length === 1) {
         setSelectedAccount(accounts[0]);

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ZipraProduct } from '../types';
 import { supabase } from '../services/supabaseService';
+import { getProductById } from '../services/userAccountService';
 import { ZPRIA_MAIN_LOGO } from '../constants';
 import { dataIds, colors } from '../config';
 
@@ -31,15 +32,11 @@ const ProductDetailsPage: React.FC = () => {
     const fetchData = async () => {
       if (!id) return;
       try {
-        const { data: pData, error: pError } = await supabase
-          .from('zipra_products')
-          .select('*')
-          .eq('product_id', id)
-          .maybeSingle();
+        // Get the specific product using the service function
+        const productData = await getProductById(id);
+        setProduct(productData);
 
-        if (pError) throw pError;
-        setProduct(pData);
-
+        // Fetch other active products directly (could be moved to service too)
         const { data: allData } = await supabase
           .from('zipra_products')
           .select('*')
