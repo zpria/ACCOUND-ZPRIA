@@ -2497,12 +2497,12 @@ CREATE TABLE public.user_activity_logs (
   ip_address inet,
   location text,
   is_successful boolean DEFAULT true,
-  is_suspicious boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   session_id text,
   country_code text,
   city_name text,
+  is_suspicious boolean DEFAULT false,
   CONSTRAINT user_activity_logs_pkey PRIMARY KEY (id),
   CONSTRAINT user_activity_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
