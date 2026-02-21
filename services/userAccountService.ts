@@ -1360,9 +1360,7 @@ function mapUserSessionToDatabase(session: Partial<UserSession>): any {
     logout_reason: session.logoutReason,
     login_notification_sent: session.loginNotificationSent,
     country_code: session.countryCode,
-    city_name: session.cityName,
-    os_name: session.os,  // Removed duplicate
-    browser_name: session.browser  // Removed duplicate
+    city_name: session.cityName
   };
 }
 

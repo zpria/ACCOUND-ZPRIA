@@ -1,7 +1,7 @@
 
 // AI Image Generation Service for Profile Pictures
 // Uses Stability AI for image generation
-import { dataIds, colors, aiServicesConfig, storageConfig } from '../config';
+import { dataIds, colors, aiServicesConfig, storageConfig, TABLES } from '../config';
 
 const STABILITY_API_KEY = aiServicesConfig.imageGenerator.apiKey || import.meta.env.VITE_STABILITY_API_KEY || '';
 const STABILITY_API_URL = aiServicesConfig.imageGenerator.endpoint || 'https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image';
@@ -206,7 +206,7 @@ export const autoGenerateProfileImage = async (
       // Save to database
       const { supabase } = await import('./supabaseService');
       await supabase
-        .from('users')
+        .from(TABLES.users)
         .update({ avatar_url: imageUrl, ai_generated_avatar: true })
         .eq('id', userId);
     }

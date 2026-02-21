@@ -1,6 +1,6 @@
 
 // Device Detection Service - Auto detects device, browser, IP, location
-import { dataIds, colors } from '../config';
+import { dataIds, colors, TABLES } from '../config';
 
 export interface DeviceInfo {
   device_type: 'mobile' | 'tablet' | 'desktop';
@@ -193,7 +193,7 @@ export const saveDeviceToDatabase = async (userId: string, deviceInfo: DeviceInf
     
     // Check if device already exists
     const { data: existingDevice } = await supabase
-      .from('user_devices')
+      .from(TABLES.user_devices)
       .select('id')
       .eq('user_id', userId)
       .eq('ip_address', deviceInfo.ip_address)
@@ -215,7 +215,7 @@ export const saveDeviceToDatabase = async (userId: string, deviceInfo: DeviceInf
     
     // Insert new device
     const { data, error } = await supabase
-      .from('user_devices')
+      .from(TABLES.user_devices)
       .insert([{
         user_id: userId,
         device_name: deviceInfo.device_name,
@@ -256,7 +256,7 @@ export const logActivity = async (
     const { supabase } = await import('./supabaseService');
     const deviceInfo = await getFullDeviceInfo();
     
-    await supabase.from('user_activity_logs').insert([{
+    await supabase.from(TABLES.user_activity_logs).insert([{
       user_id: userId,
       action,
       details: details || {},

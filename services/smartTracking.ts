@@ -163,7 +163,7 @@ const updateUserStats = async (
 export const calculateEngagementScore = async (userId: string): Promise<number> => {
   try {
     const { data: stats } = await supabase
-      .from('user_stats')
+      .from(TABLES.user_daily_activity)
       .select('*')
       .eq('user_id', userId)
       .single();

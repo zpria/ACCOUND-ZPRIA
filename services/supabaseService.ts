@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { dbConfig } from '../config';
+import { dbConfig, TABLES } from '../config';
 
 export const supabase = createClient(dbConfig.supabase.url, dbConfig.supabase.anonKey);
 
@@ -17,13 +17,13 @@ export const checkAvailability = async (field: 'username' | 'email' | 'mobile', 
   
   // For mobile: allow up to 3 accounts per mobile number
   if (field === 'mobile') {
-    const { data: users, error } = await supabase.from('users').select('id').eq(field, normalizedValue);
+    const { data: users, error } = await supabase.from(TABLES.users).select('id').eq(field, normalizedValue);
     if (error) return false;
     return (users?.length || 0) < 3; // Allow if less than 3 accounts
   }
   
   // For username and email: must be unique
-  const { data: user } = await supabase.from('users').select('id').eq(field, normalizedValue).maybeSingle();
+  const { data: user } = await supabase.from(TABLES.users).select('id').eq(field, normalizedValue).maybeSingle();
   return !user;
 };
 
@@ -32,7 +32,7 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
 
   // Find user by username, login_id, mobile, OR email
   const { data: user, error } = await supabase
-    .from('users')
+    .from(TABLES.users)
     .select('*')
     .or(`username.eq.${normalizedId},login_id.eq.${normalizedId},mobile.eq.${normalizedId},email.eq.${normalizedId}`)
     .maybeSingle();
@@ -44,13 +44,13 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
     const scheduledDeletionDate = new Date(user.scheduled_for_permanent_deletion);
     if (scheduledDeletionDate > new Date()) {
       // Reactivate the account since user is logging in within the recovery window
-      await supabase.from('users').update({ 
+      await supabase.from(TABLES.users).update({ 
         account_status: 'active',
         deactivated_at: null,
         scheduled_for_permanent_deletion: null,
         failed_login_attempts: 0, 
         locked_until: null, 
-        last_login: new Date().toISOString(),
+        last_login_at: new Date().toISOString(),  // Fixed: Use correct column name 'last_login_at' instead of 'last_login'
         updated_at: new Date().toISOString()
       }).eq('id', user.id);
       
@@ -58,7 +58,7 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
       user.account_status = 'active';
       user.deactivated_at = null;
       user.scheduled_for_permanent_deletion = null;
-      user.last_login = new Date().toISOString();
+      user.last_login_at = new Date().toISOString();  // Fixed: Use correct column name 'last_login_at' instead of 'last_login'
       user.updated_at = new Date().toISOString();
     }
   }
@@ -76,10 +76,10 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
 
   if (user.password_hash === passwordHash) {
     // Reset attempts on success
-    await supabase.from('users').update({ 
+    await supabase.from(TABLES.users).update({ 
       failed_login_attempts: 0, 
       locked_until: null, 
-      last_login: new Date().toISOString() 
+      last_login_at: new Date().toISOString()  // Fixed: Use correct column name 'last_login_at' instead of 'last_login'
     }).eq('id', user.id);
     return user;
   } else {
@@ -93,7 +93,7 @@ export const handleLoginAttempt = async (identifier: string, passwordHash: strin
       throw new Error('Security Protocol: Account locked for 15 minutes.');
     }
     
-    await supabase.from('users').update(update).eq('id', user.id);
+    await supabase.from(TABLES.users).update(update).eq('id', user.id);
     throw new Error(`Invalid credentials. ${5 - newAttempts} attempts remaining.`);
   }
 };
