@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Smartphone, Laptop, Tablet, Globe, ChevronLeft, LogOut, Shield, AlertTriangle, Check, X } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Device {
   id: string;
@@ -45,7 +45,7 @@ const DeviceManagementPage: React.FC = () => {
       
       // Fetch devices from user_devices table
       const { data, error } = await supabase
-        .from('user_devices')
+        .from(dbConfig.tables.user_devices)
         .select('*')
         .eq('user_id', userData.id)
         .order('last_used_at', { ascending: false });
@@ -110,7 +110,7 @@ const DeviceManagementPage: React.FC = () => {
   const handleLogoutDevice = async (deviceId: string) => {
     try {
       const { error } = await supabase
-        .from('user_devices')
+        .from(dbConfig.tables.user_devices)
         .delete()
         .eq('id', deviceId);
 
@@ -136,7 +136,7 @@ const DeviceManagementPage: React.FC = () => {
 
       // Delete all devices except current
       const { error } = await supabase
-        .from('user_devices')
+        .from(dbConfig.tables.user_devices)
         .delete()
         .eq('user_id', userData.id)
         .neq('id', currentDeviceId);
@@ -156,7 +156,7 @@ const DeviceManagementPage: React.FC = () => {
   const handleToggleTrust = async (deviceId: string, currentTrust: boolean) => {
     try {
       const { error } = await supabase
-        .from('user_devices')
+        .from(dbConfig.tables.user_devices)
         .update({ is_trusted: !currentTrust })
         .eq('id', deviceId);
 

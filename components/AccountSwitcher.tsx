@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, ChevronDown, LogOut, User, Check, X } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import { logActivity } from '../services/deviceDetection';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Account {
   id: string;
@@ -98,7 +98,7 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({ currentUser, onSwitch
 
       // Fetch full user data for the selected account
       const { data, error } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('*')
         .eq('id', account.id)
         .single();

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, User, Bot } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Message {
   id: string;
@@ -40,7 +40,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
   const loadChatHistory = async () => {
     try {
       const { data } = await supabase
-        .from('ai_chat_history')
+        .from(dbConfig.tables.ai_chat_history)
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: true })
@@ -126,7 +126,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
 
     try {
       // Save user message
-      const { error: saveError } = await supabase.from('ai_chat_history').insert([{
+      const { error: saveError } = await supabase.from(dbConfig.tables.ai_chat_history).insert([{
         user_id: userId,
         role: 'user',
         content: userMessage.content,
@@ -148,7 +148,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ userId, userName }) => {
       setMessages(prev => [...prev, aiMessage]);
 
       // Save AI message
-      const { error: aiSaveError } = await supabase.from('ai_chat_history').insert([{
+      const { error: aiSaveError } = await supabase.from(dbConfig.tables.ai_chat_history).insert([{
         user_id: userId,
         role: 'assistant',
         content: aiContent,

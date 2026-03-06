@@ -8,7 +8,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import { hashPassword, handleLoginAttempt, supabase } from '../services/supabaseService';
 import { sendWelcomeAlert } from '../services/emailService';
 import { getFullDeviceInfo, saveDeviceToDatabase, logActivity } from '../services/deviceDetection';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Props {
   onLogin: (user: UserProfile) => void;
@@ -34,7 +34,7 @@ const SigninPage: React.FC<Props> = ({ onLogin }) => {
     try {
       const normalizedId = identifier.trim().toLowerCase();
       const { data: user, error: queryError } = await supabase
-        .from('users')
+        .from(dbConfig.tables.users)
         .select('id, first_name, last_name, username, login_id, mobile, email, address, dob, gender, is_email_verified, theme_preference, account_status, avatar_url')
         .or(`username.eq.${normalizedId},login_id.eq.${normalizedId},mobile.eq.${normalizedId},email.eq.${normalizedId}`)
         .maybeSingle();

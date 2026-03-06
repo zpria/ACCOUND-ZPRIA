@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link2, ChevronLeft, Shield, ExternalLink, X, Check, AlertTriangle, RefreshCw, Lock, Globe, Smartphone, Zap } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface ConnectedApp {
   id: string;
@@ -53,7 +53,7 @@ const ConnectedAppsPage: React.FC = () => {
       
       // Load connected apps - only show internal ZPRIA/Ripple apps
       const { data: connectedData, error: connectedError } = await supabase
-        .from('user_connected_apps')
+        .from(dbConfig.tables.user_connected_apps)
         .select(`
           *,
           zipra_app:zipra_apps(*)
@@ -80,7 +80,7 @@ const ConnectedAppsPage: React.FC = () => {
 
       // Load available ZPRIA apps from database
       const { data: availableData, error: availableError } = await supabase
-        .from('zipra_apps')
+        .from(dbConfig.tables.zipra_apps)
         .select('*')
         .eq('is_active', true)
         .eq('is_launched', true)
@@ -108,7 +108,7 @@ const ConnectedAppsPage: React.FC = () => {
   const handleDisconnect = async (connectionId: string) => {
     try {
       const { error } = await supabase
-        .from('user_connected_apps')
+        .from(dbConfig.tables.user_connected_apps)
         .update({ is_active: false, disconnected_at: new Date().toISOString() })
         .eq('id', connectionId);
 
@@ -139,7 +139,7 @@ const ConnectedAppsPage: React.FC = () => {
 
       // Create connection
       const { error } = await supabase
-        .from('user_connected_apps')
+        .from(dbConfig.tables.user_connected_apps)
         .insert([{
           user_id: userData.id,
           zipra_app_id: appId,

@@ -4,7 +4,7 @@ import { ZPRIA_MAIN_LOGO } from '../pages/constants';
 import { Smartphone, Monitor, Globe, LogOut, Shield, AlertCircle, Check } from 'lucide-react';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase } from '../services/supabaseService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 interface Device {
   id: string;
@@ -39,7 +39,7 @@ const DevicesPage: React.FC = () => {
 
       // Fetch active sessions/devices
       const { data, error } = await supabase
-        .from('user_devices')
+        .from(dbConfig.tables.user_devices)
         .select('*')
         .eq('user_id', user.id)
         .order('last_used_at', { ascending: false });
@@ -84,7 +84,7 @@ const DevicesPage: React.FC = () => {
     setIsLoading(true);
     try {
       const { error } = await supabase
-        .from('user_sessions')
+        .from(dbConfig.tables.user_sessions)
         .delete()
         .eq('id', deviceId);
 
@@ -107,7 +107,7 @@ const DevicesPage: React.FC = () => {
 
       // Delete all sessions except current
       const { error } = await supabase
-        .from('user_sessions')
+        .from(dbConfig.tables.user_sessions)
         .delete()
         .eq('user_id', user.id)
         .neq('is_current', true);

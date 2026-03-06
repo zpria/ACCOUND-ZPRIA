@@ -150,7 +150,7 @@ const CartPage: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
         .eq('id', itemId);
 
@@ -169,7 +169,7 @@ const CartPage: React.FC = () => {
   const removeItem = async (itemId: string) => {
     try {
       const { error } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .delete()
         .eq('id', itemId);
 
@@ -200,7 +200,7 @@ const CartPage: React.FC = () => {
       const userData = JSON.parse(savedUser);
 
       const { error } = await supabase
-        .from('user_carts')
+        .from(dbConfig.tables.user_carts)
         .delete()
         .eq('user_id', userData.id);
 

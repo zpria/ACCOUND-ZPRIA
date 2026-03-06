@@ -202,7 +202,7 @@ export const saveDeviceToDatabase = async (userId: string, deviceInfo: DeviceInf
     if (existingDevice) {
       // Update last active
       await supabase
-        .from('user_devices')
+        .from(TABLES.user_devices)
         .update({
           last_used_at: new Date().toISOString(),
           is_current: true

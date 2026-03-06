@@ -2326,7 +2326,7 @@ export const getUserProfilesByIdentifier = async (identifier: string): Promise<U
 // Get product by product_id
 export const getProductById = async (productId: string): Promise<ZipraProduct | null> => {
   const { data, error } = await supabase
-    .from('zipra_products')
+    .from(TABLES.zipra_products)
     .select('*')
     .eq('product_id', productId)
     .maybeSingle();
@@ -2375,7 +2375,7 @@ export const getProductById = async (productId: string): Promise<ZipraProduct | 
 // Get all active products
 export const getAllProducts = async (): Promise<ZipraProduct[]> => {
   const { data, error } = await supabase
-    .from('zipra_products')
+    .from(TABLES.zipra_products)
     .select('*')
     .eq('is_active', true)
     .order('display_order');
@@ -2424,7 +2424,7 @@ export const getAllProducts = async (): Promise<ZipraProduct[]> => {
 // Get all active product types
 export const getAllProductTypes = async (): Promise<ProductType[]> => {
   const { data, error } = await supabase
-    .from('product_types')
+    .from(TABLES.product_types)
     .select('*')
     .eq('is_active', true)
     .order('display_order');

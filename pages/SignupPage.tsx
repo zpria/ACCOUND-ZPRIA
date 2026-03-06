@@ -7,7 +7,7 @@ import FloatingInput from '../components/FloatingInput';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { supabase, hashPassword, checkAvailability } from '../services/supabaseService';
 import { sendOTP } from '../services/emailService';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 const STORAGE_KEY = 'zpria_signup_draft';
 
@@ -232,10 +232,10 @@ const SignupPage: React.FC = () => {
       const hPassword = await hashPassword(formData.password);
 
       // Delete old pending registration and OTP if exists
-      await supabase.from('pending_registrations').delete().eq('email', formData.email.toLowerCase());
-      await supabase.from('otp_verifications').delete().eq('email', formData.email.toLowerCase());
+      await supabase.from(dbConfig.tables.pending_registrations).delete().eq('email', formData.email.toLowerCase());
+      await supabase.from(dbConfig.tables.otp_verifications).delete().eq('email', formData.email.toLowerCase());
 
-      const { error: regError } = await supabase.from('pending_registrations').insert({
+      const { error: regError } = await supabase.from(dbConfig.tables.pending_registrations).insert({
         username: cleanUsername,
         login_id: loginId,
         password_hash: hPassword,
@@ -250,7 +250,7 @@ const SignupPage: React.FC = () => {
 
       if (regError) throw regError;
 
-      await supabase.from('otp_verifications').insert({
+      await supabase.from(dbConfig.tables.otp_verifications).insert({
         email: formData.email.toLowerCase(),
         otp_code: otpCode,
         purpose: 'registration',

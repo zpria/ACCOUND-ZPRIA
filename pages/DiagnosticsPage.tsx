@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 // Fix: Use ZPRIA_MAIN_LOGO instead of non-existent ZIPRA_LOGO
 import { ZPRIA_MAIN_LOGO } from '../constants';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 import { supabase } from '../services/supabaseService';
 
 const DiagnosticsPage: React.FC = () => {
@@ -15,7 +15,7 @@ const DiagnosticsPage: React.FC = () => {
     const fetchHealthData = async () => {
       try {
         const { data, error } = await supabase
-          .from('system_health_logs')
+          .from(dbConfig.tables.system_health_logs)
           .select('*')
           .order('checked_at', { ascending: false })
           .limit(10); // Get recent logs

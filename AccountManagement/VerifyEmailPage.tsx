@@ -8,8 +8,7 @@ import { sendOTP, sendWelcomeAlert } from '../services/emailService';
 import { autoGenerateProfileImage } from '../services/aiImageService';
 import { logActivity } from '../services/deviceDetection';
 import { UserProfile } from '../pages/types';
-import { dataIds, colors } from '../config';
-import { dbConfig } from '../config/dbConfig';
+import { dataIds, colors, dbConfig } from '../config';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -147,12 +146,12 @@ const VerifyEmailPage: React.FC = () => {
         navigate('/reset-password'); 
       } else {
         // Handle Registration verification success
-        const { data: pending } = await supabase.from('pending_registrations').select('*').eq('email', email).maybeSingle();
+        const { data: pending } = await supabase.from(dbConfig.tables.pending_registrations).select('*').eq('email', email).maybeSingle();
         if (!pending) throw new Error('Registration session expired. Please sign up again.');
 
         // Check how many accounts already exist with this mobile number
         const { data: existingUsers } = await supabase
-          .from('users')
+          .from(dbConfig.tables.users)
           .select('id')
           .eq('mobile', pending.mobile);
         
@@ -161,7 +160,7 @@ const VerifyEmailPage: React.FC = () => {
           throw new Error('This phone number already has 3 accounts. Please use a different number.');
         }
 
-        const { error: insertError } = await supabase.from('users').insert({
+        const { error: insertError } = await supabase.from(dbConfig.tables.users).insert({
           username: pending.username,
           login_id: pending.login_id,
           password_hash: pending.password_hash,
@@ -347,7 +346,7 @@ const VerifyEmailPage: React.FC = () => {
 
         // Get the created user ID for AI image generation
         const { data: createdUser } = await supabase
-          .from('users')
+          .from(dbConfig.tables.users)
           .select('id')
           .eq('username', pending.username)
           .single();
@@ -366,7 +365,7 @@ const VerifyEmailPage: React.FC = () => {
               
               // Update the user record with the generated avatar
               const { error: avatarUpdateError } = await supabase
-                .from('users')
+                .from(dbConfig.tables.users)
                 .update({ avatar_url: avatarUrl })
                 .eq('id', createdUser.id);
               
@@ -392,7 +391,7 @@ const VerifyEmailPage: React.FC = () => {
           });
         }
 
-        await supabase.from('pending_registrations').delete().eq('email', email);
+        await supabase.from(dbConfig.tables.pending_registrations).delete().eq('email', email);
         navigate('/verify-phone');
       }
     } catch (err: any) {

@@ -5,7 +5,7 @@ import { ZipraProduct } from '../types';
 import { supabase } from '../services/supabaseService';
 import { getProductById } from '../services/userAccountService';
 import { ZPRIA_MAIN_LOGO } from '../constants';
-import { dataIds, colors } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 const Badge = ({ children, color = 'blue' }: { children?: React.ReactNode, color?: 'blue' | 'gray' | 'green' | 'indigo' }) => {
   const colors = {
@@ -38,7 +38,7 @@ const ProductDetailsPage: React.FC = () => {
 
         // Fetch other active products directly (could be moved to service too)
         const { data: allData } = await supabase
-          .from('zipra_products')
+          .from(dbConfig.tables.zipra_products)
           .select('*')
           .eq('is_active', true)
           .neq('product_id', id)
