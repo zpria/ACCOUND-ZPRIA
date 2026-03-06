@@ -5,6 +5,7 @@
 
 import { supabase } from '../services/supabaseService';
 import { envConfig } from '../config/envConfig';
+import { dbConfig } from '../config';
 
 interface PoolConfig {
   maxConnections: number;
@@ -207,7 +208,7 @@ export async function monitorConnectionHealth() {
   try {
     // Simple health check query
     const result = await supabase
-      .from('system_health_logs')
+      .from(dbConfig.tables.system_health_logs)
       .select('count')
       .limit(1);
     
