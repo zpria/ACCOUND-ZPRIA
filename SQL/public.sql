@@ -108,6 +108,25 @@ CREATE TABLE public.affiliate_partners (
   CONSTRAINT affiliate_partners_pkey PRIMARY KEY (id),
   CONSTRAINT affiliate_partners_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.ai_chat_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  role text NOT NULL CHECK (role = ANY (ARRAY['user'::text, 'assistant'::text])),
+  content text NOT NULL,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  token_count integer DEFAULT 0,
+  model_used text,
+  conversation_id uuid,
+  parent_message_id uuid,
+  is_edited boolean DEFAULT false,
+  edited_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
+  CONSTRAINT ai_chat_history_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_chat_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.ai_conversations (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -4217,6 +4236,15 @@ CREATE TABLE public.user_privacy_settings (
   auto_delete_activity_after_months integer DEFAULT 0,
   serial_id text,
   username text,
+  updated_at timestamp with time zone DEFAULT now(),
+  profile_visibility text DEFAULT 'public'::text,
+  show_email boolean DEFAULT false,
+  show_phone boolean DEFAULT false,
+  allow_search_by_email boolean DEFAULT false,
+  allow_search_by_phone boolean DEFAULT false,
+  show_profile_to_public boolean DEFAULT true,
+  show_activity_status boolean DEFAULT true,
+  data_export_enabled boolean DEFAULT true,
   CONSTRAINT user_privacy_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_privacy_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -5055,6 +5083,7 @@ CREATE TABLE public.users (
   emergency_contact_relation text,
   stripe_customer_id text,
   serial_id text NOT NULL DEFAULT lpad((nextval('users_serial_seq'::regclass))::text, 8, '0'::text) UNIQUE,
+  deactivated_at timestamp with time zone,
   CONSTRAINT users_pkey PRIMARY KEY (id),
   CONSTRAINT users_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES auth.users(id),
   CONSTRAINT users_referred_by_fkey FOREIGN KEY (referred_by) REFERENCES public.users(id)
