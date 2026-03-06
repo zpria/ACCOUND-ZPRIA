@@ -43,7 +43,11 @@ CREATE TABLE public.ad_campaigns (
   end_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT ad_campaigns_pkey PRIMARY KEY (id)
+  user_id uuid,
+  serial_id text,
+  username text,
+  CONSTRAINT ad_campaigns_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_ad_campaigns_user_id FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.admin_roles (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -79,6 +83,9 @@ CREATE TABLE public.affiliate_clicks (
   commission_earned numeric DEFAULT 0.00,
   clicked_at timestamp with time zone DEFAULT now(),
   converted_at timestamp with time zone,
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT affiliate_clicks_pkey PRIMARY KEY (id),
   CONSTRAINT affiliate_clicks_affiliate_id_fkey FOREIGN KEY (affiliate_id) REFERENCES public.affiliate_partners(id)
 );
@@ -112,6 +119,8 @@ CREATE TABLE public.ai_conversations (
   is_archived boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT ai_conversations_pkey PRIMARY KEY (id),
   CONSTRAINT ai_conversations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -127,6 +136,8 @@ CREATE TABLE public.ai_generated_content (
   is_public boolean DEFAULT false,
   edited_version text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT ai_generated_content_pkey PRIMARY KEY (id),
   CONSTRAINT ai_generated_content_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -139,6 +150,9 @@ CREATE TABLE public.ai_messages (
   model_used text,
   is_liked boolean,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT ai_messages_pkey PRIMARY KEY (id),
   CONSTRAINT ai_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.ai_conversations(id)
 );
@@ -155,6 +169,8 @@ CREATE TABLE public.ai_product_recommendations (
   is_purchased boolean DEFAULT false,
   generated_at timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone DEFAULT (now() + '7 days'::interval),
+  serial_id text,
+  username text,
   CONSTRAINT ai_product_recommendations_pkey PRIMARY KEY (id),
   CONSTRAINT ai_product_recommendations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -168,6 +184,8 @@ CREATE TABLE public.ai_usage_stats (
   monthly_tokens_used bigint DEFAULT 0,
   reset_date date DEFAULT date_trunc('month'::text, (now() + '1 mon'::interval)),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT ai_usage_stats_pkey PRIMARY KEY (id),
   CONSTRAINT ai_usage_stats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -190,6 +208,8 @@ CREATE TABLE public.api_keys (
   daily_limit integer DEFAULT 10000,
   monthly_limit integer DEFAULT 100000,
   description text,
+  serial_id text,
+  username text,
   CONSTRAINT api_keys_pkey PRIMARY KEY (id),
   CONSTRAINT api_keys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -208,6 +228,8 @@ CREATE TABLE public.api_usage_logs (
   error_message text,
   created_at timestamp with time zone DEFAULT now(),
   oauth_app_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT api_usage_logs_pkey PRIMARY KEY (id),
   CONSTRAINT api_usage_logs_api_key_id_fkey FOREIGN KEY (api_key_id) REFERENCES public.api_keys(id),
   CONSTRAINT api_usage_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -226,6 +248,8 @@ CREATE TABLE public.audit_logs (
   user_agent text,
   notes text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT audit_logs_pkey PRIMARY KEY (id),
   CONSTRAINT audit_logs_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.users(id)
 );
@@ -277,6 +301,8 @@ CREATE TABLE public.bank_accounts (
   is_verified boolean DEFAULT false,
   is_default boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT bank_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT bank_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -292,6 +318,8 @@ CREATE TABLE public.bnpl_plans (
   status text DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'completed'::text, 'defaulted'::text, 'cancelled'::text])),
   provider text CHECK (provider = ANY (ARRAY['internal'::text, 'klarna'::text, 'afterpay'::text, 'affirm'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT bnpl_plans_pkey PRIMARY KEY (id),
   CONSTRAINT bnpl_plans_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -312,6 +340,8 @@ CREATE TABLE public.calendar_events (
   guests ARRAY,
   is_private boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT calendar_events_pkey PRIMARY KEY (id),
   CONSTRAINT calendar_events_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -325,6 +355,9 @@ CREATE TABLE public.captcha_challenges (
   created_at timestamp with time zone DEFAULT now(),
   solved_at timestamp with time zone,
   expires_at timestamp with time zone DEFAULT (now() + '00:10:00'::interval),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT captcha_challenges_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.chat_conversations (
@@ -338,6 +371,8 @@ CREATE TABLE public.chat_conversations (
   resolved_at timestamp with time zone,
   rating integer CHECK (rating IS NULL OR rating >= 1 AND rating <= 5),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT chat_conversations_pkey PRIMARY KEY (id),
   CONSTRAINT chat_conversations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT chat_conversations_support_agent_id_fkey FOREIGN KEY (support_agent_id) REFERENCES public.users(id)
@@ -353,6 +388,8 @@ CREATE TABLE public.chat_messages (
   is_read boolean DEFAULT false,
   read_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT chat_messages_pkey PRIMARY KEY (id),
   CONSTRAINT chat_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.chat_conversations(id),
   CONSTRAINT chat_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
@@ -362,6 +399,9 @@ CREATE TABLE public.circle_members (
   circle_id uuid NOT NULL,
   member_user_id uuid NOT NULL,
   added_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT circle_members_pkey PRIMARY KEY (id),
   CONSTRAINT circle_members_circle_id_fkey FOREIGN KEY (circle_id) REFERENCES public.user_circles(id),
   CONSTRAINT circle_members_member_user_id_fkey FOREIGN KEY (member_user_id) REFERENCES public.users(id)
@@ -391,6 +431,8 @@ CREATE TABLE public.collaborative_tasks (
   attachments jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT collaborative_tasks_pkey PRIMARY KEY (id),
   CONSTRAINT collaborative_tasks_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.shared_workspaces(id),
   CONSTRAINT collaborative_tasks_assigned_to_fkey FOREIGN KEY (assigned_to) REFERENCES public.users(id),
@@ -404,6 +446,9 @@ CREATE TABLE public.collection_items (
   notes text,
   position integer DEFAULT 0,
   added_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT collection_items_pkey PRIMARY KEY (id),
   CONSTRAINT collection_items_collection_id_fkey FOREIGN KEY (collection_id) REFERENCES public.user_collections(id)
 );
@@ -416,6 +461,8 @@ CREATE TABLE public.community_comments (
   like_count integer DEFAULT 0,
   is_approved boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT community_comments_pkey PRIMARY KEY (id),
   CONSTRAINT community_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT community_comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_posts(id),
@@ -427,6 +474,8 @@ CREATE TABLE public.community_likes (
   post_id uuid,
   comment_id uuid,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT community_likes_pkey PRIMARY KEY (id),
   CONSTRAINT community_likes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT community_likes_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_posts(id),
@@ -449,6 +498,8 @@ CREATE TABLE public.community_posts (
   status text DEFAULT 'published'::text CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'hidden'::text, 'deleted'::text])),
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT community_posts_pkey PRIMARY KEY (id),
   CONSTRAINT community_posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -503,6 +554,8 @@ CREATE TABLE public.content_posts (
   scheduled_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT content_posts_pkey PRIMARY KEY (id),
   CONSTRAINT content_posts_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id)
 );
@@ -518,6 +571,8 @@ CREATE TABLE public.content_reports (
   action_taken text,
   reviewed_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT content_reports_pkey PRIMARY KEY (id),
   CONSTRAINT content_reports_reporter_id_fkey FOREIGN KEY (reporter_id) REFERENCES public.users(id),
   CONSTRAINT content_reports_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES public.users(id)
@@ -533,6 +588,9 @@ CREATE TABLE public.content_versions (
   changed_by uuid,
   change_summary text,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT content_versions_pkey PRIMARY KEY (id),
   CONSTRAINT content_versions_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES public.users(id)
 );
@@ -555,6 +613,8 @@ CREATE TABLE public.coupon_usage_history (
   order_id text,
   discount_applied numeric NOT NULL,
   used_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT coupon_usage_history_pkey PRIMARY KEY (id),
   CONSTRAINT coupon_usage_history_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.promo_codes(id),
   CONSTRAINT coupon_usage_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -584,6 +644,8 @@ CREATE TABLE public.crypto_transactions (
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirming'::text, 'completed'::text, 'failed'::text, 'cancelled'::text])),
   confirmations integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT crypto_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT crypto_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT crypto_transactions_wallet_id_fkey FOREIGN KEY (wallet_id) REFERENCES public.crypto_wallets(id)
@@ -599,6 +661,8 @@ CREATE TABLE public.crypto_wallets (
   balance_cache jsonb,
   last_sync_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT crypto_wallets_pkey PRIMARY KEY (id),
   CONSTRAINT crypto_wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -637,6 +701,8 @@ CREATE TABLE public.daily_health_logs (
   sleep_hours numeric,
   mood text CHECK (mood = ANY (ARRAY['excellent'::text, 'good'::text, 'okay'::text, 'bad'::text, 'terrible'::text])),
   notes text,
+  serial_id text,
+  username text,
   CONSTRAINT daily_health_logs_pkey PRIMARY KEY (id),
   CONSTRAINT daily_health_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -653,6 +719,8 @@ CREATE TABLE public.dashboard_widgets (
   refresh_interval_seconds integer DEFAULT 300,
   is_visible boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT dashboard_widgets_pkey PRIMARY KEY (id),
   CONSTRAINT dashboard_widgets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -673,6 +741,8 @@ CREATE TABLE public.developer_apps (
   status text DEFAULT 'active'::text CHECK (status = ANY (ARRAY['pending'::text, 'active'::text, 'suspended'::text, 'revoked'::text])),
   created_at timestamp with time zone DEFAULT now(),
   oauth_app_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT developer_apps_pkey PRIMARY KEY (id),
   CONSTRAINT developer_apps_developer_id_fkey FOREIGN KEY (developer_id) REFERENCES public.users(id),
   CONSTRAINT developer_apps_oauth_app_id_fkey FOREIGN KEY (oauth_app_id) REFERENCES public.oauth_applications(id)
@@ -690,6 +760,8 @@ CREATE TABLE public.direct_messages (
   reply_to_id uuid,
   created_at timestamp with time zone DEFAULT now(),
   read_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT direct_messages_pkey PRIMARY KEY (id),
   CONSTRAINT direct_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id),
   CONSTRAINT direct_messages_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.users(id),
@@ -705,6 +777,9 @@ CREATE TABLE public.drive_file_shares (
   share_link text UNIQUE,
   link_expires_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT drive_file_shares_pkey PRIMARY KEY (id),
   CONSTRAINT drive_file_shares_shared_with_fkey FOREIGN KEY (shared_with) REFERENCES public.users(id),
   CONSTRAINT drive_file_shares_file_id_fkey FOREIGN KEY (file_id) REFERENCES public.drive_files(id),
@@ -736,6 +811,8 @@ CREATE TABLE public.drive_files (
   preview_enabled boolean DEFAULT true,
   ocr_text text,
   ai_summary text,
+  serial_id text,
+  username text,
   CONSTRAINT drive_files_pkey PRIMARY KEY (id),
   CONSTRAINT drive_files_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT drive_files_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id)
@@ -761,6 +838,8 @@ CREATE TABLE public.email_queue (
   opened_at timestamp with time zone,
   clicked_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT email_queue_pkey PRIMARY KEY (id),
   CONSTRAINT email_queue_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES public.users(id),
   CONSTRAINT email_queue_template_id_fkey FOREIGN KEY (template_id) REFERENCES public.email_templates(id)
@@ -812,6 +891,8 @@ CREATE TABLE public.error_logs (
   occurrence_count integer DEFAULT 1,
   first_seen_at timestamp with time zone DEFAULT now(),
   last_seen_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT error_logs_pkey PRIMARY KEY (id),
   CONSTRAINT error_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -828,6 +909,8 @@ CREATE TABLE public.external_connections (
   last_sync_at timestamp with time zone,
   sync_status text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT external_connections_pkey PRIMARY KEY (id),
   CONSTRAINT external_connections_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -915,6 +998,8 @@ CREATE TABLE public.fraud_events (
   reviewed_by uuid,
   created_at timestamp with time zone DEFAULT now(),
   resolved_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT fraud_events_pkey PRIMARY KEY (id),
   CONSTRAINT fraud_events_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT fraud_events_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES public.users(id)
@@ -928,6 +1013,8 @@ CREATE TABLE public.funnel_dropoffs (
   session_duration_seconds integer,
   device_type text,
   dropped_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT funnel_dropoffs_pkey PRIMARY KEY (id),
   CONSTRAINT funnel_dropoffs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -965,6 +1052,8 @@ CREATE TABLE public.game_leaderboards (
   level integer DEFAULT 1,
   season text,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT game_leaderboards_pkey PRIMARY KEY (id),
   CONSTRAINT game_leaderboards_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.games(id),
   CONSTRAINT game_leaderboards_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -978,6 +1067,8 @@ CREATE TABLE public.game_sessions (
   duration_minutes integer DEFAULT 0,
   score bigint DEFAULT 0,
   device_type text,
+  serial_id text,
+  username text,
   CONSTRAINT game_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT game_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT game_sessions_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.games(id)
@@ -1029,6 +1120,8 @@ CREATE TABLE public.group_members (
   role text DEFAULT 'member'::text CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'moderator'::text, 'member'::text])),
   joined_at timestamp with time zone DEFAULT now(),
   invited_by uuid,
+  serial_id text,
+  username text,
   CONSTRAINT group_members_pkey PRIMARY KEY (id),
   CONSTRAINT group_members_group_id_fkey FOREIGN KEY (group_id) REFERENCES public.user_groups(id),
   CONSTRAINT group_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -1040,6 +1133,9 @@ CREATE TABLE public.hashtag_usage (
   entity_type text NOT NULL CHECK (entity_type = ANY (ARRAY['post'::text, 'media'::text, 'product'::text, 'story'::text])),
   entity_id text NOT NULL,
   used_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT hashtag_usage_pkey PRIMARY KEY (id),
   CONSTRAINT hashtag_usage_hashtag_id_fkey FOREIGN KEY (hashtag_id) REFERENCES public.hashtags(id)
 );
@@ -1063,6 +1159,8 @@ CREATE TABLE public.health_goals (
   target_date date,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT health_goals_pkey PRIMARY KEY (id),
   CONSTRAINT health_goals_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1078,6 +1176,8 @@ CREATE TABLE public.ip_rules (
   expires_at timestamp with time zone,
   created_by uuid,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT ip_rules_pkey PRIMARY KEY (id),
   CONSTRAINT ip_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
 );
@@ -1095,6 +1195,8 @@ CREATE TABLE public.kb_articles (
   author_id uuid,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT kb_articles_pkey PRIMARY KEY (id),
   CONSTRAINT kb_articles_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id)
 );
@@ -1118,6 +1220,8 @@ CREATE TABLE public.landing_pages (
   created_by uuid,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT landing_pages_pkey PRIMARY KEY (id),
   CONSTRAINT landing_pages_ab_test_id_fkey FOREIGN KEY (ab_test_id) REFERENCES public.ab_test_configs(id),
   CONSTRAINT landing_pages_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
@@ -1140,6 +1244,8 @@ CREATE TABLE public.mail_accounts (
   storage_used_mb numeric DEFAULT 0,
   storage_limit_mb numeric DEFAULT 15360,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT mail_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT mail_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1151,6 +1257,9 @@ CREATE TABLE public.mail_attachments (
   mime_type text,
   size_bytes bigint DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT mail_attachments_pkey PRIMARY KEY (id),
   CONSTRAINT mail_attachments_message_id_fkey FOREIGN KEY (message_id) REFERENCES public.mail_messages(id)
 );
@@ -1164,6 +1273,8 @@ CREATE TABLE public.mail_contacts (
   avatar_url text,
   is_favorite boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT mail_contacts_pkey PRIMARY KEY (id),
   CONSTRAINT mail_contacts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1177,6 +1288,8 @@ CREATE TABLE public.mail_folders (
   unread_count integer DEFAULT 0,
   total_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT mail_folders_pkey PRIMARY KEY (id),
   CONSTRAINT mail_folders_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1197,6 +1310,8 @@ CREATE TABLE public.mail_messages (
   reply_to_id uuid,
   sent_at timestamp with time zone DEFAULT now(),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT mail_messages_pkey PRIMARY KEY (id),
   CONSTRAINT mail_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id),
   CONSTRAINT mail_messages_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES public.mail_folders(id),
@@ -1211,6 +1326,8 @@ CREATE TABLE public.mail_recipients (
   type text DEFAULT 'to'::text CHECK (type = ANY (ARRAY['to'::text, 'cc'::text, 'bcc'::text])),
   is_read boolean DEFAULT false,
   read_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT mail_recipients_pkey PRIMARY KEY (id),
   CONSTRAINT mail_recipients_message_id_fkey FOREIGN KEY (message_id) REFERENCES public.mail_messages(id),
   CONSTRAINT mail_recipients_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -1252,6 +1369,8 @@ CREATE TABLE public.media_assets (
   is_public boolean DEFAULT true,
   download_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT media_assets_pkey PRIMARY KEY (id),
   CONSTRAINT media_assets_uploader_id_fkey FOREIGN KEY (uploader_id) REFERENCES public.users(id)
 );
@@ -1265,6 +1384,8 @@ CREATE TABLE public.media_comments (
   is_pinned boolean DEFAULT false,
   is_approved boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT media_comments_pkey PRIMARY KEY (id),
   CONSTRAINT media_comments_media_id_fkey FOREIGN KEY (media_id) REFERENCES public.media_items(id),
   CONSTRAINT media_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -1303,6 +1424,8 @@ CREATE TABLE public.media_creator_profiles (
   payout_threshold numeric DEFAULT 1000,
   payout_currency text DEFAULT 'BDT'::text,
   tax_form_submitted boolean DEFAULT false,
+  serial_id text,
+  username text,
   CONSTRAINT media_creator_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT media_creator_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1344,6 +1467,8 @@ CREATE TABLE public.media_items (
   download_count integer DEFAULT 0,
   embed_enabled boolean DEFAULT true,
   chapters jsonb DEFAULT '[]'::jsonb,
+  serial_id text,
+  username text,
   CONSTRAINT media_items_pkey PRIMARY KEY (id),
   CONSTRAINT media_items_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.users(id)
 );
@@ -1353,6 +1478,9 @@ CREATE TABLE public.media_playlist_items (
   media_id uuid NOT NULL,
   position integer DEFAULT 0,
   added_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT media_playlist_items_pkey PRIMARY KEY (id),
   CONSTRAINT media_playlist_items_media_id_fkey FOREIGN KEY (media_id) REFERENCES public.media_items(id),
   CONSTRAINT media_playlist_items_playlist_id_fkey FOREIGN KEY (playlist_id) REFERENCES public.media_playlists(id)
@@ -1366,6 +1494,8 @@ CREATE TABLE public.media_playlists (
   is_public boolean DEFAULT false,
   item_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT media_playlists_pkey PRIMARY KEY (id),
   CONSTRAINT media_playlists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1375,6 +1505,8 @@ CREATE TABLE public.media_subscriptions (
   channel_id uuid NOT NULL,
   notify_new_content boolean DEFAULT true,
   subscribed_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT media_subscriptions_pkey PRIMARY KEY (id),
   CONSTRAINT media_subscriptions_subscriber_id_fkey FOREIGN KEY (subscriber_id) REFERENCES public.users(id),
   CONSTRAINT media_subscriptions_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.users(id)
@@ -1389,6 +1521,8 @@ CREATE TABLE public.media_watch_history (
   is_completed boolean DEFAULT false,
   last_watched_at timestamp with time zone DEFAULT now(),
   device_type text,
+  serial_id text,
+  username text,
   CONSTRAINT media_watch_history_pkey PRIMARY KEY (id),
   CONSTRAINT media_watch_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT media_watch_history_media_id_fkey FOREIGN KEY (media_id) REFERENCES public.media_items(id)
@@ -1400,6 +1534,8 @@ CREATE TABLE public.micro_conversions (
   value_score integer DEFAULT 1,
   metadata jsonb,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT micro_conversions_pkey PRIMARY KEY (id),
   CONSTRAINT micro_conversions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1409,6 +1545,8 @@ CREATE TABLE public.note_collaborators (
   user_id uuid NOT NULL,
   permission text DEFAULT 'view'::text CHECK (permission = ANY (ARRAY['view'::text, 'comment'::text, 'edit'::text])),
   added_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT note_collaborators_pkey PRIMARY KEY (id),
   CONSTRAINT note_collaborators_note_id_fkey FOREIGN KEY (note_id) REFERENCES public.user_notes(id),
   CONSTRAINT note_collaborators_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -1430,6 +1568,8 @@ CREATE TABLE public.oauth_access_tokens (
   access_token_expires_at timestamp with time zone DEFAULT (now() + '01:00:00'::interval),
   refresh_token_expires_at timestamp with time zone DEFAULT (now() + '30 days'::interval),
   last_used_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT oauth_access_tokens_pkey PRIMARY KEY (id),
   CONSTRAINT oauth_access_tokens_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.oauth_applications(id),
   CONSTRAINT oauth_access_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -1463,6 +1603,8 @@ CREATE TABLE public.oauth_applications (
   approved_by uuid,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT oauth_applications_pkey PRIMARY KEY (id),
   CONSTRAINT oauth_applications_developer_id_fkey FOREIGN KEY (developer_id) REFERENCES public.users(id),
   CONSTRAINT oauth_applications_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES public.users(id)
@@ -1482,6 +1624,8 @@ CREATE TABLE public.oauth_authorization_codes (
   used_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone DEFAULT (now() + '00:10:00'::interval),
+  serial_id text,
+  username text,
   CONSTRAINT oauth_authorization_codes_pkey PRIMARY KEY (id),
   CONSTRAINT oauth_authorization_codes_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.oauth_applications(id),
   CONSTRAINT oauth_authorization_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -1501,6 +1645,8 @@ CREATE TABLE public.oauth_authorizations (
   consented_at timestamp with time zone DEFAULT now(),
   consent_ip inet,
   consent_device text,
+  serial_id text,
+  username text,
   CONSTRAINT oauth_authorizations_pkey PRIMARY KEY (id),
   CONSTRAINT oauth_authorizations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT oauth_authorizations_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.oauth_applications(id)
@@ -1530,6 +1676,8 @@ CREATE TABLE public.oauth_token_logs (
   success boolean DEFAULT true,
   error_message text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT oauth_token_logs_pkey PRIMARY KEY (id),
   CONSTRAINT oauth_token_logs_token_id_fkey FOREIGN KEY (token_id) REFERENCES public.oauth_access_tokens(id),
   CONSTRAINT oauth_token_logs_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.oauth_applications(id),
@@ -1553,6 +1701,8 @@ CREATE TABLE public.order_items (
   gift_message text,
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'processing'::text, 'shipped'::text, 'delivered'::text, 'returned'::text, 'cancelled'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT order_items_pkey PRIMARY KEY (id),
   CONSTRAINT order_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1571,6 +1721,8 @@ CREATE TABLE public.order_shipments (
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT order_shipments_pkey PRIMARY KEY (id),
   CONSTRAINT order_shipments_address_id_fkey FOREIGN KEY (address_id) REFERENCES public.user_addresses(id),
   CONSTRAINT order_shipments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -1612,6 +1764,8 @@ CREATE TABLE public.organization_members (
   role text DEFAULT 'member'::text CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text, 'viewer'::text])),
   invited_by uuid,
   joined_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT organization_members_pkey PRIMARY KEY (id),
   CONSTRAINT organization_members_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id),
   CONSTRAINT organization_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -1641,6 +1795,8 @@ CREATE TABLE public.organizations (
   social_links jsonb DEFAULT '{}'::jsonb,
   verified_at timestamp with time zone,
   is_verified boolean DEFAULT false,
+  serial_id text,
+  username text,
   CONSTRAINT organizations_pkey PRIMARY KEY (id),
   CONSTRAINT organizations_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id)
 );
@@ -1654,6 +1810,9 @@ CREATE TABLE public.otp_verifications (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   expires_at timestamp with time zone NOT NULL DEFAULT (now() + '00:10:00'::interval),
   verified_at timestamp with time zone,
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT otp_verifications_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.payment_transactions (
@@ -1673,6 +1832,8 @@ CREATE TABLE public.payment_transactions (
   completed_at timestamp with time zone,
   refunded_at timestamp with time zone,
   refund_reason text,
+  serial_id text,
+  username text,
   CONSTRAINT payment_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT payment_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT payment_transactions_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES public.user_invoices(id)
@@ -1692,6 +1853,8 @@ CREATE TABLE public.payout_requests (
   processed_by uuid,
   requested_at timestamp with time zone DEFAULT now(),
   processed_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT payout_requests_pkey PRIMARY KEY (id),
   CONSTRAINT payout_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT payout_requests_bank_account_id_fkey FOREIGN KEY (bank_account_id) REFERENCES public.bank_accounts(id),
@@ -1713,6 +1876,8 @@ CREATE TABLE public.pending_registrations (
   otp_verified boolean NOT NULL DEFAULT false,
   expires_at timestamp with time zone NOT NULL DEFAULT (now() + '00:30:00'::interval),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  user_id uuid,
+  serial_id text,
   CONSTRAINT pending_registrations_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.platform_analytics (
@@ -1750,6 +1915,8 @@ CREATE TABLE public.platform_announcements (
   ends_at timestamp with time zone,
   created_by uuid,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT platform_announcements_pkey PRIMARY KEY (id),
   CONSTRAINT platform_announcements_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
 );
@@ -1786,6 +1953,9 @@ CREATE TABLE public.podcast_episodes (
   is_premium boolean DEFAULT false,
   published_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT podcast_episodes_pkey PRIMARY KEY (id),
   CONSTRAINT podcast_episodes_podcast_fkey FOREIGN KEY (podcast_id) REFERENCES public.podcasts(id)
 );
@@ -1798,6 +1968,8 @@ CREATE TABLE public.podcast_progress (
   is_completed boolean DEFAULT false,
   playback_speed numeric DEFAULT 1.0,
   last_played_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT podcast_progress_pkey PRIMARY KEY (id),
   CONSTRAINT podcast_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1808,6 +1980,8 @@ CREATE TABLE public.podcast_subscriptions (
   auto_download boolean DEFAULT false,
   notification_enabled boolean DEFAULT true,
   subscribed_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT podcast_subscriptions_pkey PRIMARY KEY (id),
   CONSTRAINT podcast_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1839,6 +2013,8 @@ CREATE TABLE public.price_alerts (
   alert_sent_at timestamp with time zone,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT price_alerts_pkey PRIMARY KEY (id),
   CONSTRAINT price_alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -1895,6 +2071,9 @@ CREATE TABLE public.product_category_map (
   product_id text NOT NULL,
   category_id uuid NOT NULL,
   is_primary boolean DEFAULT false,
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT product_category_map_pkey PRIMARY KEY (id),
   CONSTRAINT product_category_map_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.product_categories(id)
 );
@@ -1924,6 +2103,8 @@ CREATE TABLE public.product_price_history (
   effective_from timestamp with time zone DEFAULT now(),
   effective_until timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT product_price_history_pkey PRIMARY KEY (id),
   CONSTRAINT product_price_history_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES public.users(id)
 );
@@ -1938,6 +2119,8 @@ CREATE TABLE public.product_questions (
   is_approved boolean DEFAULT true,
   helpful_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT product_questions_pkey PRIMARY KEY (id),
   CONSTRAINT product_questions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT product_questions_answered_by_fkey FOREIGN KEY (answered_by) REFERENCES public.users(id)
@@ -1954,6 +2137,8 @@ CREATE TABLE public.product_recommendations (
   is_purchased boolean DEFAULT false,
   generated_at timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone DEFAULT (now() + '24:00:00'::interval),
+  serial_id text,
+  username text,
   CONSTRAINT product_recommendations_pkey PRIMARY KEY (id),
   CONSTRAINT product_recommendations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2010,6 +2195,8 @@ CREATE TABLE public.product_waitlists (
   notified_at timestamp with time zone,
   position integer,
   joined_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT product_waitlists_pkey PRIMARY KEY (id),
   CONSTRAINT product_waitlists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2074,6 +2261,8 @@ CREATE TABLE public.rate_limit_logs (
   is_blocked boolean DEFAULT false,
   blocked_until timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT rate_limit_logs_pkey PRIMARY KEY (id),
   CONSTRAINT rate_limit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2084,6 +2273,8 @@ CREATE TABLE public.reactions (
   entity_id text NOT NULL,
   reaction_type text NOT NULL CHECK (reaction_type = ANY (ARRAY['like'::text, 'love'::text, 'haha'::text, 'wow'::text, 'sad'::text, 'angry'::text, 'fire'::text, 'clap'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT reactions_pkey PRIMARY KEY (id),
   CONSTRAINT reactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2098,6 +2289,8 @@ CREATE TABLE public.reading_progress (
   is_completed boolean DEFAULT false,
   completed_at timestamp with time zone,
   last_read_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT reading_progress_pkey PRIMARY KEY (id),
   CONSTRAINT reading_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2116,6 +2309,8 @@ CREATE TABLE public.return_requests (
   reviewed_by uuid,
   created_at timestamp with time zone DEFAULT now(),
   resolved_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT return_requests_pkey PRIMARY KEY (id),
   CONSTRAINT return_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT return_requests_order_item_id_fkey FOREIGN KEY (order_item_id) REFERENCES public.order_items(id),
@@ -2153,6 +2348,8 @@ CREATE TABLE public.scheduled_reports (
   is_active boolean DEFAULT true,
   created_by uuid,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT scheduled_reports_pkey PRIMARY KEY (id),
   CONSTRAINT scheduled_reports_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
 );
@@ -2164,6 +2361,8 @@ CREATE TABLE public.sdk_downloads (
   download_count integer DEFAULT 1,
   first_downloaded_at timestamp with time zone DEFAULT now(),
   last_downloaded_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT sdk_downloads_pkey PRIMARY KEY (id),
   CONSTRAINT sdk_downloads_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2181,6 +2380,8 @@ CREATE TABLE public.security_alerts (
   device_info text,
   created_at timestamp with time zone DEFAULT now(),
   read_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT security_alerts_pkey PRIMARY KEY (id),
   CONSTRAINT security_alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2214,6 +2415,8 @@ CREATE TABLE public.shared_workspaces (
   storage_limit_gb integer DEFAULT 10,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT shared_workspaces_pkey PRIMARY KEY (id),
   CONSTRAINT shared_workspaces_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id)
 );
@@ -2224,6 +2427,9 @@ CREATE TABLE public.shipment_tracking_events (
   location text,
   description text,
   event_time timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT shipment_tracking_events_pkey PRIMARY KEY (id),
   CONSTRAINT shipment_tracking_events_shipment_id_fkey FOREIGN KEY (shipment_id) REFERENCES public.order_shipments(id)
 );
@@ -2237,6 +2443,9 @@ CREATE TABLE public.shopping_list_items (
   purchased_at timestamp with time zone,
   notes text,
   added_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT shopping_list_items_pkey PRIMARY KEY (id),
   CONSTRAINT shopping_list_items_list_id_fkey FOREIGN KEY (list_id) REFERENCES public.smart_shopping_lists(id)
 );
@@ -2251,6 +2460,8 @@ CREATE TABLE public.smart_shopping_lists (
   budget_limit numeric,
   is_shared boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT smart_shopping_lists_pkey PRIMARY KEY (id),
   CONSTRAINT smart_shopping_lists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2269,6 +2480,8 @@ CREATE TABLE public.sms_queue (
   delivered_at timestamp with time zone,
   failed_reason text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT sms_queue_pkey PRIMARY KEY (id),
   CONSTRAINT sms_queue_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES public.users(id)
 );
@@ -2283,6 +2496,8 @@ CREATE TABLE public.sso_activity_logs (
   success boolean DEFAULT true,
   failure_reason text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT sso_activity_logs_pkey PRIMARY KEY (id),
   CONSTRAINT sso_activity_logs_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.sso_user_sessions(id),
   CONSTRAINT sso_activity_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -2305,6 +2520,8 @@ CREATE TABLE public.sso_user_sessions (
   last_activity timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone DEFAULT (now() + '30 days'::interval),
   logged_out_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT sso_user_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT sso_user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT sso_user_sessions_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.zipra_apps(id)
@@ -2314,6 +2531,9 @@ CREATE TABLE public.story_views (
   story_id uuid NOT NULL,
   viewer_id uuid NOT NULL,
   viewed_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT story_views_pkey PRIMARY KEY (id),
   CONSTRAINT story_views_story_id_fkey FOREIGN KEY (story_id) REFERENCES public.user_stories(id),
   CONSTRAINT story_views_viewer_id_fkey FOREIGN KEY (viewer_id) REFERENCES public.users(id)
@@ -2348,6 +2568,8 @@ CREATE TABLE public.support_agents (
   avg_resolution_time_hours numeric DEFAULT 0,
   satisfaction_score numeric DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT support_agents_pkey PRIMARY KEY (id),
   CONSTRAINT support_agents_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2360,6 +2582,8 @@ CREATE TABLE public.support_ticket_messages (
   attachment_urls ARRAY,
   is_internal boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT support_ticket_messages_pkey PRIMARY KEY (id),
   CONSTRAINT support_ticket_messages_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.user_support_tickets(id),
   CONSTRAINT support_ticket_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
@@ -2371,6 +2595,8 @@ CREATE TABLE public.survey_responses (
   answers jsonb NOT NULL DEFAULT '{}'::jsonb,
   nps_score integer CHECK (nps_score IS NULL OR nps_score >= 0 AND nps_score <= 10),
   completed_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT survey_responses_pkey PRIMARY KEY (id),
   CONSTRAINT survey_responses_survey_id_fkey FOREIGN KEY (survey_id) REFERENCES public.surveys(id),
   CONSTRAINT survey_responses_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -2448,6 +2674,8 @@ CREATE TABLE public.user_2fa (
   grace_period_ends_at timestamp with time zone,
   hardware_key_type text,
   hardware_key_registered_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_2fa_pkey PRIMARY KEY (id),
   CONSTRAINT user_2fa_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2458,6 +2686,8 @@ CREATE TABLE public.user_2fa_attempts (
   ip_address inet,
   is_success boolean DEFAULT false,
   attempted_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_2fa_attempts_pkey PRIMARY KEY (id),
   CONSTRAINT user_2fa_attempts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2470,6 +2700,8 @@ CREATE TABLE public.user_ab_tests (
   conversion_value numeric DEFAULT 0.00,
   assigned_at timestamp with time zone DEFAULT now(),
   converted_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_ab_tests_pkey PRIMARY KEY (id),
   CONSTRAINT user_ab_tests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2487,6 +2719,8 @@ CREATE TABLE public.user_account_deletion_schedule (
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'grace_period'::text, 'processing'::text, 'completed'::text, 'cancelled'::text])),
   cancelled_at timestamp with time zone,
   cancelled_reason text,
+  serial_id text,
+  username text,
   CONSTRAINT user_account_deletion_schedule_pkey PRIMARY KEY (id),
   CONSTRAINT user_account_deletion_schedule_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2500,6 +2734,8 @@ CREATE TABLE public.user_account_history (
   ip_address inet,
   user_agent text,
   changed_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_account_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_account_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2515,6 +2751,8 @@ CREATE TABLE public.user_account_recovery_options (
   last_used_at timestamp with time zone,
   added_from_ip inet,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_account_recovery_options_pkey PRIMARY KEY (id),
   CONSTRAINT user_account_recovery_options_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2543,6 +2781,8 @@ CREATE TABLE public.user_activity_logs (
   url text,
   product_id text,
   auto_delete_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_activity_logs_pkey PRIMARY KEY (id),
   CONSTRAINT user_activity_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2558,6 +2798,8 @@ CREATE TABLE public.user_ad_interactions (
   revenue_generated numeric DEFAULT 0.00,
   device_type text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_ad_interactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_ad_interactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2570,6 +2812,8 @@ CREATE TABLE public.user_ad_personalization (
   sensitive_topics jsonb DEFAULT '[]'::jsonb,
   reminder_ads_enabled boolean DEFAULT true,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_ad_personalization_pkey PRIMARY KEY (id),
   CONSTRAINT user_ad_personalization_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2596,6 +2840,8 @@ CREATE TABLE public.user_addresses (
   apartment_number text,
   is_commercial boolean DEFAULT false,
   verified_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_addresses_pkey PRIMARY KEY (id),
   CONSTRAINT user_addresses_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2610,6 +2856,8 @@ CREATE TABLE public.user_ai_interactions (
   response_time_ms integer,
   satisfaction_rating integer CHECK (satisfaction_rating >= 1 AND satisfaction_rating <= 5),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_ai_interactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_ai_interactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2626,6 +2874,8 @@ CREATE TABLE public.user_ai_preferences (
   personalization_level text DEFAULT 'high'::text CHECK (personalization_level = ANY (ARRAY['none'::text, 'low'::text, 'medium'::text, 'high'::text, 'maximum'::text])),
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_ai_preferences_pkey PRIMARY KEY (id),
   CONSTRAINT user_ai_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2723,6 +2973,8 @@ CREATE TABLE public.user_app_access (
   last_login_at timestamp with time zone,
   total_login_count integer DEFAULT 0,
   total_usage_minutes integer DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_app_access_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_access_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_app_access_app_id_fkey FOREIGN KEY (app_id) REFERENCES public.zipra_apps(id)
@@ -2745,6 +2997,8 @@ CREATE TABLE public.user_app_settings (
   custom_settings jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_app_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2759,6 +3013,8 @@ CREATE TABLE public.user_app_usage_timeline (
   occurred_at timestamp with time zone NOT NULL DEFAULT now(),
   deleted_at timestamp with time zone,
   is_deleted boolean DEFAULT false,
+  serial_id text,
+  username text,
   CONSTRAINT user_app_usage_timeline_pkey PRIMARY KEY (id),
   CONSTRAINT user_app_usage_timeline_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2773,6 +3029,8 @@ CREATE TABLE public.user_audit_logs (
   ip_address inet,
   user_agent text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_audit_logs_pkey PRIMARY KEY (id),
   CONSTRAINT user_audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2788,6 +3046,8 @@ CREATE TABLE public.user_automations (
   run_count integer DEFAULT 0,
   last_run_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_automations_pkey PRIMARY KEY (id),
   CONSTRAINT user_automations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2798,6 +3058,8 @@ CREATE TABLE public.user_backup_codes (
   is_used boolean DEFAULT false,
   used_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_backup_codes_pkey PRIMARY KEY (id),
   CONSTRAINT user_backup_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2807,6 +3069,8 @@ CREATE TABLE public.user_badges (
   badge_id uuid NOT NULL,
   earned_at timestamp with time zone DEFAULT now(),
   is_displayed boolean DEFAULT true,
+  serial_id text,
+  username text,
   CONSTRAINT user_badges_pkey PRIMARY KEY (id),
   CONSTRAINT user_badges_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_badges_badge_id_fkey FOREIGN KEY (badge_id) REFERENCES public.badges(id)
@@ -2824,6 +3088,8 @@ CREATE TABLE public.user_behavioral_biometrics (
   session_consistency_score numeric DEFAULT 0,
   is_anomaly boolean DEFAULT false,
   recorded_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_behavioral_biometrics_pkey PRIMARY KEY (id),
   CONSTRAINT user_behavioral_biometrics_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2833,6 +3099,9 @@ CREATE TABLE public.user_blocks (
   blocked_id uuid NOT NULL,
   reason text,
   created_at timestamp with time zone DEFAULT now(),
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT user_blocks_pkey PRIMARY KEY (id),
   CONSTRAINT user_blocks_blocker_id_fkey FOREIGN KEY (blocker_id) REFERENCES public.users(id),
   CONSTRAINT user_blocks_blocked_id_fkey FOREIGN KEY (blocked_id) REFERENCES public.users(id)
@@ -2846,6 +3115,8 @@ CREATE TABLE public.user_carbon_footprint (
   total_emissions_kg numeric DEFAULT 0,
   offset_purchased_kg numeric DEFAULT 0,
   trees_equivalent numeric DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_carbon_footprint_pkey PRIMARY KEY (id),
   CONSTRAINT user_carbon_footprint_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2858,6 +3129,8 @@ CREATE TABLE public.user_carts (
   price numeric,
   added_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_carts_pkey PRIMARY KEY (id),
   CONSTRAINT user_carts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2870,6 +3143,8 @@ CREATE TABLE public.user_challenge_progress (
   completed_at timestamp with time zone,
   reward_claimed boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_challenge_progress_pkey PRIMARY KEY (id),
   CONSTRAINT user_challenge_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_challenge_progress_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES public.daily_challenges(id)
@@ -2882,6 +3157,8 @@ CREATE TABLE public.user_circles (
   is_default boolean DEFAULT false,
   member_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_circles_pkey PRIMARY KEY (id),
   CONSTRAINT user_circles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2897,6 +3174,8 @@ CREATE TABLE public.user_collections (
   item_count integer DEFAULT 0,
   follower_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_collections_pkey PRIMARY KEY (id),
   CONSTRAINT user_collections_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2906,6 +3185,8 @@ CREATE TABLE public.user_compare_lists (
   product_ids ARRAY NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_compare_lists_pkey PRIMARY KEY (id),
   CONSTRAINT user_compare_lists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2945,6 +3226,8 @@ CREATE TABLE public.user_connected_apps (
   can_access_contacts boolean DEFAULT false,
   can_access_location boolean DEFAULT false,
   risk_level text DEFAULT 'low'::text,
+  serial_id text,
+  username text,
   CONSTRAINT user_connected_apps_pkey PRIMARY KEY (id),
   CONSTRAINT user_connected_apps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_connected_apps_zipra_app_id_fkey FOREIGN KEY (zipra_app_id) REFERENCES public.zipra_apps(id),
@@ -2957,6 +3240,8 @@ CREATE TABLE public.user_connections (
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'blocked'::text])),
   requested_at timestamp with time zone DEFAULT now(),
   responded_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_connections_pkey PRIMARY KEY (id),
   CONSTRAINT user_connections_requester_id_fkey FOREIGN KEY (requester_id) REFERENCES public.users(id),
   CONSTRAINT user_connections_addressee_id_fkey FOREIGN KEY (addressee_id) REFERENCES public.users(id)
@@ -2972,6 +3257,8 @@ CREATE TABLE public.user_consents (
   ip_address inet,
   user_agent text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_consents_pkey PRIMARY KEY (id),
   CONSTRAINT user_consents_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -2995,6 +3282,8 @@ CREATE TABLE public.user_content_preferences (
   data_saver_mode boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_content_preferences_pkey PRIMARY KEY (id),
   CONSTRAINT user_content_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3008,6 +3297,8 @@ CREATE TABLE public.user_credit_scores (
   return_rate_impact integer,
   last_calculated_at timestamp with time zone DEFAULT now(),
   calculation_details jsonb,
+  serial_id text,
+  username text,
   CONSTRAINT user_credit_scores_pkey PRIMARY KEY (id),
   CONSTRAINT user_credit_scores_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3023,6 +3314,8 @@ CREATE TABLE public.user_custom_themes (
   border_radius text DEFAULT 'medium'::text,
   custom_css text,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_custom_themes_pkey PRIMARY KEY (id),
   CONSTRAINT user_custom_themes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3041,6 +3334,8 @@ CREATE TABLE public.user_daily_activity (
   amount_spent numeric DEFAULT 0.00,
   events_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_daily_activity_pkey PRIMARY KEY (id),
   CONSTRAINT user_daily_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3051,6 +3346,8 @@ CREATE TABLE public.user_data_promises (
   promised_at timestamp with time zone DEFAULT now(),
   last_verified_at timestamp with time zone,
   is_active boolean DEFAULT true,
+  serial_id text,
+  username text,
   CONSTRAINT user_data_promises_pkey PRIMARY KEY (id),
   CONSTRAINT user_data_promises_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3063,6 +3360,8 @@ CREATE TABLE public.user_data_requests (
   admin_notes text,
   requested_at timestamp with time zone DEFAULT now(),
   completed_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_data_requests_pkey PRIMARY KEY (id),
   CONSTRAINT user_data_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3129,6 +3428,8 @@ CREATE TABLE public.user_devices (
   device_nickname text,
   country_code text,
   city_name text,
+  serial_id text,
+  username text,
   CONSTRAINT user_devices_pkey PRIMARY KEY (id),
   CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3149,6 +3450,8 @@ CREATE TABLE public.user_digital_wellbeing (
   weekly_report_enabled boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_digital_wellbeing_pkey PRIMARY KEY (id),
   CONSTRAINT user_digital_wellbeing_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3163,6 +3466,8 @@ CREATE TABLE public.user_engagement_scores (
   loyalty_score integer DEFAULT 0,
   last_calculated_at timestamp with time zone DEFAULT now(),
   calculation_factors jsonb,
+  serial_id text,
+  username text,
   CONSTRAINT user_engagement_scores_pkey PRIMARY KEY (id),
   CONSTRAINT user_engagement_scores_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3177,6 +3482,8 @@ CREATE TABLE public.user_events (
   device_type text,
   ip_address inet,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_events_pkey PRIMARY KEY (id),
   CONSTRAINT user_events_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3202,6 +3509,8 @@ CREATE TABLE public.user_export_jobs (
   processing_started_at timestamp with time zone,
   ready_at timestamp with time zone,
   checksum text,
+  serial_id text,
+  username text,
   CONSTRAINT user_export_jobs_pkey PRIMARY KEY (id),
   CONSTRAINT user_export_jobs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3219,6 +3528,8 @@ CREATE TABLE public.user_family_sharing (
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'active'::text, 'removed'::text])),
   invited_at timestamp with time zone DEFAULT now(),
   joined_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_family_sharing_pkey PRIMARY KEY (id),
   CONSTRAINT user_family_sharing_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES public.users(id),
   CONSTRAINT user_family_sharing_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.users(id)
@@ -3239,6 +3550,8 @@ CREATE TABLE public.user_feed_settings (
   blocked_products ARRAY,
   feed_weights jsonb DEFAULT '{"trending": 20, "price_match": 15, "new_arrivals": 15, "social_proof": 10, "interest_score": 40}'::jsonb,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_feed_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_feed_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3254,6 +3567,8 @@ CREATE TABLE public.user_feedback (
   admin_reply text,
   replied_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_feedback_pkey PRIMARY KEY (id),
   CONSTRAINT user_feedback_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3262,6 +3577,8 @@ CREATE TABLE public.user_follows (
   follower_id uuid NOT NULL,
   following_id uuid NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_follows_pkey PRIMARY KEY (id),
   CONSTRAINT user_follows_follower_id_fkey FOREIGN KEY (follower_id) REFERENCES public.users(id),
   CONSTRAINT user_follows_following_id_fkey FOREIGN KEY (following_id) REFERENCES public.users(id)
@@ -3271,6 +3588,8 @@ CREATE TABLE public.user_game_achievements (
   user_id uuid NOT NULL,
   achievement_id uuid NOT NULL,
   unlocked_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_game_achievements_pkey PRIMARY KEY (id),
   CONSTRAINT user_game_achievements_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_game_achievements_achievement_id_fkey FOREIGN KEY (achievement_id) REFERENCES public.game_achievements(id)
@@ -3284,6 +3603,8 @@ CREATE TABLE public.user_game_library (
   is_favorite boolean DEFAULT false,
   purchase_price numeric DEFAULT 0.00,
   purchased_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_game_library_pkey PRIMARY KEY (id),
   CONSTRAINT user_game_library_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_game_library_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.games(id)
@@ -3300,6 +3621,8 @@ CREATE TABLE public.user_goals (
   related_products ARRAY,
   created_at timestamp with time zone DEFAULT now(),
   completed_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_goals_pkey PRIMARY KEY (id),
   CONSTRAINT user_goals_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3318,6 +3641,8 @@ CREATE TABLE public.user_groups (
   is_verified boolean DEFAULT false,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_groups_pkey PRIMARY KEY (id),
   CONSTRAINT user_groups_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id)
 );
@@ -3334,6 +3659,9 @@ CREATE TABLE public.user_heatmaps (
   device_type text,
   session_count integer DEFAULT 1,
   date date DEFAULT CURRENT_DATE,
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT user_heatmaps_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.user_identity_verification (
@@ -3357,6 +3685,8 @@ CREATE TABLE public.user_identity_verification (
   verified_at timestamp with time zone,
   expires_at timestamp with time zone,
   submitted_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_identity_verification_pkey PRIMARY KEY (id),
   CONSTRAINT user_identity_verification_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3372,6 +3702,8 @@ CREATE TABLE public.user_inactive_account_manager (
   trusted_contacts jsonb DEFAULT '[]'::jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_inactive_account_manager_pkey PRIMARY KEY (id),
   CONSTRAINT user_inactive_account_manager_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3386,6 +3718,8 @@ CREATE TABLE public.user_interest_scores (
   wishlist_count integer DEFAULT 0,
   last_interacted_at timestamp with time zone,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_interest_scores_pkey PRIMARY KEY (id),
   CONSTRAINT user_interest_scores_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3407,6 +3741,8 @@ CREATE TABLE public.user_invoices (
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_invoices_pkey PRIMARY KEY (id),
   CONSTRAINT user_invoices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3423,6 +3759,8 @@ CREATE TABLE public.user_journeys (
   drop_off_point text,
   duration_seconds integer,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_journeys_pkey PRIMARY KEY (id),
   CONSTRAINT user_journeys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3436,6 +3774,8 @@ CREATE TABLE public.user_levels (
   level_title text DEFAULT 'Beginner'::text,
   perks_unlocked jsonb DEFAULT '[]'::jsonb,
   level_updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_levels_pkey PRIMARY KEY (id),
   CONSTRAINT user_levels_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3457,6 +3797,8 @@ CREATE TABLE public.user_location_history (
   is_home boolean DEFAULT false,
   is_work boolean DEFAULT false,
   recorded_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_location_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_location_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3469,6 +3811,8 @@ CREATE TABLE public.user_login_methods (
   is_enabled boolean DEFAULT true,
   last_used_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_login_methods_pkey PRIMARY KEY (id),
   CONSTRAINT user_login_methods_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3497,6 +3841,8 @@ CREATE TABLE public.user_login_notifications (
   was_blocked boolean DEFAULT false,
   user_confirmed boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_login_notifications_pkey PRIMARY KEY (id),
   CONSTRAINT user_login_notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3508,6 +3854,8 @@ CREATE TABLE public.user_loyalty_points (
   points_balance integer DEFAULT 0,
   tier text DEFAULT 'bronze'::text CHECK (tier = ANY (ARRAY['bronze'::text, 'silver'::text, 'gold'::text, 'platinum'::text, 'diamond'::text])),
   tier_updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_loyalty_points_pkey PRIMARY KEY (id),
   CONSTRAINT user_loyalty_points_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3520,6 +3868,8 @@ CREATE TABLE public.user_loyalty_transactions (
   reference_id text,
   balance_after integer,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_loyalty_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_loyalty_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3531,6 +3881,8 @@ CREATE TABLE public.user_mentions (
   mentioned_by_user_id uuid NOT NULL,
   is_read boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_mentions_pkey PRIMARY KEY (id),
   CONSTRAINT user_mentions_mentioned_user_id_fkey FOREIGN KEY (mentioned_user_id) REFERENCES public.users(id),
   CONSTRAINT user_mentions_mentioned_by_user_id_fkey FOREIGN KEY (mentioned_by_user_id) REFERENCES public.users(id)
@@ -3543,6 +3895,8 @@ CREATE TABLE public.user_milestones (
   description text,
   points_awarded integer DEFAULT 0,
   achieved_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_milestones_pkey PRIMARY KEY (id),
   CONSTRAINT user_milestones_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3552,6 +3906,8 @@ CREATE TABLE public.user_mutes (
   muted_type text NOT NULL CHECK (muted_type = ANY (ARRAY['user'::text, 'keyword'::text, 'hashtag'::text, 'category'::text])),
   muted_value text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_mutes_pkey PRIMARY KEY (id),
   CONSTRAINT user_mutes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3577,6 +3933,8 @@ CREATE TABLE public.user_notes (
   lock_pin_hash text,
   version_count integer DEFAULT 1,
   last_edited_by uuid,
+  serial_id text,
+  username text,
   CONSTRAINT user_notes_pkey PRIMARY KEY (id),
   CONSTRAINT user_notes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_notes_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id)
@@ -3623,6 +3981,8 @@ CREATE TABLE public.user_notification_settings (
   group_notifications boolean DEFAULT false,
   notification_sound text DEFAULT 'default'::text,
   priority_level text DEFAULT 'normal'::text,
+  serial_id text,
+  username text,
   CONSTRAINT user_notification_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_notification_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3646,6 +4006,8 @@ CREATE TABLE public.user_notifications (
   clicked_at timestamp with time zone,
   scheduled_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_notifications_pkey PRIMARY KEY (id),
   CONSTRAINT user_notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3662,6 +4024,8 @@ CREATE TABLE public.user_onboarding (
   completed_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_onboarding_pkey PRIMARY KEY (id),
   CONSTRAINT user_onboarding_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3679,6 +4043,8 @@ CREATE TABLE public.user_passkeys (
   is_backup_state boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   last_used_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_passkeys_pkey PRIMARY KEY (id),
   CONSTRAINT user_passkeys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3696,6 +4062,8 @@ CREATE TABLE public.user_payment_disputes (
   resolution_notes text,
   resolved_at timestamp with time zone,
   opened_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_payment_disputes_pkey PRIMARY KEY (id),
   CONSTRAINT user_payment_disputes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3720,6 +4088,8 @@ CREATE TABLE public.user_payment_methods (
   last_used_at timestamp with time zone,
   use_count integer DEFAULT 0,
   failed_count integer DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_payment_methods_pkey PRIMARY KEY (id),
   CONSTRAINT user_payment_methods_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3845,6 +4215,8 @@ CREATE TABLE public.user_privacy_settings (
   personalized_ads boolean DEFAULT true,
   data_retention_preference text DEFAULT 'standard'::text,
   auto_delete_activity_after_months integer DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_privacy_settings_pkey PRIMARY KEY (id),
   CONSTRAINT user_privacy_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3860,6 +4232,8 @@ CREATE TABLE public.user_product_interactions (
   price_at_time numeric,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_product_interactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_product_interactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3873,6 +4247,8 @@ CREATE TABLE public.user_promo_codes (
   order_id text,
   saving_amount numeric,
   used_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_promo_codes_pkey PRIMARY KEY (id),
   CONSTRAINT user_promo_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3892,6 +4268,8 @@ CREATE TABLE public.user_purchase_history_extended (
   carbon_offset_purchased boolean DEFAULT false,
   invoice_pdf_url text,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_purchase_history_extended_pkey PRIMARY KEY (id),
   CONSTRAINT user_purchase_history_extended_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3925,6 +4303,8 @@ CREATE TABLE public.user_purchases (
   download_link text,
   warranty_expires_at date,
   insurance_added boolean DEFAULT false,
+  serial_id text,
+  username text,
   CONSTRAINT user_purchases_pkey PRIMARY KEY (id),
   CONSTRAINT user_purchases_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3937,6 +4317,8 @@ CREATE TABLE public.user_push_tokens (
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   last_used_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_push_tokens_pkey PRIMARY KEY (id),
   CONSTRAINT user_push_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3946,6 +4328,8 @@ CREATE TABLE public.user_recently_viewed (
   product_id text NOT NULL,
   product_name text,
   viewed_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_recently_viewed_pkey PRIMARY KEY (id),
   CONSTRAINT user_recently_viewed_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3962,6 +4346,8 @@ CREATE TABLE public.user_referrals (
   reward_given_at timestamp with time zone,
   referred_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_referrals_pkey PRIMARY KEY (id),
   CONSTRAINT user_referrals_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES public.users(id),
   CONSTRAINT user_referrals_referred_user_id_fkey FOREIGN KEY (referred_user_id) REFERENCES public.users(id)
@@ -3977,6 +4363,8 @@ CREATE TABLE public.user_reports (
   notes text,
   metadata jsonb,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_reports_pkey PRIMARY KEY (id),
   CONSTRAINT user_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -3991,6 +4379,8 @@ CREATE TABLE public.user_reputation (
   spam_reports integer DEFAULT 0,
   level text DEFAULT 'newcomer'::text CHECK (level = ANY (ARRAY['newcomer'::text, 'contributor'::text, 'regular'::text, 'trusted'::text, 'expert'::text, 'legend'::text])),
   level_updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_reputation_pkey PRIMARY KEY (id),
   CONSTRAINT user_reputation_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4016,6 +4406,8 @@ CREATE TABLE public.user_reviews (
   not_helpful_count integer DEFAULT 0,
   report_count integer DEFAULT 0,
   quality_score numeric DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_reviews_pkey PRIMARY KEY (id),
   CONSTRAINT user_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_reviews_purchase_id_fkey FOREIGN KEY (purchase_id) REFERENCES public.user_purchases(id)
@@ -4031,6 +4423,8 @@ CREATE TABLE public.user_rfm_history (
   funnel_level integer,
   churn_risk_score integer,
   recorded_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_rfm_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_rfm_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4050,6 +4444,8 @@ CREATE TABLE public.user_saved_cards_extended (
   add_to_apple_pay boolean DEFAULT false,
   add_to_google_pay boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_saved_cards_extended_pkey PRIMARY KEY (id),
   CONSTRAINT user_saved_cards_extended_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4063,6 +4459,8 @@ CREATE TABLE public.user_saved_places (
   longitude numeric,
   address text,
   saved_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_saved_places_pkey PRIMARY KEY (id),
   CONSTRAINT user_saved_places_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_saved_places_place_id_fkey FOREIGN KEY (place_id) REFERENCES public.map_places(id)
@@ -4076,6 +4474,8 @@ CREATE TABLE public.user_saved_searches (
   alert_frequency text DEFAULT 'daily'::text CHECK (alert_frequency = ANY (ARRAY['instant'::text, 'daily'::text, 'weekly'::text])),
   last_alerted_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_saved_searches_pkey PRIMARY KEY (id),
   CONSTRAINT user_saved_searches_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4093,6 +4493,8 @@ CREATE TABLE public.user_screen_time (
   last_use_time time without time zone,
   downtime_respected boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_screen_time_pkey PRIMARY KEY (id),
   CONSTRAINT user_screen_time_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4105,6 +4507,8 @@ CREATE TABLE public.user_search_history (
   clicked_product_id text,
   device_type text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_search_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_search_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4165,6 +4569,8 @@ CREATE TABLE public.user_security_activity (
   was_you boolean,
   reported_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_security_activity_pkey PRIMARY KEY (id),
   CONSTRAINT user_security_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4188,6 +4594,8 @@ CREATE TABLE public.user_security_checkup (
   next_checkup_reminder timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_security_checkup_pkey PRIMARY KEY (id),
   CONSTRAINT user_security_checkup_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4197,6 +4605,8 @@ CREATE TABLE public.user_security_questions (
   question text NOT NULL,
   answer_hash text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_security_questions_pkey PRIMARY KEY (id),
   CONSTRAINT user_security_questions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4219,6 +4629,8 @@ CREATE TABLE public.user_session_preferences (
   preferences jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_session_preferences_pkey PRIMARY KEY (id),
   CONSTRAINT user_session_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4260,6 +4672,8 @@ CREATE TABLE public.user_sessions (
   bounced boolean DEFAULT false,
   converted boolean DEFAULT false,
   conversion_value numeric DEFAULT 0.00,
+  serial_id text,
+  username text,
   CONSTRAINT user_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4280,6 +4694,8 @@ CREATE TABLE public.user_social_accounts (
   scope_granted ARRAY,
   can_post boolean DEFAULT false,
   auto_share_enabled boolean DEFAULT false,
+  serial_id text,
+  username text,
   CONSTRAINT user_social_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT user_social_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4297,6 +4713,8 @@ CREATE TABLE public.user_social_graph (
   community_memberships integer DEFAULT 0,
   groups_owned integer DEFAULT 0,
   updated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_social_graph_pkey PRIMARY KEY (id),
   CONSTRAINT user_social_graph_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4313,6 +4731,8 @@ CREATE TABLE public.user_storage_usage (
   storage_plan text DEFAULT 'free'::text CHECK (storage_plan = ANY (ARRAY['free'::text, 'basic'::text, 'standard'::text, 'premium'::text])),
   plan_expires_at timestamp with time zone,
   last_calculated_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_storage_usage_pkey PRIMARY KEY (id),
   CONSTRAINT user_storage_usage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4329,6 +4749,8 @@ CREATE TABLE public.user_stories (
   is_active boolean DEFAULT true,
   expires_at timestamp with time zone DEFAULT (now() + '24:00:00'::interval),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_stories_pkey PRIMARY KEY (id),
   CONSTRAINT user_stories_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4340,6 +4762,8 @@ CREATE TABLE public.user_streaks (
   last_checkin_date date,
   streak_started_at date,
   total_checkins integer DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_streaks_pkey PRIMARY KEY (id),
   CONSTRAINT user_streaks_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4354,6 +4778,8 @@ CREATE TABLE public.user_subscription_boxes (
   next_delivery_date date,
   status text DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'paused'::text, 'cancelled'::text, 'pending'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_subscription_boxes_pkey PRIMARY KEY (id),
   CONSTRAINT user_subscription_boxes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4369,6 +4795,8 @@ CREATE TABLE public.user_subscription_history (
   triggered_by text DEFAULT 'user'::text,
   ip_address inet,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_subscription_history_pkey PRIMARY KEY (id),
   CONSTRAINT user_subscription_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4398,6 +4826,8 @@ CREATE TABLE public.user_subscriptions (
   renewal_reminder_sent boolean DEFAULT false,
   failed_payment_count integer DEFAULT 0,
   last_failed_payment_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_subscriptions_pkey PRIMARY KEY (id),
   CONSTRAINT user_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_subscriptions_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.subscription_plans(id)
@@ -4424,6 +4854,8 @@ CREATE TABLE public.user_support_tickets (
   first_response_at timestamp with time zone,
   reopen_count integer DEFAULT 0,
   last_reopened_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_support_tickets_pkey PRIMARY KEY (id),
   CONSTRAINT user_support_tickets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_support_tickets_assigned_agent_id_fkey FOREIGN KEY (assigned_agent_id) REFERENCES public.support_agents(id)
@@ -4437,6 +4869,8 @@ CREATE TABLE public.user_third_party_permissions (
   last_used_at timestamp with time zone,
   is_active boolean DEFAULT true,
   revoked_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_third_party_permissions_pkey PRIMARY KEY (id),
   CONSTRAINT user_third_party_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4454,6 +4888,8 @@ CREATE TABLE public.user_trusted_contacts (
   invited_at timestamp with time zone,
   accepted_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_trusted_contacts_pkey PRIMARY KEY (id),
   CONSTRAINT user_trusted_contacts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4471,6 +4907,8 @@ CREATE TABLE public.user_trusted_devices (
   trusted_until timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
   last_used_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT user_trusted_devices_pkey PRIMARY KEY (id),
   CONSTRAINT user_trusted_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4487,6 +4925,8 @@ CREATE TABLE public.user_voice_activity (
   app_context text,
   auto_delete_at timestamp with time zone,
   recorded_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_voice_activity_pkey PRIMARY KEY (id),
   CONSTRAINT user_voice_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4501,6 +4941,8 @@ CREATE TABLE public.user_wallet_transactions (
   reference_id text,
   status text DEFAULT 'completed'::text CHECK (status = ANY (ARRAY['pending'::text, 'completed'::text, 'failed'::text, 'reversed'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_wallet_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT user_wallet_transactions_wallet_id_fkey FOREIGN KEY (wallet_id) REFERENCES public.user_wallets(id),
   CONSTRAINT user_wallet_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -4520,6 +4962,8 @@ CREATE TABLE public.user_wallets (
   freeze_reason text,
   cashback_balance numeric DEFAULT 0,
   reward_balance numeric DEFAULT 0,
+  serial_id text,
+  username text,
   CONSTRAINT user_wallets_pkey PRIMARY KEY (id),
   CONSTRAINT user_wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4530,6 +4974,8 @@ CREATE TABLE public.user_wishlist_lists (
   is_public boolean DEFAULT false,
   item_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT user_wishlist_lists_pkey PRIMARY KEY (id),
   CONSTRAINT user_wishlist_lists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4543,6 +4989,8 @@ CREATE TABLE public.user_wishlists (
   price_dropped boolean DEFAULT false,
   added_at timestamp with time zone DEFAULT now(),
   list_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT user_wishlists_pkey PRIMARY KEY (id),
   CONSTRAINT user_wishlists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT user_wishlists_list_id_fkey FOREIGN KEY (list_id) REFERENCES public.user_wishlist_lists(id)
@@ -4621,6 +5069,8 @@ CREATE TABLE public.video_calls (
   recording_url text,
   started_at timestamp with time zone DEFAULT now(),
   ended_at timestamp with time zone,
+  serial_id text,
+  username text,
   CONSTRAINT video_calls_pkey PRIMARY KEY (id),
   CONSTRAINT video_calls_caller_id_fkey FOREIGN KEY (caller_id) REFERENCES public.users(id),
   CONSTRAINT video_calls_callee_id_fkey FOREIGN KEY (callee_id) REFERENCES public.users(id)
@@ -4634,6 +5084,8 @@ CREATE TABLE public.virtual_try_on_history (
   feedback text,
   did_purchase boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT virtual_try_on_history_pkey PRIMARY KEY (id),
   CONSTRAINT virtual_try_on_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4649,6 +5101,8 @@ CREATE TABLE public.voice_messages (
   is_played boolean DEFAULT false,
   played_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT voice_messages_pkey PRIMARY KEY (id),
   CONSTRAINT voice_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id),
   CONSTRAINT voice_messages_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.users(id)
@@ -4665,6 +5119,9 @@ CREATE TABLE public.webhook_delivery_logs (
   error_message text,
   delivered_at timestamp with time zone DEFAULT now(),
   next_retry_at timestamp with time zone,
+  user_id uuid,
+  serial_id text,
+  username text,
   CONSTRAINT webhook_delivery_logs_pkey PRIMARY KEY (id),
   CONSTRAINT webhook_delivery_logs_webhook_fkey FOREIGN KEY (webhook_id) REFERENCES public.webhooks(id)
 );
@@ -4681,6 +5138,8 @@ CREATE TABLE public.webhooks (
   last_triggered_at timestamp with time zone,
   last_status_code integer,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT webhooks_pkey PRIMARY KEY (id),
   CONSTRAINT webhooks_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -4700,6 +5159,8 @@ CREATE TABLE public.whatsapp_queue (
   delivered_at timestamp with time zone,
   read_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT whatsapp_queue_pkey PRIMARY KEY (id),
   CONSTRAINT whatsapp_queue_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES public.users(id)
 );
@@ -4710,6 +5171,8 @@ CREATE TABLE public.workspace_members (
   role text DEFAULT 'member'::text CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'editor'::text, 'viewer'::text, 'guest'::text])),
   permissions jsonb DEFAULT '{"read": true, "write": false, "delete": false}'::jsonb,
   joined_at timestamp with time zone DEFAULT now(),
+  serial_id text,
+  username text,
   CONSTRAINT workspace_members_pkey PRIMARY KEY (id),
   CONSTRAINT workspace_members_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.shared_workspaces(id),
   CONSTRAINT workspace_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)

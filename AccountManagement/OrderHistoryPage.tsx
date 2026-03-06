@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ChevronLeft, Package, Truck, CheckCircle, Clock, X, Search, Filter, Download, Eye, MapPin, CreditCard, DollarSign, RotateCcw, Gift, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors, DB_CONFIG } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'returned' | 'on_hold';
 type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
@@ -115,7 +115,7 @@ const OrderHistoryPage: React.FC = () => {
       
       // Fetch from user_purchases table (using the UserPurchase interface from types.ts)
       const { data, error } = await supabase
-        .from(DB_CONFIG.tables.user_purchases)
+        .from(dbConfig.tables.user_purchases)
         .select('*')
         .eq('userId', userData.id)
         .order('purchasedAt', { ascending: false });

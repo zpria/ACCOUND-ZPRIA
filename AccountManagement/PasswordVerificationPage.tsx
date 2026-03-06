@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, ChevronLeft, ArrowRight, Check } from 'lucide-react';
 import { supabase, hashPassword } from '../services/supabaseService';
 import LoadingOverlay from '../components/LoadingOverlay';
-import { dataIds, colors, DB_CONFIG } from '../config';
+import { dataIds, colors, dbConfig } from '../config';
 
 const PasswordVerificationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const PasswordVerificationPage: React.FC = () => {
       
       // Verify password against database
       const { data, error: authError } = await supabase
-        .from(DB_CONFIG.tables.users)
+        .from(dbConfig.tables.users)
         .select('id, password_hash')
         .eq('id', userData.id)
         .single();
