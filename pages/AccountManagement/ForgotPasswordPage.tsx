@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ZPRIA_MAIN_LOGO } from '../pages/constants';
-import { supabase } from '../services/supabaseService';
-import { sendOTP } from '../services/emailService';
-import FloatingInput from '../components/FloatingInput';
-import LoadingOverlay from '../components/LoadingOverlay';
-import { UserProfile } from '../pages/types';
-import { dataIds, colors, dbConfig } from '../config';
+import { ZPRIA_MAIN_LOGO } from '../../constants';
+import { supabase } from '../../services/supabaseService';
+import { sendOTP } from '../../services/emailService';
+import FloatingInput from '../../components/FloatingInput';
+import LoadingOverlay from '../../components/LoadingOverlay';
+import { UserProfile } from '../../types';
+import { dataIds, colors, dbConfig } from '../../config';
 
 type RecoveryStep = 'SEARCH' | 'SELECT' | 'METHOD' | 'DONE';
 

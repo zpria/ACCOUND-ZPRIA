@@ -276,66 +276,86 @@ const App: React.FC = () => {
       <ScrollToTop />
       <Layout user={authState.user} onLogout={logout}>
         <Routes>
-          {/* Main Pages */}
           <Route path="/" element={<div data-id={dataIds.navMain}>{authState.isAuthenticated ? <ProductHubPage user={authState.user} onLogout={logout} /> : <DashboardPage user={null} theme={authState.theme} onLogout={logout} />}</div>} />
+          <Route path="/home" element={<div data-id={dataIds.navMain}>{authState.isAuthenticated ? <ProductHubPage user={authState.user} onLogout={logout} /> : <DashboardPage user={null} theme={authState.theme} onLogout={logout} />}</div>} />
           <Route path="/signin" element={<SigninPage onLogin={login} />} />
+          <Route path="/sign-in" element={<SigninPage onLogin={login} />} />
+          <Route path="/login" element={<SigninPage onLogin={login} />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/sign-up" element={<SignupPage />} />
+          <Route path="/register" element={<SignupPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/support" element={<SupportPage />} />
-          
-          {/* Authentication & Verification */}
           <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/verify-phone" element={<VerifyPhonePage onLogin={login} />} />
+          <Route path="/verify/phone" element={<VerifyPhonePage onLogin={login} />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage onLogin={login} />} />
-          
-          {/* Products & Legal */}
+          <Route path="/reset" element={<ResetPasswordPage onLogin={login} />} />
           <Route path="/product/:id" element={<ProductDetailsPage />} />
+          <Route path="/products/:id" element={<ProductDetailsPage />} />
           <Route path="/privacy" element={<PolicyPage />} />
+          <Route path="/privacy-policy" element={<PolicyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/terms-of-service" element={<TermsPage />} />
           <Route path="/legal" element={<LegalPage />} />
-          
-          {/* Services & Utilities */}
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/account-services" element={<div data-id="page-account-services"><AccountServicesPage /></div>} />
+          <Route path="/services" element={<div data-id="page-account-services"><AccountServicesPage /></div>} />
           <Route path="/diagnostics" element={<DiagnosticsPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/contact-us" element={<ContactUsPage />} />
           <Route path="/theme" element={<ThemeSelectionPage onSelectTheme={updateTheme} currentTheme={authState.theme} />} />
-          
-          {/* Security Pages */}
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/security/2fa-setup" element={<TwoFactorSetupPage />} />
+          <Route path="/security/2fa" element={<TwoFactorSetupPage />} />
           <Route path="/security/devices" element={<DevicesPage />} />
-          
-          {/* Account Management Main */}
           <Route path="/account" element={<div data-id={dataIds.navAccount}><AccountManagementPage /></div>} />
-          
-          {/* Account Management Tools - All Pages */}
           <Route path="/account/profile" element={<div data-id={dataIds.accountProfile}><ProfilePage /></div>} />
-          <Route path="/account/security-verification" element={<PasswordVerificationPage />} />
+          <Route path="/profile" element={<div data-id={dataIds.accountProfile}><ProfilePage /></div>} />
+          <Route path="/account/security" element={<PasswordVerificationPage />} />
           <Route path="/security-settings" element={<div data-id={dataIds.accountSecurity}><SecuritySettingsPage /></div>} />
           <Route path="/security/login-notifications" element={<LoginNotificationSetupPage />} />
           <Route path="/account/devices" element={<div data-id={dataIds.accountDevices}><DeviceManagementPage /></div>} />
+          <Route path="/devices" element={<div data-id={dataIds.accountDevices}><DeviceManagementPage /></div>} />
           <Route path="/account/privacy" element={<div data-id={dataIds.accountPrivacy}><PrivacySettingsPage /></div>} />
+          <Route path="/privacy-settings" element={<div data-id={dataIds.accountPrivacy}><PrivacySettingsPage /></div>} />
           <Route path="/account/payments" element={<PaymentMethodsPage />} />
+          <Route path="/payments" element={<PaymentMethodsPage />} />
           <Route path="/account/apps" element={<div data-id={dataIds.accountApps}><ConnectedAppsPage /></div>} />
+          <Route path="/connected-apps" element={<div data-id={dataIds.accountApps}><ConnectedAppsPage /></div>} />
           <Route path="/account/activity" element={<div data-id={dataIds.accountActivity}><ActivityLogsPage /></div>} />
+          <Route path="/activity" element={<div data-id={dataIds.accountActivity}><ActivityLogsPage /></div>} />
           <Route path="/account/wishlist" element={<WishlistPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/account/cart" element={<CartPage />} />
+          <Route path="/cart" element={<CartPage />} />
           <Route path="/account/wallet" element={<WalletPage />} />
+          <Route path="/wallet" element={<WalletPage />} />
           <Route path="/account/subscriptions" element={<div data-id={dataIds.accountSubscriptions}><SubscriptionsPage /></div>} />
+          <Route path="/subscriptions" element={<div data-id={dataIds.accountSubscriptions}><SubscriptionsPage /></div>} />
           <Route path="/account/addresses" element={<AddressesPage />} />
+          <Route path="/addresses" element={<AddressesPage />} />
           <Route path="/account/rewards" element={<RewardsPage />} />
+          <Route path="/rewards" element={<RewardsPage />} />
           <Route path="/account/preferences" element={<div data-id={dataIds.accountPreferences}><PreferencesPage /></div>} />
+          <Route path="/preferences" element={<div data-id={dataIds.accountPreferences}><PreferencesPage /></div>} />
           <Route path="/account/delete" element={<div data-id={dataIds.accountDelete}><AccountDeletionPage /></div>} />
+          <Route path="/delete-account" element={<div data-id={dataIds.accountDelete}><AccountDeletionPage /></div>} />
           <Route path="/account/notifications" element={<NotificationPreferencesPage />} />
+          <Route path="/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/account/orders" element={<OrderHistoryPage />} />
-          
-          {/* Dashboard & Settings */}
+          <Route path="/orders" element={<OrderHistoryPage />} />
+          <Route path="/account/order-history" element={<OrderHistoryPage />} />
           <Route path="/dashboard" element={<AccountDashboardPage />} />
+          <Route path="/account/dashboard" element={<AccountDashboardPage />} />
           <Route path="/settings" element={<PreferencesPage />} />
-          
-          {/* Catch-all */}
+          <Route path="/account/settings" element={<PreferencesPage />} />
+          {/* Duplicate pages from pages/AccountManagement */}
+          <Route path="/pages/forgot-password" element={<PagesForgotPasswordPage />} />
+          <Route path="/pages/reset-password" element={<PagesResetPasswordPage onLogin={login} />} />
+          <Route path="/pages/password-verification" element={<PagesPasswordVerificationPage />} />
+          <Route path="/pages/login-notifications" element={<PagesLoginNotificationSetupPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
