@@ -9,6 +9,7 @@ export const dataIds = {
   navAccount: 'nav-account',
   navDashboard: 'nav-dashboard',
   navSettings: 'nav-settings',
+  navProducts: 'nav-products',
   navUserProfile: 'nav-user-profile',
   navNotifications: 'nav-notifications',
   navMessages: 'nav-messages',
@@ -1039,6 +1040,7 @@ export const dataIds = {
   userProfileAccountStatus: 'user-profile-account-status',
   userProfileIsVerified: 'user-profile-is-verified',
   userProfileCompletionPercent: 'user-profile-completion-percent',
+  userProfileThemePreference: 'user-profile-theme-preference',
   
   // User notification settings data-ids
   userNotifyEveryLogin: 'user-notify-every-login',

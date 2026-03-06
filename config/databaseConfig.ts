@@ -361,6 +361,7 @@ export const dbConfig = {
       emergency_contact_relation: 'emergency_contact_relation',
       stripe_customer_id: 'stripe_customer_id',
       serial_id: 'serial_id',
+      theme_preference: 'theme_preference',
       // Notification settings columns
       login_notify_every_login: 'login_notify_every_login',
       login_notify_new_device_only: 'login_notify_new_device_only',

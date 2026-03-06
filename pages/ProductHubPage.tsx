@@ -97,9 +97,9 @@ const ProductHubPage: React.FC<Props> = ({ user, onLogout }) => {
   );
 
   return (
-    <div className="reveal-node px-6 pb-40 max-w-[1200px] mx-auto pt-4 md:pt-10">
+    <div className="reveal-node px-6 pb-40 max-w-[1200px] mx-auto pt-4 md:pt-10" data-id={dataIds.navProducts}>
       {/* Identity Bar */}
-      <div className="flex justify-between items-center mb-16 border-b border-gray-50 pb-6">
+      <div className="flex justify-between items-center mb-16 border-b border-gray-50 pb-6" data-id="product-hub-identity-bar">
         <div className="flex items-center gap-3">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ring-4 ring-green-50"></div>
           <span className="text-[11px] font-black text-[#86868b] uppercase tracking-[0.4em]">Node Authorized</span>
@@ -111,7 +111,7 @@ const ProductHubPage: React.FC<Props> = ({ user, onLogout }) => {
       </div>
 
       {/* Hero Management */}
-      <div className="bg-[#fbfbfd] p-8 md:p-14 rounded-[48px] border border-gray-100 shadow-sm mb-20 flex flex-col md:flex-row items-center justify-between gap-12 group hover:border-blue-500 transition-colors duration-500 overflow-hidden relative">
+      <div className="bg-[#fbfbfd] p-8 md:p-14 rounded-[48px] border border-gray-100 shadow-sm mb-20 flex flex-col md:flex-row items-center justify-between gap-12 group hover:border-blue-500 transition-colors duration-500 overflow-hidden relative" data-id="product-hub-hero">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full -mr-32 -mt-32"></div>
         
         <div className="space-y-6 text-center md:text-left relative z-10">
@@ -124,6 +124,7 @@ const ProductHubPage: React.FC<Props> = ({ user, onLogout }) => {
           <button 
             onClick={() => navigate('/account-services')}
             className="px-12 py-4 bg-[#1d1d1f] text-white rounded-full font-black text-[12px] uppercase tracking-[0.3em] hover:bg-blue-600 transition-all shadow-xl hover:scale-105 active:scale-95"
+            data-id="product-hub-manage-account-btn"
           >
             Manage Account
           </button>
