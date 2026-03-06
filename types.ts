@@ -1,4 +1,6 @@
 
+// Export all database table types
+export * from './database.types';
 export interface LogoVariant {
   id: string;
   name: string;
