@@ -99,14 +99,14 @@ const DashboardPage: React.FC<Props> = ({ user, theme, onLogout }) => {
   }
 
   return (
-    <div className="flex flex-col items-center pt-0 reveal-node bg-white min-h-[80vh]">
+    <div className="flex flex-col items-center pt-0 reveal-node bg-white min-h-[80vh]" data-id={dataIds.navDashboard}>
       {/* Hero Brand Identity Section */}
-      <div className="relative flex flex-col items-center justify-center w-full max-w-[1400px] py-12 md:py-16">
+      <div className="relative flex flex-col items-center justify-center w-full max-w-[1400px] py-12 md:py-16" data-id="dashboard-hero">
         <ZPRIA_MAIN_LOGO className="w-[200px] h-[200px] md:w-[300px] md:h-[300px] relative z-10 transition-transform hover:scale-105 duration-700" />
       </div>
 
       {/* Hero Content Section */}
-      <div className="text-center max-w-[1000px] px-6 mb-16 md:mb-24 relative z-20">
+      <div className="text-center max-w-[1000px] px-6 mb-16 md:mb-24 relative z-20" data-id="dashboard-content">
         <h1 className="text-[42px] md:text-[88px] font-black text-[#1d1d1f] tracking-tighter leading-[0.9] md:leading-[0.85] mb-6 md:mb-8 uppercase">
           Welcome to <br /> ZPRIA.
         </h1>
@@ -115,7 +115,7 @@ const DashboardPage: React.FC<Props> = ({ user, theme, onLogout }) => {
         </p>
         
         {!user ? (
-          <div className="flex flex-col items-center gap-6 md:gap-8">
+          <div className="flex flex-col items-center gap-6 md:gap-8" data-id="dashboard-guest-actions">
             <button 
               onClick={() => navigate('/signin')}
               className="w-full sm:w-auto px-16 md:px-24 py-4 md:py-5 bg-[#0071e3] text-white rounded-full text-[18px] md:text-[20px] font-black hover:bg-[#0077ed] transition-all shadow-xl hover:scale-105 active:scale-95 uppercase tracking-[0.2em]"
@@ -131,7 +131,7 @@ const DashboardPage: React.FC<Props> = ({ user, theme, onLogout }) => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-10 md:gap-12">
+          <div className="flex flex-col items-center gap-10 md:gap-12" data-id="dashboard-user-actions">
             <Link 
               to="/theme"
               className="w-full sm:w-auto px-16 md:px-24 py-4 md:py-5 bg-[#1d1d1f] text-white rounded-full text-[18px] md:text-[20px] font-black hover:bg-black transition-all shadow-xl hover:scale-105 active:scale-95 uppercase tracking-[0.2em] btn-premium"
@@ -147,7 +147,7 @@ const DashboardPage: React.FC<Props> = ({ user, theme, onLogout }) => {
       </div>
 
       {/* Origin & Engineering Section */}
-      <div className="w-full bg-[#fbfbfd] py-20 md:py-32 border-t border-[#d2d2d7]">
+      <div className="w-full bg-[#fbfbfd] py-20 md:py-32 border-t border-[#d2d2d7]" data-id="dashboard-origin-section">
         <div className="max-w-[1000px] mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
             <div className="space-y-6 md:space-y-8 text-center md:text-left">
@@ -193,7 +193,7 @@ const DashboardPage: React.FC<Props> = ({ user, theme, onLogout }) => {
 
       {/* Bottom CTA for New Users */}
       {!user && (
-        <div className="w-full py-16 md:py-24 text-center px-6">
+        <div className="w-full py-16 md:py-24 text-center px-6" data-id="dashboard-cta-section">
           <h3 className="text-[20px] md:text-[24px] font-black text-[#1d1d1f] mb-4 md:mb-6 uppercase tracking-tighter leading-tight">Ready to provision your @progod account?</h3>
           <div className="flex flex-col items-center gap-4">
             <Link 

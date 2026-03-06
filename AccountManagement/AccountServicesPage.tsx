@@ -82,10 +82,10 @@ const AccountServicesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] py-12 px-6">
+    <div className="min-h-screen bg-[#f5f5f7] py-12 px-6" data-id="page-account-services">
       <div className="max-w-[800px] mx-auto">
         {/* Header */}
-        <header className="mb-12 text-center">
+        <header className="mb-12 text-center" data-id={dataIds.navAccount}>
           <Link to="/" className="inline-block mb-6">
             <ZPRIA_MAIN_LOGO className="w-16 h-16 mx-auto" />
           </Link>
@@ -106,6 +106,7 @@ const AccountServicesPage: React.FC = () => {
                 key={service.id}
                 to={service.path}
                 className="flex items-center gap-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all group"
+                data-id={`account-service-${service.id}`}
               >
                 <div className={`w-14 h-14 ${service.color} rounded-2xl flex items-center justify-center flex-shrink-0`}>
                   <Icon className="w-7 h-7 text-white" />
