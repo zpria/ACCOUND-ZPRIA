@@ -274,19 +274,20 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] py-8 px-4">
+    <div className="min-h-screen bg-[#f5f5f7] py-8 px-4" data-id={dataIds.accountProfile}>
       <div className="max-w-[800px] mx-auto">
         {/* Header */}
         <header className="mb-8">
           <button 
             onClick={() => navigate('/account-services')}
             className="flex items-center gap-2 text-[#0071e3] font-medium mb-4 hover:underline"
+            data-id={dataIds.navAccount}
           >
             <ChevronLeft className="w-5 h-5" />
             Back to Account Services
           </button>
           
-          <div className="bg-white rounded-3xl p-8 shadow-sm">
+          <div className="bg-white rounded-3xl p-8 shadow-sm" data-id={dataIds.navUserProfile}>
             <div className="flex items-center gap-6">
               <div className="relative">
                 <div className="w-24 h-24 bg-gradient-to-br from-[#0071e3] to-[#00c6ff] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
@@ -300,13 +301,14 @@ const ProfilePage: React.FC = () => {
                     `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#0071e3] rounded-full flex items-center justify-center text-white hover:bg-[#0051a3] transition-colors cursor-pointer">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#0071e3] rounded-full flex items-center justify-center text-white hover:bg-[#0051a3] transition-colors cursor-pointer" data-id={dataIds.formProfileEdit}>
                   <Camera className="w-4 h-4" />
                   <input 
                     type="file" 
                     accept="image/*" 
                     className="hidden" 
                     onChange={handleAvatarUpload}
+                    data-id="input-avatar-upload"
                   />
                 </label>
               </div>
@@ -336,7 +338,7 @@ const ProfilePage: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        <div className="flex gap-2 mb-6 overflow-x-auto" data-id="profile-tabs">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -348,6 +350,7 @@ const ProfilePage: React.FC = () => {
                     ? 'bg-[#0071e3] text-white'
                     : 'bg-white text-[#1d1d1f] hover:bg-gray-100'
                 }`}
+                data-id={`profile-tab-${tab.id}`}
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
@@ -357,9 +360,9 @@ const ProfilePage: React.FC = () => {
         </div>
 
         {/* Form Content */}
-        <div className="bg-white rounded-3xl p-8 shadow-sm">
+        <div className="bg-white rounded-3xl p-8 shadow-sm" data-id={dataIds.formProfileEdit}>
           {activeTab === 'personal' && (
-            <div className="space-y-6">
+            <div className="space-y-6" data-id="personal-info-section">
               <h2 className="text-[24px] font-semibold text-[#1d1d1f] mb-6">Personal Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -370,6 +373,7 @@ const ProfilePage: React.FC = () => {
                     value={profile.firstName}
                     onChange={(e) => handleChange('firstName', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all"
+                    data-id="input-first-name"
                   />
                 </div>
                 <div>
@@ -379,6 +383,7 @@ const ProfilePage: React.FC = () => {
                     value={profile.lastName}
                     onChange={(e) => handleChange('lastName', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 outline-none transition-all"
+                    data-id="input-last-name"
                   />
                 </div>
               </div>
@@ -390,6 +395,7 @@ const ProfilePage: React.FC = () => {
                   value={profile.username}
                   disabled
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed"
+                  data-id="input-username"
                 />
                 <p className="text-xs text-[#86868b] mt-1">Username cannot be changed</p>
               </div>
